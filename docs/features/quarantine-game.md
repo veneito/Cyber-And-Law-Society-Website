@@ -1,11 +1,19 @@
-# Quarantine mini-game
+# Quarantine mini-game (2026-10-06)
 
-Minesweeper-style game in `src/components/Quarantine.tsx`, shown in the `#quarantine` section ("Play" in the nav), just above Contact. Styles in `src/index.css`.
+Minesweeper with viruses as the mines; players "quarantine" suspected viruses with a green shield. Live at `/play`.
 
-- Viruses = mines. Three levels (`LEVELS`): easy 9×9/10, medium 12×12/22, hard 14×18/45.
-- Viruses are seeded after the first click, so the first scan and its neighbors are always safe.
-- Flagging quarantines a cell; win by opening every clean cell.
+## Page — `play/index.html` + `PlayPage` in `src/App.tsx`
+- Separate Vite page (multi-page input in `vite.config.ts`); `App` renders `PlayPage` when the path is `/play`.
+- Nav links use `/#section` so they work from `/play`. "Play" nav item → `/play`.
+- Page animations: decoding heading + blinking cursor, staggered rise-in, scrolling grid background, drifting red bugs.
 
-## Deploy notes
-- To force a live update right away: `ssh vene@vene-serverlinux 'cd ~/cls-site && bash deploy/update.sh'` (over Tailscale).
-- Fixed: `deploy/*.sh` weren't executable, so the 5-min update timer was failing. Now committed with +x.
+## Game — `src/components/Quarantine.tsx`
+- Levels: easy 9×9/10, medium 12×12/22, hard 14×18/45. First click is always safe (viruses seeded after it).
+- Click = scan; right-click / long-press / "Quarantine mode" toggle = shield. Clicking a satisfied number opens its neighbors.
+- Animations (CSS `q-*` in `index.css`): diagonal board boot + scanline on new game, reveal ripple from click, pop-ins, loss shake + pulsing hit virus, win glow + spinning shield wave. All off under reduced motion.
+
+## Leaderboard — `deploy/leaderboard.mjs`
+- `GET/POST /api/leaderboard`, top 10 per level, stored in `data/leaderboard.json` on the server (gitignored, survives deploys).
+- Used by `deploy/serve.mjs` in production and by a Vite plugin in dev.
+- Checks: name sanitized to 16 chars, minimum plausible times (2s/5s/10s), 1 post per IP per 10s (`cf-connecting-ip`). Times are client-reported, so a determined person could fake one.
+- To wipe scores: delete `~/cls-site/data/leaderboard.json` on the Mint PC and restart `cls-site`.
