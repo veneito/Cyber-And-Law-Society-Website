@@ -16,8 +16,22 @@ type Board = Record<Level, Score[]>;
 const API = "/api/leaderboard";
 const NAME_KEY = "cls-quarantine-name";
 const fmt = (ms: number) => (ms / 1000).toFixed(2) + "s";
+// Same rule the server applies (deploy/leaderboard.mjs), so what you type is what gets saved.
+const cleanName = (s: string) => s.replace(/[^\p{L}\p{N} ._-]/gu, "").slice(0, 16);
 
-function Leaderboard({ level, board, mine }: { level: Level; board: Board | null; mine: Score | null }) {
+type SubmitState =
+  | { kind: "idle" | "sending" }
+  | { kind: "done"; rank: number }
+  | { kind: "error"; message: string };
+
+function errorMessage(status: number, body: { error?: string; retryIn?: number }) {
+  if (status === 429) return `Someone on your network just saved a score. Try again in ${body.retryIn ?? 10} seconds.`;
+  if (body.error === "name") return "Add a name using letters, numbers, spaces, or . - _";
+  if (body.error === "time") return "This time didn't pass the leaderboard's check, so it wasn't saved.";
+  return "Couldn't reach the leaderboard. Check your connection and try again.";
+}
+
+function Leaderboard({ level, board, mine }: { level: Level; board: Board | null; mine: number }) {
   const list = board?.[level] ?? [];
   return (
     <aside className="q-rise w-full rounded-xl border border-neutral-800 bg-neutral-950/80 p-5 lg:w-72" style={{ animationDelay: "0.5s" }}>
@@ -28,18 +42,18 @@ function Leaderboard({ level, board, mine }: { level: Level; board: Board | null
       {board === null ? (
         <p className="mt-4 text-sm text-neutral-500">Loading scores…</p>
       ) : list.length === 0 ? (
-        <p className="mt-4 text-sm text-neutral-500">No scores yet. Be the first to secure the system.</p>
+        <p className="mt-4 text-sm text-neutral-500">No {level} scores yet. Win a game to claim #1.</p>
       ) : (
         <ol className="mt-4 space-y-1 font-mono text-sm">
           {list.map((s, k) => {
-            const me = mine && s.name === mine.name && s.ms === mine.ms && s.date === mine.date;
+            const me = k === mine;
             return (
               <li
-                key={k + s.name + s.ms}
+                key={`${s.name}|${s.ms}|${s.date}`}
                 className={`q-rise flex items-center gap-3 rounded-md px-2 py-1.5 ${me ? "bg-green-400/15 text-green-300 ring-1 ring-green-400/50" : "text-neutral-300"}`}
                 style={{ animationDelay: `${k * 50}ms` }}
               >
-                <span className={`w-5 text-right ${k === 0 ? "text-yellow-300" : k === 1 ? "text-neutral-300" : k === 2 ? "text-orange-400" : "text-neutral-600"}`}>{k + 1}</span>
+                <span className={`w-5 text-right ${k === 0 ? "text-yellow-300" : k === 1 ? "text-slate-200" : k === 2 ? "text-orange-400" : "text-neutral-600"}`}>{k + 1}</span>
                 <span className="truncate">{s.name}</span>
                 <span className="ml-auto tabular-nums text-neutral-400">{fmt(s.ms)}</span>
               </li>
@@ -89,11 +103,11 @@ export function Quarantine() {
   const [gameId, setGameId] = useState(0);
   const [finalMs, setFinalMs] = useState(0);
   const [board, setBoard] = useState<Board | null>(null);
-  const [mine, setMine] = useState<Score | null>(null);
+  const [mine, setMine] = useState(-1);
   const [name, setName] = useState(() => {
-    try { return localStorage.getItem(NAME_KEY) ?? ""; } catch { return ""; }
+    try { return cleanName(localStorage.getItem(NAME_KEY) ?? ""); } catch { return ""; }
   });
-  const [submit, setSubmit] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [submit, setSubmit] = useState<SubmitState>({ kind: "idle" });
   const startedAt = useRef(0);
 
   useEffect(() => {
@@ -103,19 +117,20 @@ export function Quarantine() {
   async function submitScore(e: React.FormEvent) {
     e.preventDefault();
     const clean = name.trim();
-    if (!clean || submit === "sending") return;
-    setSubmit("sending");
+    if (!clean || submit.kind === "sending") return;
+    setSubmit({ kind: "sending" });
     try { localStorage.setItem(NAME_KEY, clean); } catch { /* storage unavailable */ }
+    let r: Response;
     try {
-      const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: clean, level, ms: finalMs }) });
-      if (!r.ok) throw new Error();
-      const next: Board = await r.json();
-      setBoard(next);
-      setMine(next[level].find((s) => s.ms === finalMs) ?? null);
-      setSubmit("done");
+      r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: clean, level, ms: finalMs }) });
     } catch {
-      setSubmit("error");
+      return setSubmit({ kind: "error", message: errorMessage(0, {}) });
     }
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) return setSubmit({ kind: "error", message: errorMessage(r.status, body) });
+    setBoard(body.board);
+    setMine(body.rank);
+    setSubmit({ kind: "done", rank: body.rank });
   }
   const pressTimer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
@@ -128,8 +143,8 @@ export function Quarantine() {
     setHit(-1);
     setOrigin(0);
     setGameId((g) => g + 1);
-    setSubmit("idle");
-    setMine(null);
+    setSubmit({ kind: "idle" });
+    setMine(-1);
   };
 
   // New boards "boot up" in a diagonal wave.
@@ -167,6 +182,7 @@ export function Quarantine() {
       if (next[t].virus) {
         next.forEach((c) => c.virus && (c.open = true));
         setHit(t);
+        setFinalMs(Math.round(performance.now() - startedAt.current));
         setCells(next);
         setStatus("lost");
         return;
@@ -210,8 +226,8 @@ export function Quarantine() {
           ))}
         </div>
         <div className="flex items-center gap-4 font-mono text-sm">
-          <span className="flex items-center gap-1.5 text-red-400"><Bug className="h-4 w-4" aria-hidden /><span key={flags} className="q-pop inline-block">{viruses - flags}</span></span>
-          <span className="flex items-center gap-1.5 text-neutral-300"><Timer className="h-4 w-4" aria-hidden />{time}s</span>
+          <span className="flex items-center gap-1.5 text-red-400" title="Viruses left to quarantine" aria-label={`${viruses - flags} viruses left`}><Bug className="h-4 w-4" aria-hidden /><span key={flags} className="q-pop inline-block">{viruses - flags}</span></span>
+          <span className="flex items-center gap-1.5 text-neutral-300"><Timer className="h-4 w-4" aria-hidden /><span className="tabular-nums">{over ? fmt(finalMs) : `${time}s`}</span></span>
           <button
             onClick={() => setFlagMode(!flagMode)}
             className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs ${flagMode ? "border-green-400 bg-green-400/15 text-green-300" : "border-neutral-700 text-neutral-400"}`}
@@ -224,6 +240,59 @@ export function Quarantine() {
           </button>
         </div>
       </div>
+
+      {over && (
+        <section
+          aria-live="polite"
+          className={`q-rise mb-4 flex w-full max-w-3xl flex-wrap items-center gap-x-6 gap-y-4 rounded-xl border p-4 ${status === "won" ? "border-green-400/40 bg-green-400/5" : "border-red-400/40 bg-red-500/5"}`}
+          style={{ animationDelay: status === "won" ? "0.8s" : "0.5s" }}
+        >
+          <div className="min-w-0 flex-1 basis-56">
+            <p className={`font-mono text-xl font-extrabold ${status === "won" ? "text-green-400" : "text-red-400"}`}>
+              {status === "won" ? "> SYSTEM SECURED" : "> SYSTEM INFECTED"}
+            </p>
+            <p className="mt-1 text-sm text-neutral-300">
+              {status === "won"
+                ? `All ${viruses} viruses quarantined in ${fmt(finalMs)}.`
+                : `A virus got loose after ${fmt(finalMs)}. The bright red cell is the one you scanned.`}
+            </p>
+            <div>
+              {submit.kind === "done" && (
+                <p className="q-pop mt-2 text-sm text-green-300">
+                  {submit.rank >= 0
+                    ? `Saved. You're #${submit.rank + 1} on the ${level} board.`
+                    : `Saved, but it didn't make the top 10. Beat ${fmt(board![level][board![level].length - 1].ms)} to get on the board.`}
+                </p>
+              )}
+              {submit.kind === "error" && <p className="mt-2 text-sm text-red-400">{submit.message}</p>}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            {status === "won" && submit.kind !== "done" && (
+              <form onSubmit={submitScore}>
+                <label htmlFor="q-name" className="block text-xs text-neutral-400">Name on the {level} leaderboard</label>
+                <div className="mt-1.5 flex gap-2">
+                  <input
+                    id="q-name"
+                    value={name}
+                    onChange={(e) => setName(cleanName(e.target.value))}
+                    maxLength={16}
+                    placeholder="e.g. Zoë"
+                    autoComplete="nickname"
+                    className="w-36 rounded-lg border border-neutral-700 bg-black px-3 py-2 font-mono text-sm text-white outline-none focus:border-green-400"
+                  />
+                  <button disabled={!name.trim() || submit.kind === "sending"} className="rounded-lg border border-green-400 px-3 py-2 text-sm font-semibold text-green-300 hover:bg-green-400/10 disabled:opacity-40">
+                    {submit.kind === "sending" ? "Saving…" : "Save score"}
+                  </button>
+                </div>
+              </form>
+            )}
+            <button onClick={() => reset()} className="rounded-lg bg-green-400 px-4 py-2 text-sm font-semibold text-black hover:bg-green-300">
+              Play again
+            </button>
+          </div>
+        </section>
+      )}
 
       <div className={`relative max-w-full overflow-x-auto rounded-xl border border-green-400/30 ${status === "lost" ? "q-shake" : ""} ${status === "won" ? "q-win" : ""}`}><div className="relative overflow-hidden rounded-xl bg-neutral-950 p-2 shadow-[0_0_40px_-12px_#4ade80]">
         <div key={`scan${gameId}`} className="q-scan pointer-events-none absolute inset-x-0 z-10 h-0.5 bg-green-400 shadow-[0_0_12px_2px_#4ade80]" aria-hidden />
@@ -261,38 +330,6 @@ export function Quarantine() {
           ))}
         </div>
         </div>
-        {over && (
-          <div className="q-fade absolute inset-0 grid place-items-center rounded-xl bg-black/70 backdrop-blur-sm" style={{ animationDelay: status === "won" ? "0.9s" : "0.6s" }}>
-            <div className="q-pop text-center" style={{ animationDelay: status === "won" ? "1s" : "0.7s" }}>
-              <p className={`font-mono text-2xl font-extrabold ${status === "won" ? "text-green-400" : "text-red-400"}`}>
-                {status === "won" ? "> SYSTEM SECURED" : "> SYSTEM INFECTED"}
-              </p>
-              <p className="mt-2 text-sm text-neutral-300">
-                {status === "won" ? `All ${viruses} viruses quarantined in ${fmt(finalMs)}.` : "A virus got loose. Try again?"}
-              </p>
-              {status === "won" && submit !== "done" && (
-                <form onSubmit={submitScore} className="mt-4 flex justify-center gap-2">
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={16}
-                    placeholder="Your name"
-                    aria-label="Your name for the leaderboard"
-                    className="w-36 rounded-lg border border-neutral-700 bg-black px-3 py-2 font-mono text-sm text-white outline-none focus:border-green-400"
-                  />
-                  <button disabled={!name.trim() || submit === "sending"} className="rounded-lg border border-green-400 px-3 py-2 text-sm font-semibold text-green-300 hover:bg-green-400/10 disabled:opacity-40">
-                    {submit === "sending" ? "Saving…" : "Submit"}
-                  </button>
-                </form>
-              )}
-              {submit === "done" && <p className="q-pop mt-3 text-sm text-green-300">{mine ? `You placed #${board![level].indexOf(mine) + 1}!` : "Saved, but not fast enough for the top 10."}</p>}
-              {submit === "error" && <p className="mt-3 text-sm text-red-400">Couldn't save your score. Try again in a moment.</p>}
-              <button onClick={() => reset()} className="mt-4 rounded-lg bg-green-400 px-4 py-2 font-semibold text-black hover:bg-green-300">
-                Play again
-              </button>
-            </div>
-          </div>
-        )}
       </div>
       <p className="mt-4 text-center text-sm text-neutral-500">
         Click to scan a file. Right-click, long-press, or use Quarantine mode to lock down a suspected virus with our shield.

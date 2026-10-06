@@ -47,7 +47,8 @@ export function handleLeaderboard(req, res) {
 
   const ip = req.headers["cf-connecting-ip"] || req.socket.remoteAddress;
   const now = Date.now();
-  if (now - (lastPost.get(ip) ?? 0) < COOLDOWN_MS) return send(res, 429, { error: "slow down" }), true;
+  const wait = COOLDOWN_MS - (now - (lastPost.get(ip) ?? 0));
+  if (wait > 0) return send(res, 429, { error: "cooldown", retryIn: Math.ceil(wait / 1000) }), true;
 
   let raw = "";
   req.on("data", (c) => {
@@ -61,19 +62,22 @@ export function handleLeaderboard(req, res) {
     } catch {
       return send(res, 400, { error: "bad json" });
     }
-    const name = String(body.name ?? "").replace(/[^\w .-]/g, "").trim().slice(0, 16);
+    // Keep in sync with cleanName() in src/components/Quarantine.tsx.
+    const name = String(body.name ?? "").replace(/[^\p{L}\p{N} ._-]/gu, "").trim().slice(0, 16);
     const { level } = body;
     const ms = Math.round(Number(body.ms));
-    if (!name || !LEVELS.includes(level) || !Number.isFinite(ms) || ms < MIN_MS[level] || ms > 3_600_000)
-      return send(res, 400, { error: "invalid score" });
+    if (!name) return send(res, 400, { error: "name" });
+    if (!LEVELS.includes(level) || !Number.isFinite(ms) || ms < MIN_MS[level] || ms > 3_600_000)
+      return send(res, 400, { error: "time" });
 
     lastPost.set(ip, now);
     const list = load()[level];
-    list.push({ name, ms, date: new Date(now).toISOString().slice(0, 10) });
+    const entry = { name, ms, date: new Date(now).toISOString().slice(0, 10) };
+    list.push(entry);
     list.sort((a, b) => a.ms - b.ms);
     list.length = Math.min(list.length, KEEP);
     save();
-    send(res, 200, board);
+    send(res, 200, { board, rank: list.indexOf(entry) }); // rank is -1 if it missed the top 10
   });
   return true;
 }
