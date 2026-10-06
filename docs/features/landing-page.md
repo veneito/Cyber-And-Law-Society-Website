@@ -10,7 +10,7 @@ Vite + React + TypeScript + Tailwind v4 + lucide-react (lucide has no brand icon
 - A link set to `"#"` is hidden. An image set to `null` falls back (initials / shield).
 - Join button: sign-up form if set, else Discord, else scrolls to #contact.
 - Assets in `public/assets/`: `logo.webp` (crest, white background, shown in a white circle), `banner.webp` (hero), `flyer.webp` (contact section).
-- Sections: hero (banner, `>` headline with a blinking cursor), Three disciplines (Cybersecurity/Law/Philosophy), What We Do (5 activities), Events, Officers, FAQ, Ready to join.
+- Sections: hero (banner image fills the first screen with only the Join / Explore buttons over its bottom edge; the pill, `>` headline with blinking cursor and subheadline sit in an intro block right below it. Without a banner, the hero falls back to text + buttons on the green grid), Three disciplines (Cybersecurity/Law/Philosophy), What We Do (5 activities), Events, Officers, FAQ, Ready to join.
 
 ## Look
 Black, terminal green (`green-400`), white. JetBrains Mono (Google Fonts) for the headline and labels. The cursor blinks even with reduced motion (user's choice; ~1/sec, safe).
