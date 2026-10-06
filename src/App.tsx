@@ -7,7 +7,7 @@ import { Socials } from "./components/Socials";
 import { hasLink, siteConfig, type Officer } from "./config/site";
 
 const NAV = [
-  { href: "#about", label: "What We Do" },
+  { href: "#about", label: "About" },
   { href: "#events", label: "Events" },
   { href: "#officers", label: "Officers" },
   { href: "#faq", label: "FAQ" },
@@ -17,12 +17,12 @@ const initials = (name: string) =>
   name.replace(/\(.*?\)/g, "").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
 function JoinButton({ className = "" }: { className?: string }) {
-  const { joinForm } = siteConfig.links;
-  const ready = hasLink(joinForm);
+  const { joinForm, discord } = siteConfig.links;
+  const target = hasLink(joinForm) ? joinForm : hasLink(discord) ? discord : null;
   return (
     <a
-      href={ready ? joinForm : "#contact"}
-      target={ready ? "_blank" : undefined}
+      href={target ?? "#contact"}
+      target={target ? "_blank" : undefined}
       rel="noreferrer"
       className={`inline-flex items-center justify-center gap-2 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black hover:bg-green-300 ${className}`}
     >
@@ -67,7 +67,13 @@ function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#22c55e14_1px,transparent_1px),linear-gradient(to_bottom,#22c55e14_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_75%)]" />
-      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+      {siteConfig.branding.bannerPath && (
+        <div className="relative">
+          <img src={siteConfig.branding.bannerPath} alt={`${name} banner`} className="w-full object-cover max-h-[520px]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+        </div>
+      )}
+      <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <span className="inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 font-mono text-xs text-green-300">
           <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> {hero.pillBadge}
         </span>
@@ -117,13 +123,31 @@ export default function App() {
       <main>
         <Hero />
 
-        <Section id="about" eyebrow="What We Do" title="Four pillars, one community">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Section id="about" eyebrow="Who We Are" title={siteConfig.pillarsHeading}>
+          <p className="-mt-4 mb-10 max-w-2xl text-neutral-400">{siteConfig.description}</p>
+          <div className="grid gap-6 lg:grid-cols-3">
             {pillars.map((p) => (
-              <div key={p.title} className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 transition hover:border-green-400/50">
-                <Icon name={p.icon} className="h-8 w-8 text-green-300" />
-                <h3 className="mt-4 font-semibold text-white">{p.title}</h3>
-                <p className="mt-2 text-sm text-neutral-400">{p.description}</p>
+              <div key={p.title} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 transition hover:border-green-400/50">
+                <Icon name={p.icon} className="h-9 w-9 text-green-400" />
+                <h3 className="mt-4 font-mono text-xl font-bold uppercase tracking-wide text-white">{p.title}</h3>
+                <p className="mt-1 font-mono text-sm text-green-400">{p.motto}</p>
+                <p className="mt-3 text-sm text-neutral-400">{p.description}</p>
+                <ul className="mt-5 space-y-2 border-t border-neutral-800 pt-5 text-sm text-neutral-300">
+                  {p.topics.map((t) => (
+                    <li key={t} className="flex gap-2"><span className="font-mono text-green-500">&gt;</span>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <h3 className="mt-20 font-mono text-xs uppercase tracking-[0.2em] text-green-400">What We Do</h3>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+            {siteConfig.activities.map((a) => (
+              <div key={a.title}>
+                <Icon name={a.icon} className="h-7 w-7 text-white" />
+                <h4 className="mt-3 font-semibold text-white">{a.title}</h4>
+                <p className="mt-1 text-sm text-neutral-400">{a.description}</p>
               </div>
             ))}
           </div>
@@ -179,10 +203,23 @@ export default function App() {
         </Section>
 
         <Section id="contact" eyebrow="Get Involved" title="Ready to join?">
-          <p className="max-w-2xl text-neutral-400">{siteConfig.description}</p>
-          <div className="mt-8 flex flex-col gap-8">
-            <JoinButton className="self-start" />
-            <Socials />
+          <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
+            <div>
+              <p className="font-mono text-lg text-white">{siteConfig.slogan}</p>
+              <div className="mt-6 max-w-xl rounded-xl border border-green-400/30 bg-green-400/5 p-5">
+                <p className="font-mono text-sm font-bold uppercase tracking-wide text-green-400">★ {siteConfig.openToAll.title}</p>
+                <p className="mt-2 text-neutral-300">{siteConfig.openToAll.body}</p>
+              </div>
+              <div className="mt-8 flex flex-col gap-8">
+                <JoinButton className="self-start" />
+                <Socials />
+              </div>
+            </div>
+            {siteConfig.branding.flyerPath && (
+              <a href={siteConfig.branding.flyerPath} target="_blank" rel="noreferrer" className="block">
+                <img src={siteConfig.branding.flyerPath} alt={`${siteConfig.name} flyer`} loading="lazy" className="w-full rounded-xl border border-neutral-800 transition hover:border-green-400/50" />
+              </a>
+            )}
           </div>
         </Section>
       </main>
