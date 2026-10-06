@@ -43,7 +43,7 @@ function Header() {
         <a href="/" className="flex items-center gap-3">
           <Logo />
           <span className="font-semibold text-white md:hidden">{siteConfig.shortName}</span>
-          <span className="hidden font-semibold text-white md:inline">{siteConfig.name.replace(" and ", " & ")}</span>
+          <span className="hidden font-semibold text-white md:inline">{siteConfig.name}</span>
         </a>
         <nav className="hidden items-center gap-8 text-sm md:flex">
           {NAV.map((n) => (

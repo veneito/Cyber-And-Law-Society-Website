@@ -49,7 +49,7 @@ export interface FaqItem {
 }
 
 export const siteConfig = {
-  name: "Cyber and Law Society",
+  name: "Cyber & Law Society",
   shortName: "CLS",
   tagline: "Where Technology, Justice, and Ethics Intersect",
   description:

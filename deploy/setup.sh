@@ -11,7 +11,7 @@ npx vite build
 
 sudo tee /etc/systemd/system/cls-site.service >/dev/null <<UNIT
 [Unit]
-Description=Cyber and Law Society website
+Description=Cyber & Law Society website
 After=network-online.target
 
 [Service]
@@ -28,7 +28,7 @@ UNIT
 
 sudo tee /etc/systemd/system/cls-site-update.service >/dev/null <<UNIT
 [Unit]
-Description=Update Cyber and Law Society website from GitHub
+Description=Update Cyber & Law Society website from GitHub
 
 [Service]
 Type=oneshot
