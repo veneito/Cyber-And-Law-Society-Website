@@ -16,7 +16,9 @@
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
-- [ ] Full-screen banner crops the "CYBER & LAW" artwork on phones; consider showing the whole image (object-contain or a phone-specific crop) on narrow screens
+- [ ] Get a higher-res banner from Gemini (current source 1408×768 is soft on big screens)
+- [ ] Hero buttons still sit in the centered max-w-6xl column; maybe align with the full-width header
+- [ ] Full-screen banner crops the artwork on phones; consider showing the whole image (object-contain or a phone-specific crop) on narrow screens
 - [ ] Quarantine game: server-side game validation if leaderboard cheating becomes a problem
 - [ ] Quarantine game: moderation for leaderboard names (currently only character filtering)
 - [x] Allow passwordless `sudo systemctl restart cls-site` on the server so update.sh's restart step runs

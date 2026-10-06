@@ -10,3 +10,6 @@
 - Every `<Section>` (About, Events, Officers, FAQ, Contact) builds when it enters view: eyebrow + title decode from random glyphs, body draws top-down behind a glowing green scanline (CSS in `index.css`, `.materialize`).
 - One-time per section. Hero not affected.
 - Kill switch: `ENABLED = false` in Materialize.tsx. Reduced motion → static (unless `?intro`).
+
+## Trigger point (2026-10-06)
+Section animations start when the section top is ~35% up the screen (`rootMargin: "0px 0px -35% 0px"` in `Materialize.tsx`), not as soon as 15% peeks in, so they play where people are looking.
