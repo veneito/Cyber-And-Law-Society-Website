@@ -8,3 +8,4 @@
 
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)
+- [ ] Consider a shorter intro or skip hint if visitors find 4s long
