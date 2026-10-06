@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "npm run build && wrangler dev",
-    "deploy": "vite build && wrangler deploy"
+    "deploy": "vite build && wrangler deploy",
+    "serve": "node deploy/serve.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.52.0",
