@@ -39,7 +39,7 @@ function Header() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-800/80 bg-black/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-10">
         <a href="/" className="flex items-center gap-3">
           <Logo />
           <span className="font-semibold text-white md:hidden">{siteConfig.shortName}</span>
