@@ -16,13 +16,13 @@ export function Socials() {
     <div className="flex flex-wrap gap-3">
       {items.map(({ key, label, icon: I }) => (
         <a key={key} href={siteConfig.links[key]} target="_blank" rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm hover:border-cyan-400 hover:text-cyan-300">
+          className="inline-flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm hover:border-green-400 hover:text-green-300">
           <I className="h-4 w-4" aria-hidden /> {label}
         </a>
       ))}
       {email && (
         <a href={`mailto:${email}`}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm hover:border-cyan-400 hover:text-cyan-300">
+          className="inline-flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm hover:border-green-400 hover:text-green-300">
           <Mail className="h-4 w-4" aria-hidden /> {email}
         </a>
       )}
