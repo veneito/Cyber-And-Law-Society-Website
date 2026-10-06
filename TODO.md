@@ -18,4 +18,4 @@
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
 - [ ] Quarantine game: server-side game validation if leaderboard cheating becomes a problem
 - [ ] Quarantine game: moderation for leaderboard names (currently only character filtering)
-- [ ] Allow passwordless `sudo systemctl restart cls-site` on the server so update.sh's restart step runs
+- [x] Allow passwordless `sudo systemctl restart cls-site` on the server so update.sh's restart step runs
