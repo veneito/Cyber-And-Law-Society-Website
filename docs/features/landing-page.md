@@ -15,6 +15,10 @@ Vite + React + TypeScript + Tailwind v4 + lucide-react (lucide has no brand icon
 ## Look
 Black, terminal green (`green-400`), white. JetBrains Mono (Google Fonts) for the headline and labels. The cursor blinks even with reduced motion (user's choice; ~1/sec, safe).
 
+## Navigation
+- Header nav: Home (`/`), About, Events, Officers, FAQ, Play. Logo also links to `/`.
+- `main.tsx` sets `history.scrollRestoration = "manual"` and scrolls to top on load (or to the `#section` in the URL), so Back from /play lands at the top.
+
 ## Hosting
 - Mint PC `vene-serverlinux` (same as the Family dashboard), clone at `~/cls-site`.
 - `cls-site.service` runs `deploy/serve.mjs` (no deps, blocks `../`, SPA fallback, no-cache HTML) on 127.0.0.1:3001.
