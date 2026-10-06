@@ -2,6 +2,7 @@ import { ArrowRight, CalendarDays, ChevronDown, MapPin, Menu, X } from "lucide-r
 import { useState } from "react";
 import { Icon } from "./components/Icon";
 import { Logo } from "./components/Logo";
+import { Quarantine } from "./components/Quarantine";
 import { Section } from "./components/Section";
 import { Socials } from "./components/Socials";
 import { hasLink, siteConfig, type Officer } from "./config/site";
@@ -11,6 +12,7 @@ const NAV = [
   { href: "#events", label: "Events" },
   { href: "#officers", label: "Officers" },
   { href: "#faq", label: "FAQ" },
+  { href: "#quarantine", label: "Play" },
 ];
 
 const initials = (name: string) =>
@@ -200,6 +202,10 @@ export default function App() {
               </details>
             ))}
           </div>
+        </Section>
+
+        <Section id="quarantine" eyebrow="Mini-Game" title="Quarantine the viruses">
+          <Quarantine />
         </Section>
 
         <Section id="contact" eyebrow="Get Involved" title="Ready to join?">

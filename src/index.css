@@ -51,3 +51,32 @@ body {
 }
 .materialize.is-static .materialize-body { clip-path: none; animation: none; }
 .materialize.is-static .materialize-body::after { display: none; }
+
+/* Quarantine mini-game (see components/Quarantine.tsx) */
+@keyframes q-reveal {
+  from { background-color: #4ade80; transform: scale(0.6); }
+  to { background-color: #171717; transform: scale(1); }
+}
+.q-reveal { animation: q-reveal 0.35s ease-out both; }
+@keyframes q-pop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.q-pop { animation: q-pop 0.3s ease-out both; }
+@keyframes q-pulse {
+  50% { transform: scale(1.4); filter: drop-shadow(0 0 8px #f87171); }
+}
+.q-pulse { animation: q-pulse 0.6s ease-in-out infinite; }
+@keyframes q-shake {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.q-shake { animation: q-shake 0.4s ease-in-out; border-color: #f8717180; }
+@keyframes q-win {
+  50% { box-shadow: 0 0 60px 4px #4ade80; }
+}
+.q-win { animation: q-win 1.2s ease-in-out 2; }
+@media (prefers-reduced-motion: reduce) {
+  .q-reveal, .q-pop, .q-pulse, .q-shake, .q-win { animation: none; }
+}
