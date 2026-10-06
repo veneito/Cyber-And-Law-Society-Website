@@ -66,35 +66,62 @@ function Header() {
   );
 }
 
-function Hero() {
-  const { hero, name, tagline } = siteConfig;
+function HeroButtons() {
   return (
-    <section id="top" className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#22c55e14_1px,transparent_1px),linear-gradient(to_bottom,#22c55e14_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_75%)]" />
-      {siteConfig.branding.bannerPath && (
-        <div className="relative">
-          <img src={siteConfig.branding.bannerPath} alt={`${name} banner`} className="w-full object-cover max-h-[520px]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <JoinButton />
+      <a href="#about" className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-700 bg-black/40 px-5 py-3 font-semibold text-white backdrop-blur-sm hover:border-neutral-500">
+        {siteConfig.hero.secondaryCtaText} <ChevronDown className="h-4 w-4" aria-hidden />
+      </a>
+    </div>
+  );
+}
+
+function Hero() {
+  const { hero, name, tagline, branding } = siteConfig;
+  const grid = (
+    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#22c55e14_1px,transparent_1px),linear-gradient(to_bottom,#22c55e14_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_75%)]" />
+  );
+  const intro = (
+    <>
+      <span className="inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 font-mono text-xs text-green-300">
+        <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> {hero.pillBadge}
+      </span>
+      <p className="mt-8 text-sm font-medium text-neutral-400">{name} · {tagline}</p>
+      <h1 className="mt-3 max-w-4xl font-mono text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        <span className="text-green-400">&gt;</span> {hero.headline}
+        <span className="cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.1em] bg-green-400" aria-hidden />
+      </h1>
+      <p className="mt-6 max-w-2xl text-lg text-neutral-400">{hero.subheadline}</p>
+    </>
+  );
+
+  if (!branding.bannerPath) {
+    return (
+      <section id="top" className="relative flex min-h-[calc(100svh-4rem)] flex-col justify-end overflow-hidden">
+        {grid}
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-16 pt-32 sm:px-6 sm:pb-20">
+          {intro}
+          <div className="mt-10"><HeroButtons /></div>
         </div>
-      )}
-      <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <span className="inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-400/10 px-3 py-1 font-mono text-xs text-green-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> {hero.pillBadge}
-        </span>
-        <p className="mt-8 text-sm font-medium text-neutral-400">{name} · {tagline}</p>
-        <h1 className="mt-3 max-w-4xl font-mono text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-          <span className="text-green-400">&gt;</span> {hero.headline}
-          <span className="cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.1em] bg-green-400" aria-hidden />
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-neutral-400">{hero.subheadline}</p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <JoinButton />
-          <a href="#about" className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-700 px-5 py-3 font-semibold text-white hover:border-neutral-500">
-            {hero.secondaryCtaText} <ChevronDown className="h-4 w-4" aria-hidden />
-          </a>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      <section id="top" className="relative flex min-h-[calc(100svh-4rem)] flex-col justify-end overflow-hidden">
+        <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 sm:pb-14">
+          <HeroButtons />
         </div>
-      </div>
-    </section>
+      </section>
+      <section className="relative overflow-hidden">
+        {grid}
+        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">{intro}</div>
+      </section>
+    </>
   );
 }
 
