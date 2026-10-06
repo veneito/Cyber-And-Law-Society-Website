@@ -9,6 +9,7 @@ import { Socials } from "./components/Socials";
 import { hasLink, siteConfig, type Officer } from "./config/site";
 
 const NAV = [
+  { href: "/", label: "Home" },
   { href: "/#about", label: "About" },
   { href: "/#events", label: "Events" },
   { href: "/#officers", label: "Officers" },
@@ -39,7 +40,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-800/80 bg-black/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <a href="/#top" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           <Logo />
           <span className="font-semibold text-white">{siteConfig.shortName}</span>
         </a>
