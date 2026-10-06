@@ -72,7 +72,10 @@ function Hero() {
           <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> {hero.pillBadge}
         </span>
         <p className="mt-8 text-sm font-medium text-neutral-400">{name} · {tagline}</p>
-        <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-6xl">{hero.headline}</h1>
+        <h1 className="mt-3 max-w-4xl font-mono text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <span className="text-green-400">&gt;</span> {hero.headline}
+          <span className="cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.1em] bg-green-400" aria-hidden />
+        </h1>
         <p className="mt-6 max-w-2xl text-lg text-neutral-400">{hero.subheadline}</p>
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <JoinButton />

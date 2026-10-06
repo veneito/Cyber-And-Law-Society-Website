@@ -46,11 +46,11 @@ export const siteConfig = {
     "Bridging technical cybersecurity, digital forensics, privacy regulation, and campus career opportunities.",
 
   // PENDING
-  contactEmail: "placeholder@club.org",
+  contactEmail: "cyberlawsociety1@gmail.com",
   links: {
     joinForm: "#", // Google Form / campus portal
     discord: "#",
-    instagram: "#",
+    instagram: "https://www.instagram.com/cyberlawsociety",
     linkedin: "#",
     x: "#",
     github: "#",
@@ -65,7 +65,7 @@ export const siteConfig = {
     pillBadge: "Information & Recruitment - Fall 2026",
     headline: "Bridging the Divide Between Code and Law",
     subheadline:
-      "Empowering students through ethical hacking workshops, digital privacy case studies, policy debates, and industry networking.",
+      "You wouldn't let a stranger walk into your house, so why let one into your computer? Your devices hold your private messages and personal data. We study the cybersecurity that protects them and the laws that govern who can access them.",
     primaryCtaText: "Join the Society",
     secondaryCtaText: "Explore What We Do",
   },
