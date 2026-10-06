@@ -42,7 +42,8 @@ function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <a href="/" className="flex items-center gap-3">
           <Logo />
-          <span className="font-semibold text-white">{siteConfig.shortName}</span>
+          <span className="font-semibold text-white md:hidden">{siteConfig.shortName}</span>
+          <span className="hidden font-semibold text-white md:inline">{siteConfig.name.replace(" and ", " & ")}</span>
         </a>
         <nav className="hidden items-center gap-8 text-sm md:flex">
           {NAV.map((n) => (
