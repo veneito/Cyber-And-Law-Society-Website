@@ -77,6 +77,38 @@ body {
   50% { box-shadow: 0 0 60px 4px #4ade80; }
 }
 .q-win { animation: q-win 1.2s ease-in-out 2; }
+@keyframes q-boot {
+  from { opacity: 0; transform: translateY(-8px) scale(0.7); }
+  to { opacity: 1; transform: none; }
+}
+.q-boot { animation: q-boot 0.35s ease-out both; }
+@keyframes q-scan {
+  0% { top: 0; opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+.q-scan { animation: q-scan 0.9s cubic-bezier(0.4, 0, 0.2, 1) both; }
+@keyframes q-celebrate {
+  0% { transform: scale(1) rotate(0); }
+  40% { transform: scale(1.5) rotate(-15deg); filter: drop-shadow(0 0 10px #4ade80); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+.q-celebrate { animation: q-celebrate 0.7s ease-in-out both; }
+@keyframes q-fade { from { opacity: 0; } }
+.q-fade { animation: q-fade 0.4s ease-out both; }
+@keyframes q-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.q-rise { animation: q-rise 0.6s ease-out both; }
+@keyframes q-drift {
+  from { top: 105%; transform: rotate(0); }
+  to { top: -5%; transform: rotate(360deg); }
+}
+.q-drift { animation: q-drift linear infinite; }
+@keyframes q-grid { from { background-position: 0 0; } to { background-position: 0 48px; } }
+.q-grid { animation: q-grid 4s linear infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .q-reveal, .q-pop, .q-pulse, .q-shake, .q-win { animation: none; }
+  .q-reveal, .q-pop, .q-pulse, .q-shake, .q-win, .q-boot, .q-scan, .q-celebrate, .q-fade, .q-rise, .q-grid { animation: none; }
+  .q-drift { display: none; }
 }

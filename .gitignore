@@ -30,3 +30,6 @@ dist-ssr
 .env*
 !.env.example
 update.log
+
+# Leaderboard scores (written by deploy/leaderboard.mjs)
+data

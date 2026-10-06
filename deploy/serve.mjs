@@ -4,6 +4,7 @@ import { createReadStream, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { handleLeaderboard } from "./leaderboard.mjs";
 
 const PORT = Number(process.env.PORT || 3001);
 const ROOT = fileURLToPath(new URL("../dist/", import.meta.url));
@@ -30,6 +31,7 @@ function fileFor(urlPath) {
 }
 
 createServer((req, res) => {
+  if (handleLeaderboard(req, res)) return;
   const path = new URL(req.url, "http://x").pathname;
   // Unknown paths fall back to the page itself (single-page app).
   const file = fileFor(path) ?? join(ROOT, "index.html");

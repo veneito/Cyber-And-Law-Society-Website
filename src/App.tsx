@@ -1,18 +1,19 @@
-import { ArrowRight, CalendarDays, ChevronDown, MapPin, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Bug, CalendarDays, ChevronDown, MapPin, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Icon } from "./components/Icon";
 import { Logo } from "./components/Logo";
+import { DecodeText } from "./components/Materialize";
 import { Quarantine } from "./components/Quarantine";
 import { Section } from "./components/Section";
 import { Socials } from "./components/Socials";
 import { hasLink, siteConfig, type Officer } from "./config/site";
 
 const NAV = [
-  { href: "#about", label: "About" },
-  { href: "#events", label: "Events" },
-  { href: "#officers", label: "Officers" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#quarantine", label: "Play" },
+  { href: "/#about", label: "About" },
+  { href: "/#events", label: "Events" },
+  { href: "/#officers", label: "Officers" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/play", label: "Play" },
 ];
 
 const initials = (name: string) =>
@@ -23,7 +24,7 @@ function JoinButton({ className = "" }: { className?: string }) {
   const target = hasLink(joinForm) ? joinForm : hasLink(discord) ? discord : null;
   return (
     <a
-      href={target ?? "#contact"}
+      href={target ?? "/#contact"}
       target={target ? "_blank" : undefined}
       rel="noreferrer"
       className={`inline-flex items-center justify-center gap-2 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black hover:bg-green-300 ${className}`}
@@ -38,7 +39,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-800/80 bg-black/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <a href="#top" className="flex items-center gap-3">
+        <a href="/#top" className="flex items-center gap-3">
           <Logo />
           <span className="font-semibold text-white">{siteConfig.shortName}</span>
         </a>
@@ -117,7 +118,47 @@ const Empty = ({ children }: { children: string }) => (
   <p className="rounded-xl border border-dashed border-neutral-700 p-8 text-center text-neutral-500">{children}</p>
 );
 
+function Footer() {
+  return (
+    <footer className="border-t border-neutral-800 py-8">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-neutral-500 sm:flex-row sm:px-6">
+        <div className="flex items-center gap-3"><Logo className="h-7 w-7" /> {siteConfig.name}</div>
+        <p>© {new Date().getFullYear()} {siteConfig.name}. Student organization.</p>
+      </div>
+    </footer>
+  );
+}
+
+function PlayPage() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  return (
+    <>
+      <Header />
+      <main className="relative overflow-hidden">
+        <div className="q-grid pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#22c55e14_1px,transparent_1px),linear-gradient(to_bottom,#22c55e14_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]" />
+        {[8, 22, 71, 88, 45].map((left, k) => (
+          <Bug key={left} className="q-drift pointer-events-none absolute h-6 w-6 text-red-500/20" style={{ left: `${left}%`, animationDelay: `${k * -3.1}s`, animationDuration: `${14 + k * 3}s` }} aria-hidden />
+        ))}
+        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <p className="q-rise font-mono text-xs uppercase tracking-[0.2em] text-green-400"><DecodeText text="Mini-Game" active={ready} /></p>
+          <h1 className="q-rise mt-2 font-mono text-3xl font-extrabold tracking-tight text-white sm:text-4xl" style={{ animationDelay: "0.1s" }}>
+            <span className="text-green-400">&gt;</span> <DecodeText text="Quarantine the viruses" active={ready} />
+            <span className="cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.1em] bg-green-400" aria-hidden />
+          </h1>
+          <p className="q-rise mt-3 mb-10 max-w-2xl text-neutral-400" style={{ animationDelay: "0.2s" }}>
+            Malware is hiding in the file system. Scan carefully, use the numbers to track it down, and lock every virus behind our shield.
+          </p>
+          <div className="q-rise" style={{ animationDelay: "0.3s" }}><Quarantine /></div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
 export default function App() {
+  if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
   const { pillars, upcomingEvents, officers, faq } = siteConfig;
   return (
     <>
@@ -204,10 +245,6 @@ export default function App() {
           </div>
         </Section>
 
-        <Section id="quarantine" eyebrow="Mini-Game" title="Quarantine the viruses">
-          <Quarantine />
-        </Section>
-
         <Section id="contact" eyebrow="Get Involved" title="Ready to join?">
           <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
             <div>
@@ -230,12 +267,7 @@ export default function App() {
         </Section>
       </main>
 
-      <footer className="border-t border-neutral-800 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-neutral-500 sm:flex-row sm:px-6">
-          <div className="flex items-center gap-3"><Logo className="h-7 w-7" /> {siteConfig.name}</div>
-          <p>© {new Date().getFullYear()} {siteConfig.name}. Student organization.</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
