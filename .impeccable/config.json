@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "src/App.tsx"
+        ],
+        "createdAt": "2026-10-06T19:10:49.333Z",
+        "reason": "Claude: text-slate-950 on bg-cyan-400 is near-black on cyan, ~10:1 contrast"
+      }
+    ]
+  }
+}
