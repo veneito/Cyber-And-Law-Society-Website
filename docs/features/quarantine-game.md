@@ -17,3 +17,11 @@ Minesweeper with viruses as the mines; players "quarantine" suspected viruses wi
 - Used by `deploy/serve.mjs` in production and by a Vite plugin in dev.
 - Checks: name sanitized to 16 chars, minimum plausible times (2s/5s/10s), 1 post per IP per 10s (`cf-connecting-ip`). Times are client-reported, so a determined person could fake one.
 - To wipe scores: delete `~/cls-site/data/leaderboard.json` on the Mint PC and restart `cls-site`.
+- POST returns `{ board, rank }` (rank -1 if outside top 10). Errors: 429 `cooldown` + `retryIn`, 400 `name`, 400 `time`; the client shows a specific message for each. Names allow Unicode letters/numbers plus ` ._-` (same `cleanName` rule on client and server).
+
+## End of game
+- Result strip between the controls and the board (no overlay), so the revealed board stays visible. Win: name box + Save score; loss: time lasted + Play again.
+- Timer shows whole seconds while playing, exact time (2 decimals) once over.
+
+## Impeccable critique (2026-10-06) — 22/40
+Done: clarify (leaderboard copy/errors), layout (result strip). Remaining, see TODO.md.
