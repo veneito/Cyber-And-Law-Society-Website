@@ -23,7 +23,8 @@ function useInView<T extends Element>() {
           io.disconnect();
         }
       },
-      { threshold: 0.15 },
+      // Fire once the section top is ~35% up the screen, so it plays where people are looking.
+      { rootMargin: "0px 0px -35% 0px", threshold: 0 },
     );
     io.observe(ref.current);
     return () => io.disconnect();
