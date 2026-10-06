@@ -67,7 +67,7 @@ export const siteConfig = {
 
   branding: {
     logoPath: "/assets/logo.webp" as string | null, // files live in /public/assets
-    bannerPath: "/assets/banner.webp" as string | null,
+    bannerPath: "/assets/banner-justice.webp" as string | null,
     flyerPath: "/assets/flyer.webp" as string | null,
     faviconPath: "/assets/logo.webp" as string | null,
   },
