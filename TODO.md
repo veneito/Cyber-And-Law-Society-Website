@@ -21,3 +21,4 @@
 - [ ] Quarantine game: server-side game validation if leaderboard cheating becomes a problem
 - [ ] Quarantine game: moderation for leaderboard names (currently only character filtering)
 - [x] Allow passwordless `sudo systemctl restart cls-site` on the server so update.sh's restart step runs
+- [x] Verified server dashboard update flow with a throwaway footer change (pushed and reverted, 2026-10-07)
