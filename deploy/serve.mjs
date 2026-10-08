@@ -33,8 +33,15 @@ function fileFor(urlPath) {
 createServer((req, res) => {
   if (handleLeaderboard(req, res)) return;
   const path = new URL(req.url, "http://x").pathname;
-  // Unknown paths fall back to the page itself (single-page app).
-  const file = fileFor(path) ?? join(ROOT, "index.html");
+  const found = fileFor(path);
+  // A missing file (anything with an extension, e.g. /assets/x.webp) is a real 404 that
+  // nobody caches; otherwise Cloudflare would keep the page as that "image" for a year.
+  if (!found && (extname(path) || path.startsWith("/assets/"))) {
+    res.writeHead(404, { "Content-Type": "text/plain", "Cache-Control": "no-store" });
+    return res.end("Not found");
+  }
+  // Unknown page paths fall back to the page itself (single-page app).
+  const file = found ?? join(ROOT, "index.html");
   const type = TYPES[extname(file)] ?? "application/octet-stream";
   res.writeHead(200, {
     "Content-Type": type,
