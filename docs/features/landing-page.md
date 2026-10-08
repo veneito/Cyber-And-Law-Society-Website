@@ -23,7 +23,7 @@ Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text s
 
 ## Hosting
 - Mint PC `vene-serverlinux` (same as the Family dashboard), clone at `~/cls-site`.
-- `cls-site.service` runs `deploy/serve.mjs` (no deps, blocks `../`, SPA fallback, no-cache HTML) on 127.0.0.1:3001.
+- `cls-site.service` runs `deploy/serve.mjs` (no deps, blocks `../`, SPA fallback for page paths only; missing files with an extension or under /assets/ get an uncached 404, because Cloudflare once cached the HTML fallback as a year-long "image") on 127.0.0.1:3001.
 - `cls-site-update.timer` runs `deploy/update.sh` every 5 min: fetch, fast-forward, `npm ci`, build, restart. Log: `~/cls-site/update.log`.
 - Cloudflare Tunnel `family-dashboard` → Published application routes: `cybernlaw.veneito.dev` → `http://localhost:3001`. **No Access gate** (public site).
 - **Deploy = push to main.** No Cloudflare API token / GitHub Actions (user's choice).
