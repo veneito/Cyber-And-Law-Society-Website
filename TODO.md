@@ -3,6 +3,8 @@
 ## Waiting on the club
 - [x] Officers added (see docs/features/officers.md). Still need: Professor Wang photo → `image` in site.ts
 - [ ] Real bios from Alfred and Andrew (current ones are invented placeholders in `officers`)
+- [ ] Oct 22 Metadata Scavenger Hunt: add location/time
+- [ ] Phage chase: user reported the last catch not clickable (not reproduced); view the carousel, hero, glow and win screen in a browser (never visually checked this chat)
 - [ ] Event dates/locations → `upcomingEvents`
 - [ ] Sign-up form link (Google Form?) → `links.joinForm`
 - [ ] LinkedIn / X / GitHub if they have them

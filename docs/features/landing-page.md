@@ -35,3 +35,6 @@ Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text s
 ## Hero banner fit (2026-10-10)
 - Banner `<img>` uses `object-contain object-top` on black (was `object-cover`, which cropped the crest title on wide screens).
 - Hero `#top` sections have `scroll-mt-16` so anchor jumps land below the sticky nav.
+
+## Hero network
+`src/components/Network.tsx`: canvas of drifting green nodes joined by lines over the hero banner; nodes near the cursor/touch link to it and are pushed away. Pointer-events none, pauses off-screen, static with reduced motion. Only used when a banner is set.

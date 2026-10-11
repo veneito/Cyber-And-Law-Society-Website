@@ -1,9 +1,11 @@
 import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
-import { Anomaly, isFixed, startHunt } from "./components/Anomaly";
+import { Anomaly, isFixed, resetHunt, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
 import { Logo } from "./components/Logo";
+import { Network } from "./components/Network";
+import { Phage } from "./components/Phage";
 import { DecodeText } from "./components/Materialize";
 import { Quarantine } from "./components/Quarantine";
 import { Section } from "./components/Section";
@@ -116,6 +118,7 @@ function Hero() {
       {/* Phones: image cropped to its centre (sides cut off), buttons below. md+: whole image at its natural height (capped to one screen) with buttons over its bottom edge, so no empty black band at any window size. */}
       <section id="top" className="relative scroll-mt-16 flex flex-col justify-end overflow-hidden">
         <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="h-80 w-full bg-black object-cover object-center md:h-auto md:max-h-[calc(100svh-4rem)] md:object-contain" />
+        <Network />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-1/3 bg-gradient-to-t from-black to-transparent md:block" />
         <div className="relative mx-auto w-full max-w-6xl px-4 pb-8 pt-6 sm:px-6 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-14 md:pt-0">
           <HeroButtons />
@@ -149,8 +152,8 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         onClick={() => (pos === 0 ? (dlg.current?.showModal(), setOpen(true)) : onSelect())}
         aria-label={pos === 0 ? `${o.name}, open bio` : `Show ${o.name}`}
         tabIndex={Math.abs(pos) > 2 ? -1 : 0}
-        className={`group absolute left-1/2 top-6 aspect-square w-56 overflow-hidden rounded-2xl border bg-neutral-900 text-left transition-all duration-500 ease-out sm:w-72${
-          pos === 0 ? "border-green-400/70 shadow-[0_0_60px_-8px_#4ade80aa]" : "border-neutral-700 shadow-2xl"
+        className={`group absolute left-1/2 top-6 ${pos === 0 ? "" : "max-sm:hidden"} aspect-square w-56 overflow-hidden rounded-2xl border bg-neutral-900 text-left transition-all duration-500 ease-out sm:w-72${
+          pos === 0 ? "border-green-400/70 shadow-[0_0_24px_-4px_#4ade80aa] sm:shadow-[0_0_60px_-8px_#4ade80aa]" : "border-neutral-700 shadow-2xl"
         }`}
         style={{
           transform: `translateX(calc(-50% + ${pos * 58}%)) rotateY(${Math.sign(pos) * -32}deg) scale(${1 - Math.min(Math.abs(pos), 3) * 0.13})`,
@@ -193,17 +196,6 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
   );
 }
 
-// Bacteriophage drawn head-up, tail-down; rotate it so the legs point the way the arrow goes.
-const Phage = ({ className }: { className: string }) => (
-  <svg viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={`${className} drop-shadow-[0_0_3px_#4ade80]`} aria-hidden>
-    {/* T4 phage: elongated faceted head, ringed sheath, base plate, kneed tail fibres */}
-    <polygon points="16,1 23,5 23,15 16,19 9,15 9,5" fill="currentColor" fillOpacity="0.15" />
-    <path d="M9 5l7 4 7-4M16 9v10" />
-    <path d="M12 20.5h8M14 22v9M18 22v9M14 24.5h4M14 27h4M14 29.5h4M11 31h10" />
-    <path d="M13 31 7 34 4 39M19 31l6 3 3 5M14.5 31 12 39M17.5 31 20 39" />
-  </svg>
-);
-
 function OfficerCarousel({ officers }: { officers: Officer[] }) {
   const [i, setI] = useState(0);
   const go = (n: number) => setI(Math.max(0, Math.min(officers.length - 1, n)));
@@ -213,9 +205,9 @@ function OfficerCarousel({ officers }: { officers: Officer[] }) {
   const arrow = "absolute top-[18.75rem] z-20 -translate-y-1/2 rounded-full sm:top-[10.5rem] border border-green-400/60 bg-green-400/10 grid h-10 w-10 sm:h-14 sm:w-14 place-items-center text-green-300 shadow-[0_0_12px_-2px_#4ade8066] backdrop-blur transition hover:scale-110 hover:border-green-300 hover:text-green-200 hover:shadow-[0_0_18px_0_#4ade8099] disabled:opacity-25 disabled:shadow-none disabled:hover:scale-100";
   return (
     <div className="relative" onKeyDown={(e) => { if (e.key === "ArrowLeft") go(i - 1); if (e.key === "ArrowRight") go(i + 1); }}>
-    <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-[36rem] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-500/15 blur-3xl" aria-hidden />
+    <div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-500/15 blur-2xl sm:bg-green-500/10 sm:h-72 sm:w-[36rem] sm:blur-3xl" aria-hidden />
     <div
-      className="relative mx-auto h-[17rem] max-w-4xl overflow-hidden sm:h-[21rem]"
+      className="relative mx-auto h-[17rem] max-w-4xl sm:h-[21rem] sm:overflow-hidden"
       style={{ perspective: "1200px" }}
       onPointerDown={(e) => { startX.current = e.clientX; }}
       onPointerUp={(e) => { const dx = e.clientX - startX.current; if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1)); }}
@@ -314,8 +306,10 @@ function MeetingsPage() {
 }
 
 function OfficerPage() {
-  startHunt();
+  // Arriving from the win screen's Apply button switches the bug off; the home page's "Become an officer" button switches it back on.
+  if (!location.search.includes("from=win")) startHunt();
   const fixed = isFixed();
+  const [, rerender] = useReducer((n: number) => n + 1, 0);
   return (
     <SubPage>
       <Section id="apply" eyebrow="Leadership" title="Become an officer">
@@ -329,6 +323,7 @@ function OfficerPage() {
           {fixed ? (
             <>
               <p className="mt-4 font-mono text-sm text-green-400">&gt; Bug fixed. You're cleared to apply.</p>
+              <button onClick={() => { resetHunt(); rerender(); }} className="mt-4 rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black">Play again</button>
               <ApplyForm />
             </>
           ) : (

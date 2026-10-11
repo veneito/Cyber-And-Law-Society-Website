@@ -24,7 +24,7 @@ body {
 /* Experimental: sections "generate" on scroll (see components/Materialize.tsx) */
 .materialize .materialize-body {
   position: relative;
-  clip-path: inset(0 -4rem 100% -4rem); /* negative sides keep glows near the edges from being clipped */
+  clip-path: inset(-4rem -4rem 100% -4rem); /* negative margins keep glows near the edges from being clipped */
 }
 .materialize.is-in .materialize-body {
   animation: materialize-draw 1.1s 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -43,7 +43,7 @@ body {
   opacity: 0;
 }
 @keyframes materialize-draw {
-  to { clip-path: inset(0 -4rem -20px -4rem); }
+  to { clip-path: inset(-4rem -4rem -4rem -4rem); }
 }
 @keyframes materialize-scan {
   0% { top: 0; opacity: 1; }
@@ -128,6 +128,46 @@ body {
   .officer-dialog[open]::backdrop { opacity: 0; }
   .officer-dialog[open] { transform: translateY(16px) scale(0.95); }
 }
+/* Bug-hunt win screen (see WinScreen in components/Anomaly.tsx) */
+@keyframes win-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  15% { opacity: 1; transform: translateX(-6px) scale(1.02); filter: hue-rotate(60deg) saturate(2); }
+  25% { transform: translateX(6px); }
+  35% { transform: translateX(-3px); filter: none; }
+  50%, 100% { transform: none; }
+}
+@keyframes win-glow {
+  0%, 100% { box-shadow: 0 0 20px -4px #4ade8066; }
+  50% { box-shadow: 0 0 60px 4px #4ade80aa; }
+}
+.win-box { animation: win-in 0.7s ease-out both, win-glow 2.4s ease-in-out 0.7s infinite; }
+@keyframes win-line { from { opacity: 0; transform: translateX(-10px); } }
+.win-line { animation: win-line 0.4s ease-out both; }
+@keyframes win-scan { from { top: -10%; opacity: 1; } to { top: 110%; opacity: 0; } }
+.win-scan {
+  position: absolute; left: 0; right: 0; height: 3px; background: #4ade80;
+  box-shadow: 0 0 20px 6px #4ade80; animation: win-scan 1s 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes win-p {
+  from { transform: translate(0, 0) scale(1); opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+.win-p {
+  position: absolute; width: 6px; height: 6px; border-radius: 9999px; background: #4ade80;
+  box-shadow: 0 0 8px #4ade80; animation: win-p 1.1s ease-out both;
+}
+/* Scuttling phage in the bug-hunt chase stage */
+@keyframes phage-run {
+  0%, 100% { transform: rotate(-5deg) scaleX(1); }
+  50% { transform: rotate(5deg) scaleX(0.92); }
+}
+.phage-run { animation: phage-run 0.25s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .phage-run { animation: none; }
+  .win-box, .win-line, .win-scan { animation: none; }
+  .win-p { display: none; }
+}
+
 /* Bio words fade in one by one, as if being read */
 @keyframes bio-word { from { opacity: 0; } }
 .bio-word { animation: bio-word 0.4s ease-out both; }

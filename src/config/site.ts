@@ -124,9 +124,9 @@ export const siteConfig = {
 
   upcomingEvents: [
     {
-      title: "Kickoff & General Interest Meeting",
-      date: "Date & Time TBA",
-      location: "Campus Meeting Room / Discord",
+      title: "Metadata Scavenger Hunt: Revamped",
+      date: "October 22, 2026",
+      location: "Location TBA",
       tag: "Upcoming",
     },
   ] satisfies ClubEvent[] as ClubEvent[],
@@ -151,7 +151,7 @@ export const siteConfig = {
     {
       name: "Jon", role: "President", major: "Criminal Justice", image: "/assets/officers/jon.jpg",
       email: "jdr2421@jagmail.southalabama.edu",
-      bio: "Growing up as a child of Venezuelan descent, I saw how little access there was to cyber-related materials. It made me realize just how wide the gap between law and cyber really is, especially for people with no background in either. I founded this club to close that gap.",
+      bio: "Growing up of Venezuelan descent, I witnessed the limited access to cybersecurity education and resources within underserved communities. This experience opened my eyes to the growing disconnect between law, technology, and society, particularly for individuals without a background in either field. I founded this club to bridge that gap and make these complex subjects more accessible to everyone.",
     },
     {
       name: "Alfred", role: "Vice President", major: "Information Technology", image: "/assets/officers/alfred.jpg",
