@@ -1,5 +1,7 @@
 import { ArrowRight, Bug, CalendarDays, ChevronDown, MapPin, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ApplyForm } from "./components/ApplyForm";
+import { Anomaly, isFixed, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
 import { Logo } from "./components/Logo";
 import { DecodeText } from "./components/Materialize";
@@ -186,7 +188,73 @@ function PlayPage() {
   );
 }
 
+function SubPage({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </div>
+  );
+}
+
+function MeetingsPage() {
+  return (
+    <SubPage>
+      <Section id="meetings" eyebrow="Archive" title="Past meetings">
+        <div>
+          <div className="grid content-start gap-4">
+            {siteConfig.pastMeetings.map((m) => (
+              <article key={m.title} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6">
+                <p className="font-mono text-xs uppercase tracking-wider text-green-400">{m.date}</p>
+                <h3 className="mt-1 text-lg font-semibold text-white">{m.title}</h3>
+                <p className="mt-2 text-sm text-neutral-400">{m.summary}</p>
+                {m.images && (
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    {m.images.map((src) => <img key={src} src={src} alt={`${m.title} photo`} loading="lazy" className="aspect-square w-full rounded-lg object-cover" />)}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </Section>
+      <Anomaly spot="meetings" />
+    </SubPage>
+  );
+}
+
+function OfficerPage() {
+  startHunt();
+  const fixed = isFixed();
+  return (
+    <SubPage>
+      <Section id="apply" eyebrow="Leadership" title="Become an officer">
+        <div className="max-w-2xl space-y-4 text-neutral-400">
+          <p>The main goal of an officer is to be passionate about how cyber is evolving, and to keep a focus on the law that has to evolve with it.</p>
+          <p>No title or experience required. Show up, help out, and tell us you want more.</p>
+        </div>
+        <div className="mt-10 max-w-2xl rounded-xl border border-neutral-800 bg-neutral-950 p-6">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Step one</p>
+          <p className="mt-2 text-neutral-300">Somewhere on this website is an anomaly, and it hides in a different place for every visitor. Find it and fix the bug.</p>
+          {fixed ? (
+            <>
+              <p className="mt-4 font-mono text-sm text-green-400">&gt; Bug fixed. You're cleared to apply.</p>
+              <ApplyForm />
+            </>
+          ) : (
+            <p className="mt-4 text-sm text-neutral-500">Hint: look closely at the sections. It flickers.</p>
+          )}
+        </div>
+      </Section>
+    </SubPage>
+  );
+}
+
 export default function App() {
+  const path = window.location.pathname.replace(/\/$/, "");
+  if (path === "/become-an-officer") return <OfficerPage />;
+  if (path === "/meetings") return <MeetingsPage />;
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
   const { pillars, upcomingEvents, officers, officersPhoto, faq } = siteConfig;
   return (
@@ -194,6 +262,7 @@ export default function App() {
       <Header />
       <main>
         <Hero />
+        <Anomaly spot="hero" />
 
         <Section id="about" eyebrow="Who We Are" title={siteConfig.pillarsHeading}>
           <p className="-mt-4 mb-10 max-w-2xl text-neutral-400">{siteConfig.description}</p>
@@ -224,6 +293,7 @@ export default function App() {
             ))}
           </div>
         </Section>
+        <Anomaly spot="about" />
 
         <Section id="events" eyebrow="Events" title="Upcoming meetings & workshops">
           {upcomingEvents.length === 0 ? (
@@ -248,7 +318,13 @@ export default function App() {
               ))}
             </div>
           )}
+        <div className="mt-8">
+            <a href="/meetings" className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-5 py-3 font-semibold text-white hover:border-green-400">
+              Past meetings <ArrowRight className="h-4 w-4" aria-hidden />
+            </a>
+          </div>
         </Section>
+        <Anomaly spot="events" />
 
         <Section id="officers" eyebrow="Leadership" title="Meet the officers">
           {officersPhoto && (
@@ -264,7 +340,16 @@ export default function App() {
               {officers.map((o) => <OfficerCard key={o.name + o.role} o={o} />)}
             </div>
           )}
+          <div className="mt-10 text-center">
+            <a
+              href="/become-an-officer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-green-400 px-5 py-3 font-semibold text-green-300 hover:bg-green-400 hover:text-black"
+            >
+              Become an officer <ArrowRight className="h-4 w-4" aria-hidden />
+            </a>
+          </div>
         </Section>
+        <Anomaly spot="officers" />
 
         <Section id="faq" eyebrow="FAQ" title="Frequently asked questions">
           <div className="max-w-3xl divide-y divide-neutral-800 rounded-xl border border-neutral-800">
@@ -279,6 +364,7 @@ export default function App() {
             ))}
           </div>
         </Section>
+        <Anomaly spot="faq" />
 
         <Section id="contact" eyebrow="Get Involved" title="Ready to join?">
           <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
@@ -300,6 +386,7 @@ export default function App() {
             )}
           </div>
         </Section>
+        <Anomaly spot="contact" />
       </main>
 
       <Footer />

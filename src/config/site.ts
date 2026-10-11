@@ -129,6 +129,20 @@ export const siteConfig = {
     },
   ] satisfies ClubEvent[] as ClubEvent[],
 
+  pastMeetings: [
+    {
+      title: "Interest Meeting",
+      date: "August 20, 2026",
+      summary: "Our first meeting introduced the club's mission and walked members through the semester schedule, planned activities and long-term goals. Attendees met the officers, learned how mock trials, case investigations and guest speakers will work, and shared what they want to get out of the society.",
+    },
+    {
+      title: "Metadata Scavenger Hunt",
+      date: "September 10, 2026",
+      summary: "A hands-on digital forensics exercise. Teams examined file metadata to recover hidden evidence, then applied logic and cryptography, including Caesar and symbol ciphers, to decode a series of case-file puzzles. The session built the investigative reasoning that cyber law depends on: how evidence is found, verified and interpreted.",
+      images: ["/assets/meetings/hunt3.jpg", "/assets/meetings/hunt4.jpg", "/assets/meetings/hunt5.jpg"],
+    },
+  ] as { title: string; date: string; summary: string; images?: string[] }[],
+
   officersPhoto: "/assets/officers/group1.jpg",
 
   officers: [
