@@ -129,13 +129,13 @@ export const siteConfig = {
     },
   ] satisfies ClubEvent[] as ClubEvent[],
 
+  officersPhoto: "/assets/officers/group1.jpg",
+
   officers: [
-    {
-      name: "Officer Name (TBD)",
-      role: "President",
-      major: "Information Technology / Pre-Law",
-      image: null,
-    },
+    { name: "Jon", role: "President", major: "Criminal Justice", image: "/assets/officers/jon.jpg" },
+    { name: "Andrew", role: "Co-President", major: "Digital Forensics", image: "/assets/officers/andrew.jpg" },
+    { name: "Alfred", role: "Vice President", major: "Information Technology", image: "/assets/officers/alfred.jpg" },
+    { name: "Professor Wang", role: "Advisor", major: "Criminal Justice Professor", image: null },
   ] satisfies Officer[] as Officer[],
 
   faq: [

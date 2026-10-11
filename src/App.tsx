@@ -188,7 +188,7 @@ function PlayPage() {
 
 export default function App() {
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
-  const { pillars, upcomingEvents, officers, faq } = siteConfig;
+  const { pillars, upcomingEvents, officers, officersPhoto, faq } = siteConfig;
   return (
     <>
       <Header />
@@ -251,6 +251,12 @@ export default function App() {
         </Section>
 
         <Section id="officers" eyebrow="Leadership" title="Meet the officers">
+          {officersPhoto && (
+            <figure className="relative mb-8 overflow-hidden rounded-xl border border-white/10">
+              <img src={officersPhoto} alt="The CLS officers" loading="lazy" className="aspect-[16/9] w-full object-cover sm:aspect-[21/9]" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </figure>
+          )}
           {officers.length === 0 ? (
             <Empty>Officer roster coming soon.</Empty>
           ) : (
