@@ -1,7 +1,7 @@
 # TODO
 
 ## Waiting on the club
-- [ ] Officer names, roles, majors, photos → `officers` in site.ts, photos in public/assets/officers/
+- [x] Officers added (see docs/features/officers.md). Still need: Professor Wang photo → `image` in site.ts
 - [ ] Event dates/locations → `upcomingEvents`
 - [ ] Sign-up form link (Google Form?) → `links.joinForm`
 - [ ] LinkedIn / X / GitHub if they have them
