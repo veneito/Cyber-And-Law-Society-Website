@@ -114,7 +114,7 @@ function Hero() {
   return (
     <>
       <section id="top" className="relative scroll-mt-16 flex min-h-[calc(100svh-4rem)] flex-col justify-end overflow-hidden">
-        <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="absolute inset-0 h-full w-full object-cover" />
+        <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="absolute inset-0 h-full w-full bg-black object-contain object-top" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
         <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 sm:pb-14">
           <HeroButtons />
