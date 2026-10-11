@@ -60,7 +60,7 @@ export const siteConfig = {
     contactEmail: "cyberlawsociety1@gmail.com",
   links: {
     joinForm: "#", // Google Form / campus portal
-    discord: "https://discord.gg/YhXXvyGTnb",
+    discord: "https://discord.gg/ZKsKn9WNvX",
     instagram: "https://www.instagram.com/cyberlawsociety",
     linkedin: "#",
     x: "#",
