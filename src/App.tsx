@@ -113,10 +113,11 @@ function Hero() {
 
   return (
     <>
-      <section id="top" className="relative scroll-mt-16 flex min-h-[calc(100svh-4rem)] flex-col justify-end overflow-hidden">
-        <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="absolute inset-0 h-full w-full bg-black object-contain object-top" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
-        <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 sm:px-6 sm:pb-14">
+      {/* Phones: image cropped to its centre (sides cut off), buttons below. md+: whole image at its natural height (capped to one screen) with buttons over its bottom edge, so no empty black band at any window size. */}
+      <section id="top" className="relative scroll-mt-16 flex flex-col justify-end overflow-hidden">
+        <img src={branding.bannerPath} alt={`${name}: ${tagline}`} className="h-80 w-full bg-black object-cover object-center md:h-auto md:max-h-[calc(100svh-4rem)] md:object-contain" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-1/3 bg-gradient-to-t from-black to-transparent md:block" />
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-8 pt-6 sm:px-6 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-14 md:pt-0">
           <HeroButtons />
         </div>
       </section>
@@ -130,7 +131,7 @@ function Hero() {
 
 const SAMPLE_BIO = "Sample bio: this is placeholder text about the officer. Add a short intro, what they study, why they joined the society and what they are working on this semester.";
 
-function OfficerCard({ o }: { o: Officer }) {
+function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: () => void }) {
   const dlg = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false); // replays the decode effect on each open
   const avatar = (size: string) =>
@@ -143,14 +144,36 @@ function OfficerCard({ o }: { o: Officer }) {
     );
   return (
     <>
-      <button onClick={() => { dlg.current?.showModal(); setOpen(true); }} className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 text-center transition hover:-translate-y-1 hover:border-green-400/50">
-        {avatar("h-24 w-24")}
-        <h3 className="mt-4 font-semibold text-white">{o.name}</h3>
-        <p className="text-sm text-green-300">{o.role}</p>
-        <p className="mt-1 text-xs text-neutral-500">{o.major}</p>
+      {/* Centre card opens the pop-up; side cards slide to the centre. Cards beyond two steps fade out. */}
+      <button
+        onClick={() => (pos === 0 ? (dlg.current?.showModal(), setOpen(true)) : onSelect())}
+        aria-label={pos === 0 ? `${o.name}, open bio` : `Show ${o.name}`}
+        tabIndex={Math.abs(pos) > 2 ? -1 : 0}
+        className={`group absolute left-1/2 top-6 aspect-square w-56 overflow-hidden rounded-2xl border bg-neutral-900 text-left transition-all duration-500 ease-out sm:w-72${
+          pos === 0 ? "border-green-400/70 shadow-[0_0_60px_-8px_#4ade80aa]" : "border-neutral-700 shadow-2xl"
+        }`}
+        style={{
+          transform: `translateX(calc(-50% + ${pos * 58}%)) rotateY(${Math.sign(pos) * -32}deg) scale(${1 - Math.min(Math.abs(pos), 3) * 0.13})`,
+          zIndex: 10 - Math.abs(pos),
+          opacity: Math.abs(pos) > 2 ? 0 : 1,
+          pointerEvents: Math.abs(pos) > 2 ? "none" : "auto",
+          filter: pos === 0 ? "none" : `brightness(${0.5 - Math.abs(pos) * 0.08}) saturate(0.7)`,
+        }}
+      >
+        {o.image ? (
+          <img src={o.image} alt="" draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-green-500/30 to-green-900/40 text-6xl font-semibold text-white">{initials(o.name)}</div>
+        )}
+        {pos === 0 && <span className="absolute left-3 top-3 rounded-full border border-green-400/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-green-300 backdrop-blur">Read bio</span>}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/75 to-transparent p-5 pt-16">
+          <h3 className={`font-semibold text-white ${pos === 0 ? "text-xl" : ""}`}>{o.name}</h3>
+          <p className="font-mono text-xs uppercase tracking-wider text-green-300">{o.role}</p>
+          <p className="mt-0.5 text-xs text-neutral-400">{o.major}</p>
+        </div>
       </button>
       {/* showModal() traps focus, handles Escape and restores focus; a click on the dialog itself is a backdrop click */}
-      <dialog ref={dlg} aria-label={o.name} onClose={() => setOpen(false)}onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
+      <dialog ref={dlg} aria-label={o.name} onClose={() => setOpen(false)} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
         <div className="relative rounded-xl border border-neutral-700 bg-neutral-950 p-8 text-center">
           <button onClick={() => dlg.current?.close()} aria-label="Close" className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
           {avatar("h-32 w-32")}
@@ -167,6 +190,47 @@ function OfficerCard({ o }: { o: Officer }) {
         </div>
       </dialog>
     </>
+  );
+}
+
+// Bacteriophage drawn head-up, tail-down; rotate it so the legs point the way the arrow goes.
+const Phage = ({ className }: { className: string }) => (
+  <svg viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={`${className} drop-shadow-[0_0_3px_#4ade80]`} aria-hidden>
+    {/* T4 phage: elongated faceted head, ringed sheath, base plate, kneed tail fibres */}
+    <polygon points="16,1 23,5 23,15 16,19 9,15 9,5" fill="currentColor" fillOpacity="0.15" />
+    <path d="M9 5l7 4 7-4M16 9v10" />
+    <path d="M12 20.5h8M14 22v9M18 22v9M14 24.5h4M14 27h4M14 29.5h4M11 31h10" />
+    <path d="M13 31 7 34 4 39M19 31l6 3 3 5M14.5 31 12 39M17.5 31 20 39" />
+  </svg>
+);
+
+function OfficerCarousel({ officers }: { officers: Officer[] }) {
+  const [i, setI] = useState(0);
+  const go = (n: number) => setI(Math.max(0, Math.min(officers.length - 1, n)));
+  const startX = useRef(0);
+  // Holographic: translucent green glass with a neon glow that intensifies on hover.
+  // On phones they sit under the card, either side of the dots, so they never cover the photo.
+  const arrow = "absolute top-[18.75rem] z-20 -translate-y-1/2 rounded-full sm:top-[10.5rem] border border-green-400/60 bg-green-400/10 grid h-10 w-10 sm:h-14 sm:w-14 place-items-center text-green-300 shadow-[0_0_12px_-2px_#4ade8066] backdrop-blur transition hover:scale-110 hover:border-green-300 hover:text-green-200 hover:shadow-[0_0_18px_0_#4ade8099] disabled:opacity-25 disabled:shadow-none disabled:hover:scale-100";
+  return (
+    <div className="relative" onKeyDown={(e) => { if (e.key === "ArrowLeft") go(i - 1); if (e.key === "ArrowRight") go(i + 1); }}>
+    <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-[36rem] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-500/15 blur-3xl" aria-hidden />
+    <div
+      className="relative mx-auto h-[17rem] max-w-4xl overflow-hidden sm:h-[21rem]"
+      style={{ perspective: "1200px" }}
+      onPointerDown={(e) => { startX.current = e.clientX; }}
+      onPointerUp={(e) => { const dx = e.clientX - startX.current; if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1)); }}
+    >
+      {officers.map((o, n) => <OfficerCard key={o.name + o.role} o={o} pos={n - i} onSelect={() => go(n)} />)}
+    </div>
+    {/* Outside the overflow-hidden stage so the glow isn't clipped at the edges */}
+    <button aria-label="Previous officer" disabled={i === 0} onClick={() => go(i - 1)} className={`${arrow} left-6 sm:left-2`}><Phage className="h-7 w-5 sm:h-9 sm:w-7 -rotate-90" /></button>
+    <button aria-label="Next officer" disabled={i === officers.length - 1} onClick={() => go(i + 1)} className={`${arrow} right-6 sm:right-2`}><Phage className="h-7 w-5 sm:h-9 sm:w-7 rotate-90" /></button>
+    <div className="mt-2 flex h-10 items-center justify-center gap-2 sm:mt-4 sm:h-auto" role="presentation">
+      {officers.map((o, n) => (
+        <button key={o.name} aria-label={`Show ${o.name}`} onClick={() => go(n)} className={`h-1.5 rounded-full transition-all duration-300 ${n === i ? "w-8 bg-green-400" : "w-3 bg-neutral-700 hover:bg-neutral-500"}`} />
+      ))}
+    </div>
+    </div>
   );
 }
 
@@ -361,9 +425,7 @@ export default function App() {
           {officers.length === 0 ? (
             <Empty>Officer roster coming soon.</Empty>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {officers.map((o) => <OfficerCard key={o.name + o.role} o={o} />)}
-            </div>
+            <OfficerCarousel officers={officers} />
           )}
           <div className="mt-10 text-center">
             <a
