@@ -1,5 +1,5 @@
-import { ArrowRight, Bug, CalendarDays, ChevronDown, MapPin, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
 import { Anomaly, isFixed, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
@@ -128,20 +128,45 @@ function Hero() {
   );
 }
 
+const SAMPLE_BIO = "Sample bio: this is placeholder text about the officer. Add a short intro, what they study, why they joined the society and what they are working on this semester.";
+
 function OfficerCard({ o }: { o: Officer }) {
+  const dlg = useRef<HTMLDialogElement>(null);
+  const [open, setOpen] = useState(false); // replays the decode effect on each open
+  const avatar = (size: string) =>
+    o.image ? (
+      <img src={o.image} alt={o.name} className={`mx-auto ${size} rounded-full object-cover`} />
+    ) : (
+      <div className={`mx-auto grid ${size} place-items-center rounded-full bg-gradient-to-br from-green-500/30 to-green-900/40 text-2xl font-semibold text-white ring-1 ring-neutral-700`}>
+        {initials(o.name)}
+      </div>
+    );
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 text-center">
-      {o.image ? (
-        <img src={o.image} alt={o.name} className="mx-auto h-24 w-24 rounded-full object-cover" />
-      ) : (
-        <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-green-500/30 to-green-900/40 text-2xl font-semibold text-white ring-1 ring-neutral-700">
-          {initials(o.name)}
+    <>
+      <button onClick={() => { dlg.current?.showModal(); setOpen(true); }} className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-6 text-center transition hover:-translate-y-1 hover:border-green-400/50">
+        {avatar("h-24 w-24")}
+        <h3 className="mt-4 font-semibold text-white">{o.name}</h3>
+        <p className="text-sm text-green-300">{o.role}</p>
+        <p className="mt-1 text-xs text-neutral-500">{o.major}</p>
+      </button>
+      {/* showModal() traps focus, handles Escape and restores focus; a click on the dialog itself is a backdrop click */}
+      <dialog ref={dlg} aria-label={o.name} onClose={() => setOpen(false)}onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
+        <div className="relative rounded-xl border border-neutral-700 bg-neutral-950 p-8 text-center">
+          <button onClick={() => dlg.current?.close()} aria-label="Close" className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
+          {avatar("h-32 w-32")}
+          <h3 className="mt-4 text-xl font-semibold text-white"><DecodeText text={o.name} active={open} /></h3>
+          <p className="text-sm text-green-300"><DecodeText text={`${o.role} · ${o.major}`} active={open} /></p>
+          {(o.bio ?? SAMPLE_BIO) && (
+            <p className="mt-4 text-left text-neutral-300">
+              {(o.bio ?? SAMPLE_BIO).split(" ").map((w, i) => (
+                <span key={i} className={open ? "bio-word" : ""} style={{ animationDelay: `${0.3 + i * 0.06}s` }}>{w} </span>
+              ))}
+            </p>
+          )}
+          {o.email && <a href={`mailto:${o.email}`} className="mt-5 inline-flex max-w-full items-center justify-center gap-2 break-all rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black"><Mail className="h-4 w-4 shrink-0" aria-hidden />{o.email}</a>}
         </div>
-      )}
-      <h3 className="mt-4 font-semibold text-white">{o.name}</h3>
-      <p className="text-sm text-green-300">{o.role}</p>
-      <p className="mt-1 text-xs text-neutral-500">{o.major}</p>
-    </div>
+      </dialog>
+    </>
   );
 }
 

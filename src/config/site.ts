@@ -40,6 +40,8 @@ export interface Officer {
   name: string;
   role: string;
   major: string;
+  email?: string;
+  bio?: string; // shown in the officer pop-up; falls back to sample text, "" shows nothing
   image: string | null; // e.g. "/assets/officers/jane.jpg"
 }
 
@@ -146,10 +148,22 @@ export const siteConfig = {
   officersPhoto: "/assets/officers/group1.jpg",
 
   officers: [
-    { name: "Jon", role: "President", major: "Criminal Justice", image: "/assets/officers/jon.jpg" },
-    { name: "Andrew", role: "Co-President", major: "Digital Forensics", image: "/assets/officers/andrew.jpg" },
-    { name: "Alfred", role: "Vice President", major: "Information Technology", image: "/assets/officers/alfred.jpg" },
-    { name: "Professor Wang", role: "Advisor", major: "Criminal Justice Professor", image: null },
+    {
+      name: "Jon", role: "President", major: "Criminal Justice", image: "/assets/officers/jon.jpg",
+      email: "jdr2421@jagmail.southalabama.edu",
+      bio: "Growing up as a child of Venezuelan descent, I saw how little access there was to cyber-related materials. It made me realize just how wide the gap between law and cyber really is, especially for people with no background in either. I founded this club to close that gap.",
+    },
+    {
+      name: "Alfred", role: "Vice President", major: "Information Technology", image: "/assets/officers/alfred.jpg",
+      email: "all2322@jagmail.southalabama.edu",
+      bio: "Growing up in the Philippines, I watched technology reshape everyday life faster than the rules around it could keep up. That curiosity led me to IT, and to helping found a club where students can explore how cyber and law shape each other.",
+    },
+    {
+      name: "Andrew", role: "Co-President", major: "Digital Forensics", image: "/assets/officers/andrew.jpg",
+      email: "aop2322@jagmail.southalabama.edu",
+      bio: "Digital forensics taught me that every click leaves a trail, and that those trails matter in court. I help lead the society to give students hands-on experience tracing evidence and understanding the law behind it.",
+    },
+    { name: "Professor Wang", role: "Advisor", major: "Criminal Justice Professor", image: null, email: "wang@southalabama.edu", bio: "" },
   ] satisfies Officer[] as Officer[],
 
   faq: [

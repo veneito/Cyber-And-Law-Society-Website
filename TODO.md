@@ -2,6 +2,7 @@
 
 ## Waiting on the club
 - [x] Officers added (see docs/features/officers.md). Still need: Professor Wang photo → `image` in site.ts
+- [ ] Real bios from Alfred and Andrew (current ones are invented placeholders in `officers`)
 - [ ] Event dates/locations → `upcomingEvents`
 - [ ] Sign-up form link (Google Form?) → `links.joinForm`
 - [ ] LinkedIn / X / GitHub if they have them

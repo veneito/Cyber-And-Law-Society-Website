@@ -109,7 +109,31 @@ body {
 .q-drift { animation: q-drift linear infinite; }
 @keyframes q-grid { from { background-position: 0 0; } to { background-position: 0 48px; } }
 .q-grid { animation: q-grid 4s linear infinite; }
+/* Officer pop-up (see OfficerCard in App.tsx); fades in and out via transitions on the dialog's open state */
+.officer-dialog,
+.officer-dialog::backdrop {
+  opacity: 0;
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out, display 0.25s allow-discrete, overlay 0.25s allow-discrete;
+}
+.officer-dialog { transform: translateY(16px) scale(0.95); }
+.officer-dialog::backdrop {
+  background: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(3px);
+}
+.officer-dialog[open],
+.officer-dialog[open]::backdrop { opacity: 1; }
+.officer-dialog[open] { transform: none; }
+@starting-style {
+  .officer-dialog[open],
+  .officer-dialog[open]::backdrop { opacity: 0; }
+  .officer-dialog[open] { transform: translateY(16px) scale(0.95); }
+}
+/* Bio words fade in one by one, as if being read */
+@keyframes bio-word { from { opacity: 0; } }
+.bio-word { animation: bio-word 0.4s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
+  .officer-dialog, .officer-dialog::backdrop { transition: none; }
+  .bio-word { animation: none; }
   .q-reveal, .q-pop, .q-pulse, .q-shake, .q-win, .q-boot, .q-scan, .q-celebrate, .q-fade, .q-rise, .q-grid { animation: none; }
   .q-drift { display: none; }
 }
