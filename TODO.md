@@ -21,6 +21,10 @@
 - [ ] /impeccable polish — final pass, then re-run /impeccable critique to compare score
 - [ ] Add .impeccable/ and .claude/ to .gitignore
 
+## Discord bot (see docs/features/discord-bot.md)
+- [ ] Upload `lady-justice-avatar.png` as the bot avatar (Developer Portal → Bot tab)
+- [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
+
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
