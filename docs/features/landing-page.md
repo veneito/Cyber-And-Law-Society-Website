@@ -31,3 +31,7 @@ Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text s
 
 ## Files
 `src/config/site.ts`, `src/App.tsx`, `src/components/*`, `src/index.css`, `index.html`, `deploy/*`.
+
+## Hero banner fit (2026-10-10)
+- Banner `<img>` uses `object-contain object-top` on black (was `object-cover`, which cropped the crest title on wide screens).
+- Hero `#top` sections have `scroll-mt-16` so anchor jumps land below the sticky nav.
