@@ -6,6 +6,11 @@
 - [ ] Sign-up form link (Google Form?) → `links.joinForm`
 - [ ] LinkedIn / X / GitHub if they have them
 
+## Officer application (see docs/features/officer-application.md)
+- [ ] Verify a domain in Resend if applications should email more than one officer
+- [ ] Past meetings: add more entries/photos as meetings happen
+- [ ] Phone check of the bug hunt (thumbnail size/position at 375px)
+
 ## Quarantine game — remaining Impeccable fixes (from 2026-10-06 critique)
 - [ ] /impeccable harden — Android long-press double-toggles the flag (onContextMenu re-flags); confirm before switching level mid-game; maybe label leaderboard "honor system"
 - [ ] /impeccable adapt — size cells to screen width on phones (44px targets), Hard mode without sideways scroll, header row overflows by 24px
