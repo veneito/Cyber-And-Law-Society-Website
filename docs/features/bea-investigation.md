@@ -104,6 +104,12 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - Rough trace, not a survey: check the layout against the real floor before the event and nudge `floorplan.ts` and the target if the bookstand is off.
 - Updated config keys: `sonar` changed. **Re-copy `data/case-config.json` to the Mint PC** before the event.
 
+## Flash drive contents
+- Each `data/drives/team-N/` folder holds what goes on drive N: `wellington.sig` (that team's signature) plus `symbol-key.png` and `symbol-key.pdf` (printable A4 key sheet for the symbol cipher, evidence 4).
+- Regenerate with `python deploy/make-key-sheet.py` (needs Pillow and Windows fonts; uses Segoe UI Symbol, the same glyphs the site shows on Windows). Players on Mac or phones may see slightly different glyph shapes on the site than on the sheet.
+- `make-teams.mjs` recreates the team folders, so re-run `make-key-sheet.py` after it.
+- Evidence 4 plaintext: THE IT MAN WILL STAY QUIET OR HIS SECRETS GO PUBLIC.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.
