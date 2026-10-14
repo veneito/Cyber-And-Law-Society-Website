@@ -115,7 +115,13 @@ function Team({ code }: { code: string }) {
   const [picks, setPicks] = useState<Record<number, number | "">>({});
 
   const apply = useCallback((d: TeamState) => { setT(d); setNow(Date.now()); }, []);
-  useEffect(() => { api("state?code=" + encodeURIComponent(code)).then((r) => r.status === 200 && apply(r.data)); }, [code, apply]);
+  useEffect(() => {
+    // A remembered code with no server-side start (e.g. progress was reset) starts the clock instead of showing TIME UP.
+    api("state?code=" + encodeURIComponent(code)).then(async (r) => {
+      if (r.status !== 200) return;
+      apply(r.data.startedAt ? r.data : (await api("start", { code })).data);
+    });
+  }, [code, apply]);
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
 
   if (!t) return null;
