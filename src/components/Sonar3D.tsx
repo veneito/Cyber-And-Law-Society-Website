@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useEffect, useRef } from "react";
-import { BLOCKED, BOOKSTAND, DIVIDERS, FLOORS, PILLARS, PLAN_H, PLAN_W, SHELVES, TABLES, WING, type Rect } from "./floorplan";
+import { BLOCKED, BOOKSTAND, DIVIDERS, DOORS, FLOORS, GLOBE, LABELS, PILLARS, PLAN_H, PLAN_W, SHELVES, TABLES, WING, type Rect } from "./floorplan";
 
 export type ViewProps = {
   pos: { x: number; y: number };
@@ -69,6 +69,16 @@ export default function Sonar3D(props: ViewProps) {
     DIVIDERS.forEach((b) => scene.add(box(b, 0x111827, 0x94a3b8, 0.9)));
     scene.add(box(BOOKSTAND, 0x0b1a12, GREEN, 0.9));
     scene.add(label("Bookstand", BOOKSTAND.x + BOOKSTAND.w / 2, BOOKSTAND.y - 20));
+    DOORS.forEach((b) => {
+      scene.add(box(b, 0x082f49, 0x38bdf8, 0.9));
+      if (b.label) scene.add(label(b.label, b.x + b.w / 2, b.y + b.h / 2));
+    });
+    const globeGeo = new THREE.SphereGeometry(20, 16, 12);
+    const globe = new THREE.Mesh(globeGeo, new THREE.MeshBasicMaterial({ color: 0x082f49 }));
+    globe.add(edge(globeGeo, 0x38bdf8, 0.7));
+    globe.position.set(GLOBE.x, 34, GLOBE.y);
+    scene.add(globe);
+    LABELS.forEach((l) => scene.add(label(l.text, l.x, l.y)));
     PILLARS.forEach((q) => {
       const geo = new THREE.CylinderGeometry(14, 14, 80, 16);
       const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x111827 }));

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { BLOCKED, BOOKSTAND, DIVIDERS, FLOORS, PILLARS, PLAN_H, PLAN_W, SHELVES, START, TABLES, WING, walkable } from "./floorplan";
+import { BLOCKED, BOOKSTAND, DIVIDERS, DOORS, FLOORS, GLOBE, LABELS, PILLARS, PLAN_H, PLAN_W, SHELVES, START, TABLES, WING, walkable } from "./floorplan";
 import type { ViewProps } from "./Sonar3D";
 
 const Sonar3D = lazy(() => import("./Sonar3D"));
@@ -30,6 +30,14 @@ function SonarFlat({ pos, heat, pings, found, started, onMove }: ViewProps) {
       {SHELVES.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#1a1408" stroke="#fbbf24" strokeOpacity="0.7" />)}
       {DIVIDERS.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#94a3b8" />)}
       <rect x={BOOKSTAND.x} y={BOOKSTAND.y} width={BOOKSTAND.w} height={BOOKSTAND.h} fill="#0b1a12" stroke="#4ade80" />
+      {DOORS.map((b, i) => (
+        <g key={i}>
+          <rect x={b.x} y={b.y} width={b.w} height={b.h} fill="#082f49" stroke="#38bdf8" />
+          <text x={b.x + b.w / 2} y={b.y - 6} textAnchor="middle" fill="#a3a3a3" fontSize="14" fontFamily="monospace">{b.label}</text>
+        </g>
+      ))}
+      <circle cx={GLOBE.x} cy={GLOBE.y} r={20} fill="#082f49" stroke="#38bdf8" />
+      {LABELS.map((l) => <text key={l.text} x={l.x} y={l.y} textAnchor="middle" fill="#a3a3a3" fontSize="14" fontFamily="monospace">{l.text}</text>)}
       {PILLARS.map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={14} fill="#111827" stroke="#94a3b8" />)}
       {TABLES.map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={22} fill="#0f1d15" stroke="#4ade80" strokeOpacity="0.4" />)}
       {started && (
