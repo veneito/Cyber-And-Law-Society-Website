@@ -198,7 +198,7 @@ function CipherStep({ t, send, over }: { t: TeamState; send: (route: string, bod
   );
 }
 
-function Game({ code }: { code: string }) {
+function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   const [t, setT] = useState<TeamState | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [seenAt, setSeenAt] = useState(0);
@@ -271,7 +271,7 @@ function Game({ code }: { code: string }) {
       <aside className="order-first lg:order-none">
         <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
           <div>
-            <p className="font-mono text-xs text-neutral-500">{t.name}</p>
+            <p className="font-mono text-xs text-neutral-500">{t.name} <button onClick={onLeave} className="ml-2 underline hover:text-white">switch team</button></p>
             <p className="font-mono text-2xl text-green-400">{t.score} pts</p>
           </div>
           <p className={`font-mono text-2xl ${over ? "text-red-400" : "text-white"}`}>{over ? "TIME UP" : clock(left)}</p>
@@ -292,7 +292,7 @@ export function CasePage() {
       <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">&larr; Activities</a>
       <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">Case file</p>
       <h1 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington</h1>
-      {code ? <Game code={code} /> : <Gate onCode={set} />}
+      {code ? <Game code={code} onLeave={() => set("")} /> : <Gate onCode={set} />}
     </main>
   );
 }
