@@ -83,7 +83,7 @@ Each solved plaintext adds one entry to the case file (crime name, date, one-lin
 - Real config (9 team codes, answers, evidence text) goes in gitignored `data/case-config.json`; copy `deploy/case-config.example.json`. Without it the API returns 503.
 - Page now wired to the API: team code gate, answer boxes, timer, scoreboard poll (5s), accusation checklist (`Case.tsx`; sonar split into `Sonar.tsx`). `data/case-config.json` currently holds TEST values (codes TEST-1, TEST-2); replace before the event.
 - Flash-drive gate built: `unlock` route checks a per-team signature (`sigs` in the config; absent = gate off); wrong signature uses the same growing lockout. UI offers folder picker (reads `wellington.sig`), file picker, typed code. Untested with a real drive. Each drive needs a `wellington.sig` file containing that team's `sigs` value.
-- Photo section built on the case page: `public/case/evidence-01.jpg` is a PLACEHOLDER with GPS EXIF (30.6963 N, 88.1788 W, a rough guess at Marx Library, unverified); served byte-identical to the file, with a download button and pic2map.com link. Replace with the real photo (keep the GPS tag, check it on pic2map.com, and check it survives a download).
+- Photo section built on the case page: `public/case/evidence-01.jpg` is the real photo (Big_Book.jpg, iPhone original, byte-identical) with GPS 30.6976 N, 88.1789 W. Its EXIF also exposes the device (iPhone 17 Pro Max) and timestamps. Still to check: pic2map.com shows the Marx Library, and the tag survives a download from the live site (Cloudflare).
 - Not built yet: cipher ciphertext display, EXIF page, real floor plan, cipher encoding.
 
 ## Still open
