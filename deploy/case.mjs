@@ -62,6 +62,7 @@ const view = (t, now = Date.now()) => ({
   lockedFor: Math.max(0, Math.ceil((t.lockedUntil - now) / 1000)),
   accused: t.accused,
   unlocked: !loadConfig().sigs || t.unlocked, // no sigs configured = gate off
+  ciphers: !loadConfig().sigs || t.unlocked ? loadConfig().ciphers ?? [] : [], // ciphertext only after the drive unlock
 });
 
 function readBody(req, cb, fail) {

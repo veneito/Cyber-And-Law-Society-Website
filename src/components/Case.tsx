@@ -13,6 +13,7 @@ const CRIMES = [
 type TeamState = {
   name: string; startedAt: number | null; endsAt: number | null; score: number;
   solved: Record<string, string>; lockedFor: number; accused: boolean; unlocked: boolean;
+  ciphers: { type: string; text: string; hint: string }[];
 };
 type Row = { name: string; score: number; solved: number; accused: boolean };
 
@@ -162,6 +163,13 @@ function Team({ code }: { code: string }) {
             {t.solved[i] ? (
               <p className="mt-1 text-neutral-300">{t.solved[i]}</p>
             ) : (
+              <>
+              {t.ciphers[i] && (
+                <div className="mt-2">
+                  <p className="break-words font-mono text-lg tracking-wide text-green-300" style={{ fontVariantEmoji: "text" }}>{t.ciphers[i].text}</p>
+                  <p className="mt-1 text-xs text-neutral-500">{t.ciphers[i].hint}</p>
+                </div>
+              )}
               <div className="mt-2 flex gap-2">
                 <input value={answers[i]} disabled={over}
                   onChange={(e) => setAnswers(answers.map((a, j) => (j === i ? e.target.value : a)))}
@@ -169,6 +177,7 @@ function Team({ code }: { code: string }) {
                   placeholder="Decoded message" className="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white" />
                 <button onClick={() => submit(i)} disabled={over} className="rounded-lg border border-neutral-700 px-4 text-sm text-white hover:border-green-400 disabled:opacity-40">Submit</button>
               </div>
+              </>
             )}
           </li>
         ))}

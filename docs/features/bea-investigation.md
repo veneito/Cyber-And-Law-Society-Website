@@ -84,7 +84,8 @@ Each solved plaintext adds one entry to the case file (crime name, date, one-lin
 - Page now wired to the API: team code gate, answer boxes, timer, scoreboard poll (5s), accusation checklist (`Case.tsx`; sonar split into `Sonar.tsx`). `data/case-config.json` currently holds TEST values (codes TEST-1, TEST-2); replace before the event.
 - Flash-drive gate built: `unlock` route checks a per-team signature (`sigs` in the config; absent = gate off); wrong signature uses the same growing lockout. UI offers folder picker (reads `wellington.sig`), file picker, typed code. Untested with a real drive. Each drive needs a `wellington.sig` file containing that team's `sigs` value.
 - Photo section built on the case page: `public/case/evidence-01.jpg` is the real photo (Big_Book.jpg, iPhone original, byte-identical) with GPS 30.6976 N, 88.1789 W. Its EXIF also exposes the device (iPhone 17 Pro Max) and timestamps. Still to check: pic2map.com shows the Marx Library, and the tag survives a download from the live site (Cloudflare).
-- Not built yet: cipher ciphertext display, EXIF page, real floor plan, cipher encoding.
+- Cipher display built: `node deploy/make-ciphers.mjs` encodes the 6 plaintexts (Caesar 7, A1Z26, progressive, symbol, Caesar 11, A1Z26), self-checks round trips, and writes answers/ciphers/evidence into `data/case-config.json` plus the printable symbol key to `data/case-symbol-key.txt` (both gitignored; the key sheet still needs printing and hiding somewhere). Ciphertext is only sent to a team after the drive unlock. Symbols are Unicode zodiac/planet glyphs (render depends on the player's fonts; test on target devices). Progressive cipher: first letter +1, second +2, and so on; hint tells players.
+- Not built yet: (cipher display done), EXIF page, real floor plan, cipher encoding.
 
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
