@@ -5,6 +5,8 @@ import { defineConfig, type Plugin } from 'vite'
 import { handleLeaderboard } from './deploy/leaderboard.mjs'
 // @ts-expect-error plain JS module shared with the production server
 import { handleApply } from './deploy/apply.mjs'
+// @ts-expect-error plain JS module shared with the production server
+import { handleCase } from './deploy/case.mjs'
 
 import { cloudflare } from "@cloudflare/vite-plugin";
 
@@ -13,7 +15,7 @@ const leaderboardApi: Plugin = {
   name: 'leaderboard-api',
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
-      if (!handleLeaderboard(req, res) && !handleApply(req, res)) next()
+      if (!handleLeaderboard(req, res) && !handleApply(req, res) && !handleCase(req, res)) next()
     })
   },
 }
@@ -24,7 +26,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // Two pages: the landing page the /play mini-game and /become-an-officer.
-      input: { main: 'index.html', play: 'play/index.html', officer: 'become-an-officer/index.html', meetings: 'meetings/index.html' },
+      input: { main: 'index.html', play: 'play/index.html', officer: 'become-an-officer/index.html', meetings: 'meetings/index.html', wellington: 'case/wellington/index.html' },
     },
   },
 })

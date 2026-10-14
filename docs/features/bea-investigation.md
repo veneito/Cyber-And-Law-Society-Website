@@ -33,12 +33,63 @@ Plan: try 1, fall back to 2 automatically. The drive can hold more than the sign
 - Until then, a **stylized placeholder schematic** (from public descriptions/photos) can be built to develop the sonar mechanic and UI. It must be clearly rough and replaced later.
 - Optional: search for the library's public floor guides / virtual tour pages first to make the placeholder less generic.
 
-## Open decisions
-- Hashed answers in client JS (fine for a casual club event) vs. server-side checks. `deploy/` already has handlers (`handleApply`, `handleLeaderboard`) that a check could follow.
-- One shared drive for all teams, or one per team?
-- Number of stages and cipher types (Caesar, Vigenere, hidden image/audio clue, etc.).
-- Whether the page is hidden from nav.
-- Visual style: noir / evidence-board look vs. the existing site theme.
+## Decisions (confirmed)
+- **Answer checking: server-side.** Follow the `deploy/` handler pattern (`handleApply`, `handleLeaderboard`); no answers or tokens in client JS.
+- **9 flash drives**, one per team, each with its own signature/token.
+- **Content types:** photos (EXIF), sonar, ciphers, puzzles, plus a **case file** where players collect everything to work out the answers.
+- **Hidden from nav:** yes.
+- **Visual style:** mixture of noir/evidence-board and the existing site theme.
+
+- **Case file: structured evidence list** (one entry per solved item, not a free-form board).
+- **Ciphers:** Caesar, A1Z26, progressive Caesar (shift increases by 1 for each letter), and a custom symbol cipher (invent the symbols and a key sheet). Each decoded message must contain **evidence of one of Bea's crimes**, which then lands in the case file.
+
+## Draft crimes and plaintexts (fictional; story-level only, no real technique detail)
+Chronological story arc, one crime per cipher. Plaintexts are drafts, short enough to encode by hand.
+
+1. **Evil twin Wi-Fi (Caesar).** Bea sets up an open network named like the university's (e.g. "USouthAlabama_Guest"). Students join and she harvests their logins.
+   - Plaintext: `THE FAKE NETWORK IS LIVE. THREE HUNDRED LOGINS BY FRIDAY`
+2. **Credential resale (A1Z26).** She sells the stolen student and staff logins on a dark-web forum.
+   - Plaintext: `SOLD THE LOGINS TO THE BUYER FOR EIGHT BITCOIN`
+3. **Ransomware attack (progressive Caesar).** She uses a stolen staff login to lock the campus servers and demands payment.
+   - Plaintext: `INSIDE THE SERVERS WITH A STOLEN LOGIN. PAY OR EVERYTHING STAYS LOCKED`
+4. **Insider blackmail (symbol).** She threatens an IT employee with leaked personal files unless they keep quiet.
+   - Plaintext: `THE IT MAN WILL STAY QUIET OR HIS SECRETS GO PUBLIC`
+5. **Payout laundering (extra, any cipher).** She moves the ransom through crypto mixers and shell accounts.
+   - Plaintext: `THE MONEY IS CLEAN. NOBODY CAN FOLLOW IT BACK TO ME`
+6. **Cover-up (extra, optional finale).** She plants evidence to frame a student and wipes her own logs.
+   - Plaintext: `BLAME THE STUDENT. DELETE EVERY LOG BEFORE MONDAY`
+
+Each solved plaintext adds one entry to the case file (crime name, date, one-line summary).
+
+## Confirmed: stages and scoring
+- **6 stages**, one per crime above (5 and 6 are no longer optional).
+- **Two ways to finish:** just complete the evidence list, or also make the final accusation for bonus points.
+- **Final accusation:** player accuses Bea of all 6 crimes (checked server-side). A correct, complete accusation raises their points.
+- **Scoring:** points per stage solved + accusation bonus, tallied with time. Most points (more done, faster) wins the whole event. Reuse the `handleLeaderboard` pattern for the ranking.
+
+- **Wrong answers:** short lockout (enforced server-side, per team), no point deduction.
+- **Live scoreboard:** every team's points update live while they play, visible to all. Server pushes updates (SSE or short polling off the leaderboard handler).
+
+- **Points:** 150 per stage solved.
+- **Lockout:** 15s, growing on repeated misses.
+- **Accusation format:** checklist of crimes. Ticking a crime requires attaching its proper evidence entry from the case file; the server checks the pairing.
+
+- **Accusation bonus:** 300. **Time bonus:** small, shrinking over the event.
+- **Wrong evidence on a ticked crime:** point deduction instead of lockout.
+
+## Built so far
+- `/case/wellington` page: evidence list (locked placeholders) + sonar prototype on a placeholder floor plan (`src/components/Case.tsx`, own `case/wellington/index.html`, added to vite inputs).
+- `deploy/case.mjs`: server API (start, answer, accuse, state, scoreboard) with 15s growing lockout, 150/stage + time bonus, 300 accusation bonus, -10 per wrong evidence pairing, 90 min per-team clock. Wired into `serve.mjs` and the vite dev server.
+- Real config (9 team codes, answers, evidence text) goes in gitignored `data/case-config.json`; copy `deploy/case-config.example.json`. Without it the API returns 503.
+- Page now wired to the API: team code gate, answer boxes, timer, scoreboard poll (5s), accusation checklist (`Case.tsx`; sonar split into `Sonar.tsx`). `data/case-config.json` currently holds TEST values (codes TEST-1, TEST-2); replace before the event.
+- Not built yet: cipher ciphertext display, flash-drive gate, EXIF page, real floor plan, cipher encoding.
+
+## Still open
+- ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
+- Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.
+- Time bonus formula, proposed: per stage, up to 100 bonus, decaying linearly to 0 at 90 min from the team's start (so a stage solved at minute 45 earns 150 + 50).
+- Symbol cipher: design the glyphs and key.
+- Real university network name: use a clearly fictional variant to avoid implying real incidents.
 
 ## Suggested next steps
 1. Confirm the open decisions above.

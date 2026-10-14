@@ -3,6 +3,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
 import { Anomaly, isFixed, resetHunt, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
+import { CasePage } from "./components/Case";
 import { Logo } from "./components/Logo";
 import { Network } from "./components/Network";
 import { Phage } from "./components/Phage";
@@ -338,6 +339,7 @@ function OfficerPage() {
 export default function App() {
   const path = window.location.pathname.replace(/\/$/, "");
   if (path === "/become-an-officer") return <OfficerPage />;
+  if (path === "/case/wellington") return <CasePage />;
   if (path === "/meetings") return <MeetingsPage />;
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
   const { pillars, upcomingEvents, officers, officersPhoto, faq } = siteConfig;

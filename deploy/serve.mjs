@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { handleApply } from "./apply.mjs";
+import { handleCase } from "./case.mjs";
 import { handleLeaderboard } from "./leaderboard.mjs";
 
 const PORT = Number(process.env.PORT || 3001);
@@ -32,7 +33,7 @@ function fileFor(urlPath) {
 }
 
 createServer((req, res) => {
-  if (handleLeaderboard(req, res) || handleApply(req, res)) return;
+  if (handleLeaderboard(req, res) || handleApply(req, res) || handleCase(req, res)) return;
   const path = new URL(req.url, "http://x").pathname;
   const found = fileFor(path);
   // A missing file (anything with an extension, e.g. /assets/x.webp) is a real 404 that
