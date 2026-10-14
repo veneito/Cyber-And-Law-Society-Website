@@ -97,6 +97,13 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - **Bea hacks:** 20% chance after each wrong answer, plus roughly every 8 to 12 minutes at random. A full-screen puzzle (connect the dots, type the key sequence, or a quick cyber/logic question) blocks all actions until solved. Solved under 20 s: +20 points; over 60 s: -20 points (floor 0); in between: 0. Wrong attempts can retry. Solutions never leave the server. The page polls state every 4 s, which is how a random hack reaches the player.
 - Config keys added: `building`, `sonar` (written by `make-ciphers.mjs` if missing). **Copy the updated `data/case-config.json` to the Mint PC and restart** (the live one lacks them, so the building question would reject every answer).
 
+## Floor plan and 3D sonar (built)
+- Traced from the user's hand sketch (north up, 2nd floor): `src/components/floorplan.ts` holds the walkable floor, blocked areas (open stairwell/voids, office, study rooms, elevator), shelves, desks, pillars, dividers and the bookstand. One unit = one sketch pixel from the sketch origin; the plan is 820x820.
+- `Sonar3D.tsx` (three.js, lazy loaded) draws it as a tilted 3D wireframe view with rotate buttons; `Sonar.tsx` falls back to a flat SVG of the same plan when WebGL is missing (fallback not tested). The scanner can only stand on walkable floor.
+- Target = the bookstand marked X in the north wing, `config.sonar = {x: 312, y: 175}` in plan units (server: found radius 22, signal fades over 700 units). It lives only on the server. Caveat: anyone scripting the ping API could triangulate it; accepted for a club event.
+- Rough trace, not a survey: check the layout against the real floor before the event and nudge `floorplan.ts` and the target if the bookstand is off.
+- Updated config keys: `sonar` changed. **Re-copy `data/case-config.json` to the Mint PC** before the event.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.

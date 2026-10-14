@@ -44,7 +44,7 @@ cfg.answers = stages.map((s) => s[2]);
 cfg.ciphers = out;
 cfg.evidence = stages.map((s) => s[3]);
 cfg.building ??= ["Marx Library", "Marx", "Marx Library University of South Alabama", "University of South Alabama Marx Library"]; // accepted answers for the photo question
-cfg.sonar ??= { x: 440, y: 120 }; // PLACEHOLDER target on the 600x400 schematic; move it to the real hiding spot
+cfg.sonar ??= { x: 312, y: 175 }; // the bookstand on the 2nd-floor plan (src/components/floorplan.ts units)
 writeFileSync(CONFIG, JSON.stringify(cfg, null, 2));
 writeFileSync(KEY, "SYMBOL KEY (print for the symbol-cipher stage)\n" + GLYPHS.map((g, i) => `${g} = ${String.fromCharCode(A + i)}`).join("\n") + "\n");
 out.forEach((o, i) => console.log(`${i + 1} [${o.type}] ${o.text}`));

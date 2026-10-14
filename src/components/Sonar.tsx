@@ -1,25 +1,61 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { BLOCKED, BOOKSTAND, DIVIDERS, FLOORS, PILLARS, PLAN_H, PLAN_W, SHELVES, START, TABLES, WING, walkable } from "./floorplan";
+import type { ViewProps } from "./Sonar3D";
 
-// PLACEHOLDER layout: rough schematic, replace with traced Marx Library plans (the target itself lives on the server).
-const W = 600, H = 400;
-const ROOMS = [
-  { x: 20, y: 20, w: 200, h: 140, label: "Reading Room" },
-  { x: 240, y: 20, w: 160, h: 140, label: "Stacks A" },
-  { x: 420, y: 20, w: 160, h: 140, label: "Stacks B" },
-  { x: 20, y: 180, w: 120, h: 200, label: "Study Rooms" },
-  { x: 160, y: 180, w: 260, h: 90, label: "Front Desk" },
-  { x: 160, y: 290, w: 260, h: 90, label: "Computer Lab" },
-  { x: 440, y: 180, w: 140, h: 200, label: "Archives" },
-];
+const Sonar3D = lazy(() => import("./Sonar3D"));
 
 type Ping = (x: number, y: number) => Promise<{ strength: number; found: boolean } | null>;
 
+const hasWebGL = () => {
+  try { return !!document.createElement("canvas").getContext("webgl"); } catch { return false; }
+};
+
+// Flat top-down view of the same plan, used when the browser cannot do WebGL.
+function SonarFlat({ pos, heat, pings, found, started, onMove }: ViewProps) {
+  const at = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.type === "pointermove" && !e.buttons) return;
+    const b = e.currentTarget.getBoundingClientRect();
+    onMove(((e.clientX - b.left) / b.width) * PLAN_W, ((e.clientY - b.top) / b.height) * PLAN_H);
+  };
+  return (
+    <svg viewBox={`0 0 ${PLAN_W} ${PLAN_H}`} onPointerDown={at} onPointerMove={at} className="w-full touch-none rounded-xl border border-neutral-800 bg-neutral-950">
+      {FLOORS.map((f, i) => <rect key={i} x={f.x} y={f.y} width={f.w} height={f.h} fill="#0b1a12" stroke="#4ade80" strokeOpacity="0.4" />)}
+      <polygon points={WING.map((w) => `${w.x},${w.y}`).join(" ")} fill="#0b1a12" stroke="#4ade80" strokeOpacity="0.4" />
+      {BLOCKED.map((b, i) => (
+        <g key={i}>
+          <rect x={b.x} y={b.y} width={b.w} height={b.h} fill={b.height ? "#111827" : "#1a0b0b"} stroke={b.height ? "#94a3b8" : "#f87171"} strokeOpacity="0.6" />
+          {b.label && <text x={b.x + b.w / 2} y={b.y + b.h / 2} textAnchor="middle" fill="#a3a3a3" fontSize="14" fontFamily="monospace">{b.label}</text>}
+        </g>
+      ))}
+      {SHELVES.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#1a1408" stroke="#fbbf24" strokeOpacity="0.7" />)}
+      {DIVIDERS.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="#94a3b8" />)}
+      <rect x={BOOKSTAND.x} y={BOOKSTAND.y} width={BOOKSTAND.w} height={BOOKSTAND.h} fill="#0b1a12" stroke="#4ade80" />
+      {PILLARS.map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={14} fill="#111827" stroke="#94a3b8" />)}
+      {TABLES.map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={22} fill="#0f1d15" stroke="#4ade80" strokeOpacity="0.4" />)}
+      {started && (
+        <>
+          <circle cx={pos.x} cy={pos.y} r={10} fill={found ? "#f87171" : "#4ade80"} />
+          <circle cx={pos.x} cy={pos.y} r={30 + heat * 70} fill="#4ade80" opacity={0.08 + heat * 0.3} />
+          {pings.map((id) => (
+            <circle key={id} cx={pos.x} cy={pos.y} r={8} fill="none" stroke="#4ade80" strokeWidth="3">
+              <animate attributeName="r" from="8" to={50 + heat * 140} dur="0.9s" fill="freeze" />
+              <animate attributeName="opacity" from="0.9" to="0" dur="0.9s" fill="freeze" />
+            </circle>
+          ))}
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function Sonar({ onPing, onKey }: { onPing: Ping; onKey: () => void }) {
   const [started, setStarted] = useState(false);
-  const [pos, setPos] = useState({ x: 100, y: 300 });
+  const [pos, setPos] = useState(START);
   const [heat, setHeat] = useState(0);
   const [found, setFound] = useState(false);
   const [pings, setPings] = useState<number[]>([]);
+  const [angle, setAngle] = useState(0);
+  const [webgl] = useState(hasWebGL);
   const audio = useRef<AudioContext | null>(null);
   const posRef = useRef(pos);
   const heatRef = useRef(0);
@@ -55,10 +91,8 @@ export function Sonar({ onPing, onKey }: { onPing: Ping; onKey: () => void }) {
     return () => { dead = true; clearTimeout(t); };
   }, [started, found, onPing]);
 
-  const move = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (!started || found) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    setPos({ x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H });
+  const onMove = (x: number, y: number) => {
+    if (started && !found && walkable(x, y)) setPos({ x, y }); // shaded areas and rooms are off limits
   };
 
   const begin = () => {
@@ -66,6 +100,7 @@ export function Sonar({ onPing, onKey }: { onPing: Ping; onKey: () => void }) {
     setStarted(true);
   };
 
+  const view: ViewProps = { pos, heat, pings, found, started, angle, onMove };
   return (
     <div>
       {!started ? (
@@ -74,34 +109,23 @@ export function Sonar({ onPing, onKey }: { onPing: Ping; onKey: () => void }) {
         </button>
       ) : (
         <p className="font-mono text-sm text-green-400">
-          {found ? "SIGNAL FOUND. Something is hidden here." : `Signal strength ${Math.round(heat * 100)}%. Drag or tap to scan.`}
+          {found ? "SIGNAL FOUND. Something is hidden here." : `Signal strength ${Math.round(heat * 100)}%. Drag or tap on the floor to scan.`}
         </p>
       )}
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        onPointerDown={move}
-        onPointerMove={(e) => e.buttons && move(e)}
-        className="mt-4 w-full max-w-2xl touch-none rounded-xl border border-neutral-800 bg-neutral-950"
-      >
-        {ROOMS.map((r) => (
-          <g key={r.label}>
-            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="none" stroke="#404040" />
-            <text x={r.x + 8} y={r.y + 18} fill="#737373" fontSize="12" fontFamily="monospace">{r.label}</text>
-          </g>
-        ))}
-        {started && (
-          <>
-            <circle cx={pos.x} cy={pos.y} r={6} fill={found ? "#f87171" : "#4ade80"} />
-            <circle cx={pos.x} cy={pos.y} r={30 + heat * 60} fill="#4ade80" opacity={0.05 + heat * 0.25} />
-            {pings.map((id) => (
-              <circle key={id} cx={pos.x} cy={pos.y} r={8} fill="none" stroke="#4ade80" strokeWidth="2">
-                <animate attributeName="r" from="8" to={40 + heat * 80} dur="0.9s" fill="freeze" />
-                <animate attributeName="opacity" from="0.9" to="0" dur="0.9s" fill="freeze" />
-              </circle>
-            ))}
-          </>
+      <div className="mt-4 max-w-3xl">
+        {webgl ? (
+          <Suspense fallback={<p className="text-sm text-neutral-500">Loading map...</p>}><Sonar3D {...view} /></Suspense>
+        ) : (
+          <SonarFlat {...view} />
         )}
-      </svg>
+        {webgl && (
+          <div className="mt-2 flex items-center gap-2 text-sm text-neutral-400">
+            <span>Rotate view</span>
+            <button onClick={() => setAngle(angle - 30)} className="rounded border border-neutral-700 px-3 py-1 hover:border-green-400" aria-label="Rotate left">&larr;</button>
+            <button onClick={() => setAngle(angle + 30)} className="rounded border border-neutral-700 px-3 py-1 hover:border-green-400" aria-label="Rotate right">&rarr;</button>
+          </div>
+        )}
+      </div>
       {found && (
         <button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-6 py-3 font-semibold text-black hover:bg-green-300">
           Key Obtained

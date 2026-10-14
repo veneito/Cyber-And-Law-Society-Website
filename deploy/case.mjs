@@ -21,7 +21,7 @@ const STAGE_POINTS = 150, MAX_TIME_BONUS = 100, ACCUSE_BONUS = 300, WRONG_EVIDEN
 const LOCK_BASE_S = 15, LOCK_MAX_S = 120;
 const HACK_AFTER_WRONG = 0.2, HACK_GAP_MS = [8 * 60_000, 12 * 60_000]; // random hack after a miss, and roughly every 10 min
 const HACK_FAST_MS = 20_000, HACK_SLOW_MS = 60_000, HACK_POINTS = 20;
-const SONAR_W = 600, SONAR_H = 400, FOUND_RADIUS = 14;
+const SONAR_W = 820, SONAR_H = 820, FOUND_RADIUS = 22, SONAR_RANGE = 700; // plan units, see src/components/floorplan.ts
 
 let config, state;
 const norm = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -212,12 +212,12 @@ export function handleCase(req, res) {
     }
     if (route === "ping") {
       const { x, y } = body;
-      const target = config.sonar ?? { x: 440, y: 120 };
+      const target = config.sonar ?? { x: 312, y: 175 };
       if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || y < 0 || x > SONAR_W || y > SONAR_H) return send(res, 400, { error: "position" });
       const d = Math.hypot(x - target.x, y - target.y);
       if (d < FOUND_RADIUS) t.found = true;
       save();
-      return send(res, 200, { strength: Math.max(0, 1 - d / 500), found: t.found });
+      return send(res, 200, { strength: Math.max(0, 1 - d / SONAR_RANGE), found: t.found });
     }
     if (route === "key") {
       if (!t.found) return send(res, 403, { error: "not found yet" });
