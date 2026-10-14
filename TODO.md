@@ -25,6 +25,10 @@
 - [ ] Upload `lady-justice-avatar.png` as the bot avatar (Developer Portal → Bot tab)
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
+## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [ ] Planning only so far, nothing built. Settle the open decisions in the doc, then prototype the sonar scene
+- [ ] Get Marx Library floor plans (requested) and pick the flash-drive hiding spot
+
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
