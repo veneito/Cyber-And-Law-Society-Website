@@ -1,5 +1,6 @@
 // Bea F. Wellington case API. No dependencies.
 //   POST /api/case/start      {code}                    -> team state (starts that team's 90 min clock)
+//   POST /api/case/unlock     {code, sig}               -> flash-drive signature check (only if config.sigs is set)
 //   POST /api/case/answer     {code, stage, answer}     -> {ok, evidence, points} | lockout / wrong
 //   POST /api/case/accuse     {code, picks:{crime:evidence}} -> checklist of crimes with attached evidence
 //   GET  /api/case/state?code=                          -> team state
@@ -49,7 +50,7 @@ function send(res, code, body) {
 
 const team = (code) => {
   const name = loadConfig()?.teams?.[code];
-  return name ? (loadState()[code] ??= { name, startedAt: null, score: 0, solved: {}, misses: 0, lockedUntil: 0, accused: false }) : null;
+  return name ? (loadState()[code] ??= { name, startedAt: null, score: 0, solved: {}, misses: 0, lockedUntil: 0, accused: false, unlocked: false }) : null;
 };
 
 const view = (t, now = Date.now()) => ({
@@ -60,6 +61,7 @@ const view = (t, now = Date.now()) => ({
   solved: t.solved, // stage -> evidence text
   lockedFor: Math.max(0, Math.ceil((t.lockedUntil - now) / 1000)),
   accused: t.accused,
+  unlocked: !loadConfig().sigs || t.unlocked, // no sigs configured = gate off
 });
 
 function readBody(req, cb, fail) {
@@ -95,7 +97,7 @@ export function handleCase(req, res) {
     const t = team(url.searchParams.get("code"));
     return send(res, t ? 200 : 403, t ? view(t) : { error: "unknown team" }), true;
   }
-  if (!["start", "answer", "accuse"].includes(route) || req.method !== "POST")
+  if (!["start", "unlock", "answer", "accuse"].includes(route) || req.method !== "POST")
     return send(res, 404, { error: "not found" }), true;
 
   readBody(req, (body) => {
@@ -111,6 +113,22 @@ export function handleCase(req, res) {
     if (!t.startedAt) return send(res, 409, { error: "not started" });
     if (now > t.startedAt + EVENT_MS) return send(res, 410, { error: "time is up", ...view(t, now) });
     if (t.lockedUntil > now) return send(res, 429, { error: "locked", ...view(t, now) });
+
+    if (route === "unlock") {
+      const want = config.sigs?.[body.code];
+      if (!want || t.unlocked) return send(res, 200, view(t, now));
+      if (norm(body.sig) !== norm(want)) {
+        t.misses++; // shares the answer lockout so signatures cannot be brute-forced
+        t.lockedUntil = now + Math.min(LOCK_BASE_S * 2 ** (t.misses - 1), LOCK_MAX_S) * 1000;
+        save();
+        return send(res, 200, { ok: false, ...view(t, now) });
+      }
+      t.misses = 0;
+      t.unlocked = true;
+      save();
+      return send(res, 200, { ok: true, ...view(t, now) });
+    }
+    if (config.sigs && !t.unlocked) return send(res, 403, { error: "drive signature required", ...view(t, now) });
 
     if (route === "answer") {
       const stage = Number(body.stage);

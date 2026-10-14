@@ -12,7 +12,7 @@ const CRIMES = [
 
 type TeamState = {
   name: string; startedAt: number | null; endsAt: number | null; score: number;
-  solved: Record<string, string>; lockedFor: number; accused: boolean;
+  solved: Record<string, string>; lockedFor: number; accused: boolean; unlocked: boolean;
 };
 type Row = { name: string; score: number; solved: number; accused: boolean };
 
@@ -70,6 +70,42 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
   );
 }
 
+const SIG_FILE = "wellington.sig";
+
+// Browsers cannot see a USB plug-in, so "inserting the drive" means picking its folder or file.
+function DriveGate({ onSig }: { onSig: (sig: string) => void }) {
+  const [text, setText] = useState("");
+  const pickFolder = async () => {
+    try {
+      // @ts-expect-error File System Access API, desktop Chrome/Edge only
+      const dir = await window.showDirectoryPicker();
+      const file = await (await dir.getFileHandle(SIG_FILE)).getFile();
+      onSig(await file.text());
+    } catch { /* cancelled, or no signature file on that drive */ }
+  };
+  const pickFile = async (f?: File) => f && onSig(await f.text());
+  const canFolder = "showDirectoryPicker" in window;
+  return (
+    <div className="mt-12 rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
+      <p className="font-mono text-xs text-neutral-500">LOCKED</p>
+      <p className="mt-1 text-white">Requires Bea F. Wellington&apos;s digital signature.</p>
+      <p className="mt-1 text-sm text-neutral-400">Plug in the flash drive you found, then insert it here.</p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {canFolder && <button onClick={pickFolder} className="rounded-lg bg-green-400 px-5 py-2 font-semibold text-black hover:bg-green-300">Insert drive</button>}
+        <label className="cursor-pointer rounded-lg border border-neutral-700 px-4 py-2 text-sm text-white hover:border-green-400">
+          {canFolder ? "or choose the signature file" : `Choose ${SIG_FILE} from the drive`}
+          <input type="file" className="hidden" onChange={(e) => pickFile(e.target.files?.[0])} />
+        </label>
+      </div>
+      <div className="mt-4 flex gap-2">
+        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSig(text)}
+          placeholder="No laptop? Type the signature code" className="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white" />
+        <button onClick={() => onSig(text)} className="rounded-lg border border-neutral-700 px-4 text-sm text-white hover:border-green-400">Submit</button>
+      </div>
+    </div>
+  );
+}
+
 function Team({ code }: { code: string }) {
   const [t, setT] = useState<TeamState | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -90,6 +126,11 @@ function Team({ code }: { code: string }) {
     if (data.name) apply(data);
     setMsg(data.ok ? `Evidence ${stage + 1} decoded. +${data.points} points` : status === 410 ? "Time is up." : status === 429 ? "Locked out. Wait." : "Wrong. Locked out for a moment.");
   };
+  const unlock = async (sig: string) => {
+    const { data } = await api("unlock", { code, sig });
+    if (data.name) apply(data);
+    setMsg(data.ok ? "Signature accepted. Investigation unlocked." : "Signature rejected. Locked out for a moment.");
+  };
   const accuse = async () => {
     const chosen = Object.fromEntries(Object.entries(picks).filter(([, v]) => v !== ""));
     const { data } = await api("accuse", { code, picks: chosen });
@@ -109,6 +150,7 @@ function Team({ code }: { code: string }) {
       {msg && <p className="mt-3 font-mono text-sm text-green-300">{msg}</p>}
       {t.lockedFor > 0 && <p className="mt-1 text-sm text-red-400">Locked out for {t.lockedFor}s after the last wrong answer.</p>}
 
+      {!t.unlocked ? <DriveGate onSig={unlock} /> : <>
       <h2 className="mt-12 font-mono text-sm uppercase tracking-wide text-white">Evidence</h2>
       <ol className="mt-4 space-y-3">
         {CRIMES.map((c, i) => (
@@ -158,6 +200,7 @@ function Team({ code }: { code: string }) {
             className="mt-4 rounded-lg bg-green-400 px-5 py-2 font-semibold text-black hover:bg-green-300 disabled:opacity-40">Accuse</button>
         </>
       )}
+      </>}
     </>
   );
 }
@@ -175,6 +218,15 @@ export function CasePage() {
 
       <h2 className="mt-12 font-mono text-sm uppercase tracking-wide text-white">Scoreboard</h2>
       <Scoreboard />
+
+      <h2 className="mt-12 font-mono text-sm uppercase tracking-wide text-white">Last photo of Bea</h2>
+      <p className="mt-2 text-sm text-neutral-400">
+        Where was this taken? Download the <strong className="text-white">original file</strong>; screenshots and
+        photos sent through chat apps lose the hidden data. Then upload it to{" "}
+        <a href="https://www.pic2map.com" target="_blank" rel="noreferrer" className="text-green-300 hover:underline">pic2map.com</a>.
+      </p>
+      <img src="/case/evidence-01.jpg" alt="Last known photo of Bea F. Wellington" className="mt-4 w-full max-w-2xl rounded-xl border border-neutral-800" />
+      <a href="/case/evidence-01.jpg" download className="mt-3 inline-block rounded-lg border border-neutral-700 px-4 py-2 text-sm text-white hover:border-green-400">Download original</a>
 
       <h2 className="mt-12 font-mono text-sm uppercase tracking-wide text-white">Last known location</h2>
       <div className="mt-4"><Sonar /></div>

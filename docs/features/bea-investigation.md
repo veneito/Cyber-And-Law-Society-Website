@@ -82,7 +82,9 @@ Each solved plaintext adds one entry to the case file (crime name, date, one-lin
 - `deploy/case.mjs`: server API (start, answer, accuse, state, scoreboard) with 15s growing lockout, 150/stage + time bonus, 300 accusation bonus, -10 per wrong evidence pairing, 90 min per-team clock. Wired into `serve.mjs` and the vite dev server.
 - Real config (9 team codes, answers, evidence text) goes in gitignored `data/case-config.json`; copy `deploy/case-config.example.json`. Without it the API returns 503.
 - Page now wired to the API: team code gate, answer boxes, timer, scoreboard poll (5s), accusation checklist (`Case.tsx`; sonar split into `Sonar.tsx`). `data/case-config.json` currently holds TEST values (codes TEST-1, TEST-2); replace before the event.
-- Not built yet: cipher ciphertext display, flash-drive gate, EXIF page, real floor plan, cipher encoding.
+- Flash-drive gate built: `unlock` route checks a per-team signature (`sigs` in the config; absent = gate off); wrong signature uses the same growing lockout. UI offers folder picker (reads `wellington.sig`), file picker, typed code. Untested with a real drive. Each drive needs a `wellington.sig` file containing that team's `sigs` value.
+- Photo section built on the case page: `public/case/evidence-01.jpg` is a PLACEHOLDER with GPS EXIF (30.6963 N, 88.1788 W, a rough guess at Marx Library, unverified); served byte-identical to the file, with a download button and pic2map.com link. Replace with the real photo (keep the GPS tag, check it on pic2map.com, and check it survives a download).
+- Not built yet: cipher ciphertext display, EXIF page, real floor plan, cipher encoding.
 
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).

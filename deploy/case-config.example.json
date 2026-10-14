@@ -1,5 +1,6 @@
 {
   "teams": { "TEAM-CODE-1": "Team 1", "TEAM-CODE-2": "Team 2" },
+  "sigs": { "TEAM-CODE-1": "text stored in that team's wellington.sig", "TEAM-CODE-2": "..." },
   "answers": ["plaintext of cipher 1", "plaintext of cipher 2", "...6 total"],
   "evidence": ["Crime 1 summary shown in the case file", "...6 total"]
 }
