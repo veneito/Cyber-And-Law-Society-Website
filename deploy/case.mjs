@@ -59,10 +59,13 @@ function send(res, code, body) {
 
 const team = (code) => {
   const name = loadConfig()?.teams?.[code];
-  return name ? (loadState()[code] ??= {
+  if (!name) return null;
+  // Spread over the defaults so a record saved by an older version still gets any new fields.
+  return (loadState()[code] = {
     name, startedAt: null, score: 0, solved: {}, misses: 0, lockedUntil: 0, accused: false,
     phase: "photo", found: false, hack: null, nextHackAt: 0,
-  }) : null;
+    ...loadState()[code],
+  });
 };
 
 // ---- Bea's hack puzzles. The solution never leaves the server. ----
