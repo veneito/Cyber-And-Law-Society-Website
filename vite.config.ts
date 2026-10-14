@@ -26,7 +26,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // Two pages: the landing page the /play mini-game and /become-an-officer.
-      input: { main: 'index.html', play: 'play/index.html', officer: 'become-an-officer/index.html', meetings: 'meetings/index.html', wellington: 'case/wellington/index.html' },
+      input: { main: 'index.html', play: 'play/index.html', officer: 'become-an-officer/index.html', meetings: 'meetings/index.html', activities: 'activities/index.html', wellington: 'case/wellington/index.html' },
     },
   },
 })

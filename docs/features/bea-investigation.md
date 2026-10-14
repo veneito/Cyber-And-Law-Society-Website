@@ -88,6 +88,15 @@ Each solved plaintext adds one entry to the case file (crime name, date, one-lin
 - Real teams generated: `node deploy/make-teams.mjs` (refuses to overwrite without `--force`) writes 9 team codes + signatures into `data/case-config.json`, `data/drives/team-N/wellington.sig` (copy onto flash drive N) and `data/case-team-sheet.txt` (private list of codes). All of `data/` is gitignored, so **the live Mint PC needs these files copied over by hand** (config.json at least) or the live API stays unconfigured. Re-running `make-ciphers.mjs` keeps the teams.
 - Not built yet: (cipher display done), EXIF page, real floor plan, cipher encoding.
 
+## New flow (built)
+Entry: top menu **Activities** page (`/activities`) lists the Quarantine game and the case file. The case runs as steps on `/case/wellington`; the server enforces the order per team (`phase`), with the timer, score and live leaderboard in a right-hand column on every step:
+1. **Photo:** download original, pic2map, then answer "name of the building" (accepted answers in `config.building`; wrong = lockout, no points).
+2. **Sonar:** flat placeholder map (3D later, needs real plans). The target lives only on the server (`config.sonar`, x/y on the 600x400 schematic); each ping asks the server for strength. Finding it shows the **Key Obtained** button.
+3. **Drive:** flash-drive signature (folder picker, file picker, typed code).
+4. **Ciphers:** ciphertext only, **no cipher type hints**. Left sidebar of decoders (shift brute-force list, number decoder, stepping shift, symbol mapper). Accusation as before.
+- **Bea hacks:** 20% chance after each wrong answer, plus roughly every 8 to 12 minutes at random. A full-screen puzzle (connect the dots, type the key sequence, or a quick cyber/logic question) blocks all actions until solved. Solved under 20 s: +20 points; over 60 s: -20 points (floor 0); in between: 0. Wrong attempts can retry. Solutions never leave the server. The page polls state every 4 s, which is how a random hack reaches the player.
+- Config keys added: `building`, `sonar` (written by `make-ciphers.mjs` if missing). **Copy the updated `data/case-config.json` to the Mint PC and restart** (the live one lacks them, so the building question would reject every answer).
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.

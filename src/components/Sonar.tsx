@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-// PLACEHOLDER layout: rough schematic, replace with traced Marx Library plans.
-// shortcut: target is client-side for the prototype; move the check server-side before the event.
+// PLACEHOLDER layout: rough schematic, replace with traced Marx Library plans (the target itself lives on the server).
 const W = 600, H = 400;
-const TARGET = { x: 440, y: 120 };
 const ROOMS = [
   { x: 20, y: 20, w: 200, h: 140, label: "Reading Room" },
   { x: 240, y: 20, w: 160, h: 140, label: "Stacks A" },
@@ -14,25 +12,31 @@ const ROOMS = [
   { x: 440, y: 180, w: 140, h: 200, label: "Archives" },
 ];
 
-export function Sonar() {
+type Ping = (x: number, y: number) => Promise<{ strength: number; found: boolean } | null>;
+
+export function Sonar({ onPing, onKey }: { onPing: Ping; onKey: () => void }) {
   const [started, setStarted] = useState(false);
   const [pos, setPos] = useState({ x: 100, y: 300 });
+  const [heat, setHeat] = useState(0);
   const [found, setFound] = useState(false);
   const [pings, setPings] = useState<number[]>([]);
   const audio = useRef<AudioContext | null>(null);
   const posRef = useRef(pos);
+  const heatRef = useRef(0);
   useEffect(() => { posRef.current = pos; }, [pos]);
-
-  const dist = Math.hypot(pos.x - TARGET.x, pos.y - TARGET.y);
-  const heat = Math.max(0, 1 - dist / 500);
 
   useEffect(() => {
     if (!started || found) return;
-    let t: number;
-    const tick = () => {
-      const d = Math.hypot(posRef.current.x - TARGET.x, posRef.current.y - TARGET.y);
-      const h = Math.max(0, 1 - d / 500);
-      const ctx = audio.current;
+    let t: number, dead = false;
+    const tick = async () => {
+      const r = await onPing(posRef.current.x, posRef.current.y);
+      if (dead) return;
+      if (r) {
+        heatRef.current = r.strength;
+        setHeat(r.strength);
+        if (r.found) { setFound(true); return; }
+      }
+      const h = heatRef.current, ctx = audio.current;
       if (ctx) {
         const o = ctx.createOscillator(), g = ctx.createGain();
         o.frequency.value = 300 + h * 900;
@@ -48,15 +52,13 @@ export function Sonar() {
       t = window.setTimeout(tick, 250 + (1 - h) * 1750);
     };
     tick();
-    return () => clearTimeout(t);
-  }, [started, found]);
+    return () => { dead = true; clearTimeout(t); };
+  }, [started, found, onPing]);
 
   const move = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!started || found) return;
     const r = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * W, y = ((e.clientY - r.top) / r.height) * H;
-    setPos({ x, y });
-    if (Math.hypot(x - TARGET.x, y - TARGET.y) < 14) setFound(true);
+    setPos({ x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H });
   };
 
   const begin = () => {
@@ -72,7 +74,7 @@ export function Sonar() {
         </button>
       ) : (
         <p className="font-mono text-sm text-green-400">
-          {found ? "SIGNAL FOUND. Check the real spot." : `Signal strength ${Math.round(heat * 100)}%. Drag or tap to scan.`}
+          {found ? "SIGNAL FOUND. Something is hidden here." : `Signal strength ${Math.round(heat * 100)}%. Drag or tap to scan.`}
         </p>
       )}
       <svg
@@ -89,7 +91,7 @@ export function Sonar() {
         ))}
         {started && (
           <>
-            <circle cx={pos.x} cy={pos.y} r={6} fill="#4ade80" />
+            <circle cx={pos.x} cy={pos.y} r={6} fill={found ? "#f87171" : "#4ade80"} />
             <circle cx={pos.x} cy={pos.y} r={30 + heat * 60} fill="#4ade80" opacity={0.05 + heat * 0.25} />
             {pings.map((id) => (
               <circle key={id} cx={pos.x} cy={pos.y} r={8} fill="none" stroke="#4ade80" strokeWidth="2">
@@ -99,9 +101,12 @@ export function Sonar() {
             ))}
           </>
         )}
-        {found && <circle cx={TARGET.x} cy={TARGET.y} r={10} fill="#f87171" />}
       </svg>
+      {found && (
+        <button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-6 py-3 font-semibold text-black hover:bg-green-300">
+          Key Obtained
+        </button>
+      )}
     </div>
   );
 }
-

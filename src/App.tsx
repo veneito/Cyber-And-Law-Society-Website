@@ -19,7 +19,7 @@ const NAV = [
   { href: "/#events", label: "Events" },
   { href: "/#officers", label: "Officers" },
   { href: "/#faq", label: "FAQ" },
-  { href: "/play", label: "Play" },
+  { href: "/activities", label: "Activities" },
 ];
 
 const initials = (name: string) =>
@@ -242,6 +242,33 @@ function Footer() {
   );
 }
 
+function ActivitiesPage() {
+  const items = [
+    { href: "/play", tag: "Mini-game", title: "Quarantine the viruses", text: "Scan the file system, track down the malware and lock it away. Climb the leaderboard." },
+    { href: "/case/wellington", tag: "Investigation", title: "The Bea F. Wellington case file", text: "A cyber-crime investigation. Follow the photo, find the key, crack the ciphers and prove what she did." },
+  ];
+  return (
+    <>
+      <Header />
+      <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Activities</p>
+        <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Pick a challenge</h1>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {items.map((a) => (
+            <a key={a.href} href={a.href} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 transition hover:border-green-400/50">
+              <span className="rounded-full bg-green-500/10 px-2.5 py-1 font-mono text-xs text-green-300">{a.tag}</span>
+              <h2 className="mt-4 text-xl font-semibold text-white">{a.title}</h2>
+              <p className="mt-2 text-sm text-neutral-400">{a.text}</p>
+              <p className="mt-4 inline-flex items-center gap-1 text-sm text-green-300">Open <ArrowRight className="h-4 w-4" aria-hidden /></p>
+            </a>
+          ))}
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
 function PlayPage() {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
@@ -340,6 +367,7 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "");
   if (path === "/become-an-officer") return <OfficerPage />;
   if (path === "/case/wellington") return <CasePage />;
+  if (path === "/activities") return <ActivitiesPage />;
   if (path === "/meetings") return <MeetingsPage />;
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
   const { pillars, upcomingEvents, officers, officersPhoto, faq } = siteConfig;
