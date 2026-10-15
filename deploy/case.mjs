@@ -9,6 +9,7 @@
 //   POST /api/case/law       {code, choice}             -> law check asked after each cipher; blocks everything until answered
 //   POST /api/case/accuse    {code, picks:{crime:evidence}}
 //   POST /api/case/hack      {code, solution}           -> solve Bea's hack puzzle
+//   POST /api/case/reset     {key}                      -> wipes all team progress (needs config.adminKey; no ssh or restart)
 //   GET  /api/case/state?code=   GET /api/case/scoreboard
 // Answers, team codes, sigs, sonar target and evidence live in a config file outside git (see case-config.example.json).
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -201,7 +202,7 @@ function readBody(req, cb, fail) {
   });
 }
 
-const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack"];
+const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset"];
 
 // Returns true if the request was handled.
 export function handleCase(req, res) {
@@ -233,6 +234,13 @@ export function handleCase(req, res) {
   if (!ROUTES.includes(route) || req.method !== "POST") return send(res, 404, { error: "not found" }), true;
 
   readBody(req, (body) => {
+    if (route === "reset") {
+      // Clears the in-memory state as well as the file; deleting only the file does not work because open pages re-save it.
+      if (!config.adminKey || body.key !== config.adminKey) return send(res, 403, { error: "forbidden" });
+      state = {};
+      save();
+      return send(res, 200, { ok: true });
+    }
     const t = team(body.code);
     if (!t) return send(res, 403, { error: "unknown team" });
     const now = Date.now();

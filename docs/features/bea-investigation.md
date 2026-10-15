@@ -131,6 +131,11 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - **Sound (`sound.ts`):** synthesized beeps, glitch, laugh, siren, slam, chimes and jingle. Off by default; "sound: off/on" link at the top right of the case page, remembered in the browser.
 - Timers in the animation components keep the latest callback in a ref; a parent re-render (the clock ticks every second) must not restart them.
 
+## Resetting progress (use this, not rm)
+- `node deploy/reset-case.mjs` wipes all team progress on the live site (needs `adminKey`, written into `data/case-config.json` by `make-ciphers.mjs`; copy the config to the Mint PC once so the server knows the key). Pass a base URL to target another server.
+- Why not `rm data/case-state.json`: the server keeps state in memory and re-saves it on every poll, so any open case page writes the old progress straight back (and a restart then reloads it).
+- Open pages with a remembered team code re-create their team and restart its clock on the next poll (every 4 s). Before a reset, close the case pages or click "switch team", and do not reopen them afterwards.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.

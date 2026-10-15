@@ -1,6 +1,7 @@
 // Encodes the six stage plaintexts and writes answers, ciphers, evidence, building answers and sonar target into data/case-config.json.
 // Run: node deploy/make-ciphers.mjs   (keeps teams/sigs already in the config). Symbol key goes to data/case-symbol-key.txt.
 import assert from "node:assert";
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const CONFIG = new URL("../data/case-config.json", import.meta.url);
@@ -40,6 +41,7 @@ const out = stages.map(([type, n, plain]) => {
 });
 
 const cfg = existsSync(CONFIG) ? JSON.parse(readFileSync(CONFIG, "utf8")) : { teams: {} };
+cfg.adminKey ??= randomBytes(16).toString("hex"); // lets deploy/reset-case.mjs wipe progress remotely
 cfg.answers = stages.map((s) => s[2]);
 cfg.ciphers = out;
 cfg.evidence = stages.map((s) => s[2]); // evidence shown after solving = the decoded message, so the accusation takes reading and matching
