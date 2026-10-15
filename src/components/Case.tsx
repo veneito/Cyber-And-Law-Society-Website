@@ -7,6 +7,7 @@ import { Sonar } from "./Sonar";
 import { soundOn, setSound } from "./sound";
 import { StepDone, type StepKind } from "./StepDone";
 import { LawCheck, type LawState } from "./LawCheck";
+import { Gavel } from "./Gavel";
 import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
 // What Bea did, in cipher order. Players attach the decoded message that proves each one.
@@ -53,6 +54,7 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
   const [v, setV] = useState("");
   const [err, setErr] = useState("");
   const [counting, setCounting] = useState(false);
+  const [name, setName] = useState("");
   const go = async () => {
     // The state call checks the code without starting the clock; the clock starts once the case opens.
     const { status } = await api("state?code=" + encodeURIComponent(v.trim()));
@@ -64,13 +66,16 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
       <Helix />
       <div className="relative">
         <p className="text-neutral-400">Enter your team code to start. Your 90 minutes begin when you do.</p>
-        <div className="mt-3 flex max-w-md gap-2">
-          <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="TEAM CODE" className={`${field} font-mono`} />
-          <button onClick={go} className={btn}>Start</button>
+        <div className="mt-3 grid max-w-md gap-2">
+          <input value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="Choose a team name (optional)" className={field} />
+          <div className="flex gap-2">
+            <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="TEAM CODE" className={`${field} font-mono`} />
+            <button onClick={go} className={btn}>Start</button>
+          </div>
         </div>
         {err && <p className="mt-2 text-sm text-red-400">{err}</p>}
       </div>
-      {counting && <Countdown onDone={() => onCode(v.trim())} />}
+      {counting && <Countdown onDone={async () => { await api("start", { code: v.trim(), name }); onCode(v.trim()); }} />}
     </div>
   );
 }
@@ -202,14 +207,16 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   const [cele, setCele] = useState<StepKind | null>(null);
   const [arrest, setArrest] = useState(false);
-  const prev = useRef<{ phase: string; all: boolean; done: boolean } | null>(null);
+  const [verdict, setVerdict] = useState(false);
+  const prev = useRef<{ phase: string; all: boolean; done: boolean; law: boolean } | null>(null);
 
   const apply = useCallback((d: TeamState) => {
     // Compare with the last state we saw, so each step completion plays its animation once (never on a page reload).
-    const cur = { phase: d.phase, all: Object.keys(d.solved).length >= CRIMES.length && !d.law, done: !!d.finishedAt };
+    const cur = { phase: d.phase, all: Object.keys(d.solved).length >= CRIMES.length && !d.law, done: !!d.finishedAt, law: !!d.law };
     const p = prev.current;
     prev.current = cur;
     if (p) {
+      if (p.law && !cur.law) setVerdict(true);
       if (p.phase !== cur.phase) setCele(p.phase as StepKind);
       else if (!p.all && cur.all) setCele("ciphers");
       if (!p.done && cur.done) setArrest(true);
@@ -294,7 +301,8 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
         <Scoreboard me={t.name} />
       </aside>
-      {cele && !arrest && <StepDone key={cele} kind={cele} onDone={() => setCele(null)} />}
+      {verdict && !arrest && <Gavel text="SO ORDERED." sub="Legal check passed." onDone={() => setVerdict(false)} />}
+      {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => setCele(null)} />}
       {arrest && <Arrest onDone={() => setArrest(false)} />}
       {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} onPick={(choice) => send("law", { choice })} />}
       {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}

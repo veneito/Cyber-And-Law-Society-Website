@@ -1,6 +1,11 @@
+import { useState } from "react";
+import { Gavel } from "./Gavel";
+
 export type LawState = { stage: number; question: string; options: string[] };
 
 export function LawCheck({ law, lock, onPick }: { law: LawState; lock: number; onPick: (choice: number) => void }) {
+  const [opening, setOpening] = useState(true);
+  if (opening) return <Gavel text="ORDER IN THE COURT!" sub="Legal check begins." onDone={() => setOpening(false)} />;
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-black/90 p-4">
       <div className="my-auto w-full max-w-lg rounded-xl border border-sky-500/50 bg-neutral-950 p-6">

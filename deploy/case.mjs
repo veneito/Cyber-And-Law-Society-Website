@@ -167,8 +167,10 @@ function wrong(t, now) {
   maybeHack(t, now, true);
 }
 
+const label = (t) => (t.custom ? `${t.custom} (${t.name})` : t.name); // "Pandas (Team 1)"
+
 const view = (t, now = Date.now()) => ({
-  name: t.name,
+  name: label(t),
   startedAt: t.startedAt,
   endsAt: t.startedAt && t.startedAt + EVENT_MS,
   score: t.score,
@@ -217,7 +219,7 @@ export function handleCase(req, res) {
     const end = (t) => t.finishedAt ?? Math.min(now, t.startedAt + EVENT_MS);
     const rows = started
       .map((t) => ({
-        name: t.name, score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
+        name: label(t), score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
         finished: !!t.finishedAt, active: !t.finishedAt && now <= t.startedAt + EVENT_MS, elapsed: end(t) - t.startedAt,
       }))
       .sort((a, b) => b.score - a.score || a.elapsed - b.elapsed); // ties go to the faster team
@@ -247,6 +249,8 @@ export function handleCase(req, res) {
 
     if (route === "start") {
       t.startedAt ??= now;
+      const custom = String(body.name ?? "").replace(/[^\w .'!&-]/g, "").trim().slice(0, 24);
+      if (custom) t.custom = custom;
       save();
       return send(res, 200, view(t, now));
     }
