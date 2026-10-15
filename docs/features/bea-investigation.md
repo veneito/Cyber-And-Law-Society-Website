@@ -110,6 +110,13 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - `make-teams.mjs` recreates the team folders, so re-run `make-key-sheet.py` after it.
 - Evidence 4 plaintext: THE IT MAN WILL STAY QUIET OR HIS SECRETS GO PUBLIC.
 
+## Randomized puzzles, shuffled accusation, victory (built)
+- **Hack puzzles:** 8 kinds (connect dots, type the keys, quiz, memory pads, unscramble, math, number sequence, shifted-letters decode). Each team cycles through a shuffled bag of all 8 before any repeats, never the same kind twice in a row. Numbers, words and key strings are generated per hack; the quiz bank has 18 questions.
+- **Accusation:** crimes are worded as what Bea did (not the evidence labels) and shown in a per-team random order; the evidence list is shuffled per team and picked by its text. Evidence shown after solving is now the decoded message itself (config `evidence` = plaintexts), so teams must read and match. Wrong pairing still costs 10.
+- **Finish:** a correct full accusation sets `finishedAt` (clock stops, no more hacks, further actions return 409) and the page switches to the victory screen: final score, time, place, score breakdown (stages, time bonuses, hacks, wrong evidence, accusation bonus), winner banner, live leaderboard.
+- **Leaderboard/winner:** scoreboard returns `{rows, over}`, ordered by score then faster time. `over` is true when every team that has started has finished or timed out (a team that never starts does not block the announcement; a late starter could change the result).
+- **Redeploy:** `evidence` changed in `data/case-config.json`, so re-copy it to the Mint PC, then reset state and restart.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.

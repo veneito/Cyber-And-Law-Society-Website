@@ -2,14 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Decoders } from "./Decoders";
 import { Hack, type HackState } from "./Hack";
 import { Sonar } from "./Sonar";
+import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
+// What Bea did, in cipher order. Players attach the decoded message that proves each one.
 const CRIMES = [
-  "Evil-twin Wi-Fi",
-  "Credential resale",
-  "Ransomware attack",
-  "Insider blackmail",
-  "Payout laundering",
-  "Cover-up and framing",
+  "Set up a fake Wi-Fi network to steal logins",
+  "Sold the stolen logins to a buyer",
+  "Locked the university servers for ransom",
+  "Threatened an IT employee into silence",
+  "Hid the ransom money trail",
+  "Framed a student and wiped the logs",
 ];
 
 type TeamState = {
@@ -17,8 +19,9 @@ type TeamState = {
   phase: "photo" | "sonar" | "drive" | "ciphers"; found: boolean;
   solved: Record<string, string>; lockedFor: number; accused: boolean;
   ciphers: { text: string }[]; hack: HackState | null;
+  finishedAt: number | null; crimeOrder: number[]; evOrder: number[];
+  pts: { base: number; time: number; hack: number; penalty: number; accuse: number };
 };
-type Row = { name: string; score: number; solved: number; accused: boolean };
 
 const CODE_KEY = "case-code";
 const SIG_FILE = "wellington.sig";
@@ -37,25 +40,8 @@ const ghost = "rounded-lg border border-neutral-700 px-4 py-2 text-sm text-white
 const field = "min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-white";
 const h2 = "font-mono text-sm uppercase tracking-wide text-white";
 
-function Scoreboard() {
-  const [rows, setRows] = useState<Row[]>([]);
-  useEffect(() => {
-    const load = () => api("scoreboard").then((r) => r.status === 200 && setRows(r.data)).catch(() => {});
-    load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <ol className="mt-3 divide-y divide-neutral-800 rounded-xl border border-neutral-800 text-sm">
-      {rows.length === 0 && <li className="p-3 text-neutral-500">No teams yet.</li>}
-      {rows.map((r, i) => (
-        <li key={r.name} className="flex justify-between p-3">
-          <span className="text-neutral-300">{i + 1}. {r.name}{r.accused && " ✓"}</span>
-          <span className="font-mono text-green-400">{r.score} <span className="text-neutral-600">({r.solved}/6)</span></span>
-        </li>
-      ))}
-    </ol>
-  );
+function Scoreboard({ me }: { me: string }) {
+  return <Leaderboard board={useScoreboard()} me={me} />;
 }
 
 function Gate({ onCode }: { onCode: (c: string) => void }) {
@@ -173,18 +159,18 @@ function CipherStep({ t, send, over }: { t: TeamState; send: (route: string, bod
         <p className="mt-3 text-green-300">Bea F. Wellington is accused of all crimes.</p>
       ) : (
         <>
-          <p className="mt-2 text-sm text-neutral-400">Tick each crime and attach its evidence. A wrong pairing costs 10 points.</p>
+          <p className="mt-2 text-sm text-neutral-400">Tick each crime and attach the decoded message that proves it. A wrong pairing costs 10 points.</p>
           <ul className="mt-4 space-y-2">
-            {CRIMES.map((c, i) => (
+            {t.crimeOrder.map((i) => [i, CRIMES[i]] as const).map(([i, c]) => (
               <li key={c} className="flex flex-wrap items-center gap-3 text-sm">
                 <input type="checkbox" checked={i in picks} disabled={over}
                   onChange={(e) => setPicks((p) => { const n = { ...p }; if (e.target.checked) n[i] = ""; else delete n[i]; return n; })} />
-                <span className="w-44 text-neutral-300">{c}</span>
+                <span className="w-full text-neutral-300 sm:w-72">{c}</span>
                 {i in picks && (
                   <select value={picks[i]} onChange={(e) => setPicks((p) => ({ ...p, [i]: e.target.value === "" ? "" : Number(e.target.value) }))}
-                    className="rounded border border-neutral-700 bg-black px-2 py-1 text-neutral-300">
+                    className="max-w-full rounded border border-neutral-700 bg-black px-2 py-1 text-neutral-300">
                     <option value="">Attach evidence...</option>
-                    {Object.keys(t.solved).map((k) => <option key={k} value={k}>Evidence {Number(k) + 1}</option>)}
+                    {t.evOrder.filter((k) => k in t.solved).map((k) => <option key={k} value={k}>{t.solved[k].slice(0, 70)}</option>)}
                   </select>
                 )}
               </li>
@@ -224,8 +210,9 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   }, [code]);
 
   if (!t) return null;
+  const done = !!t.finishedAt;
   const left = t.endsAt ? t.endsAt - now : 0;
-  const over = left <= 0;
+  const over = !done && left <= 0;
   const lock = t.lockedFor && Math.max(0, t.lockedFor - Math.floor(Math.max(0, now - seenAt) / 1000)); // now can lag seenAt
 
   // Sends a game action; returns whether the server accepted it.
@@ -252,21 +239,22 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   };
 
   return (
-    <div className={`mt-8 grid gap-8 ${t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
-      {t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
+    <div className={`mt-8 grid gap-8 ${!done && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
+      {!done && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
       <section className="order-1 min-w-0 lg:order-none">
         {msg && <p className="mb-4 font-mono text-sm text-green-300">{msg}</p>}
         {lock > 0 && <p className="mb-4 text-sm text-red-400">Locked out for {lock}s after the last wrong answer.</p>}
-        {t.phase === "photo" && <PhotoStep send={send} over={over} />}
-        {t.phase === "sonar" && (
+        {done && <Victory t={t} />}
+        {!done && t.phase === "photo" && <PhotoStep send={send} over={over} />}
+        {!done && t.phase === "sonar" && (
           <>
             <h2 className={h2}>Step 2: Last known location</h2>
             <p className="mt-2 mb-4 text-sm text-neutral-400">Find the exact spot in the building. The signal grows stronger as you get closer.</p>
             <Sonar onPing={onPing} onKey={() => send("key", {})} />
           </>
         )}
-        {t.phase === "drive" && <DriveStep onSig={(sig) => send("unlock", { sig })} />}
-        {t.phase === "ciphers" && <CipherStep t={t} send={send} over={over} />}
+        {!done && t.phase === "drive" && <DriveStep onSig={(sig) => send("unlock", { sig })} />}
+        {!done && t.phase === "ciphers" && <CipherStep t={t} send={send} over={over} />}
       </section>
       <aside className="order-first lg:order-none">
         <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
@@ -274,12 +262,12 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
             <p className="font-mono text-xs text-neutral-500">{t.name} <button onClick={onLeave} className="ml-2 underline hover:text-white">switch team</button></p>
             <p className="font-mono text-2xl text-green-400">{t.score} pts</p>
           </div>
-          <p className={`font-mono text-2xl ${over ? "text-red-400" : "text-white"}`}>{over ? "TIME UP" : clock(left)}</p>
+          <p className={`font-mono text-2xl ${over ? "text-red-400" : "text-white"}`}>{done ? mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0)) : over ? "TIME UP" : clock(left)}</p>
         </div>
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
-        <Scoreboard />
+        <Scoreboard me={t.name} />
       </aside>
-      {t.hack && !over && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}
+      {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}
     </div>
   );
 }

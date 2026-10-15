@@ -42,7 +42,7 @@ const out = stages.map(([type, n, plain]) => {
 const cfg = existsSync(CONFIG) ? JSON.parse(readFileSync(CONFIG, "utf8")) : { teams: {} };
 cfg.answers = stages.map((s) => s[2]);
 cfg.ciphers = out;
-cfg.evidence = stages.map((s) => s[3]);
+cfg.evidence = stages.map((s) => s[2]); // evidence shown after solving = the decoded message, so the accusation takes reading and matching
 cfg.building ??= ["Marx Library", "Marx", "Marx Library University of South Alabama", "University of South Alabama Marx Library"]; // accepted answers for the photo question
 cfg.sonar ??= { x: 312, y: 175 }; // the bookstand on the 2nd-floor plan (src/components/floorplan.ts units)
 writeFileSync(CONFIG, JSON.stringify(cfg, null, 2));

@@ -1,0 +1,90 @@
+import { useEffect, useState } from "react";
+
+export type Row = { name: string; score: number; solved: number; accused: boolean; finished: boolean; active: boolean; elapsed: number };
+type Board = { rows: Row[]; over: boolean };
+export type Finished = {
+  name: string; score: number; startedAt: number | null; finishedAt: number | null;
+  pts: { base: number; time: number; hack: number; penalty: number; accuse: number };
+};
+
+export const mmss = (ms: number) => {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
+export function useScoreboard(): Board {
+  const [board, setBoard] = useState<Board>({ rows: [], over: false });
+  useEffect(() => {
+    const load = () => fetch("/api/case/scoreboard").then((r) => r.ok && r.json()).then((d) => d && setBoard(d)).catch(() => {});
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+  return board;
+}
+
+const status = (r: Row) => (r.finished ? "finished" : r.active ? "playing" : "time up");
+
+export function Leaderboard({ board, me }: { board: Board; me?: string }) {
+  return (
+    <ol className="mt-3 divide-y divide-neutral-800 rounded-xl border border-neutral-800 text-sm">
+      {board.rows.length === 0 && <li className="p-3 text-neutral-500">No teams yet.</li>}
+      {board.rows.map((r, i) => (
+        <li key={r.name} className={`flex items-center justify-between gap-2 p-3 ${r.name === me ? "bg-green-500/5" : ""}`}>
+          <span className="min-w-0 truncate text-neutral-300">{i + 1}. {r.name}{r.finished && " ✓"}</span>
+          <span className="shrink-0 font-mono text-green-400">
+            {r.score} <span className="text-neutral-600">{status(r)}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export function Victory({ t }: { t: Finished }) {
+  const board = useScoreboard();
+  const rank = board.rows.findIndex((r) => r.name === t.name) + 1;
+  const winner = board.rows[0];
+  const lines: [string, number][] = [
+    ["Evidence decoded", t.pts.base],
+    ["Time bonuses", t.pts.time],
+    ["Hack puzzles", t.pts.hack],
+    ["Wrong evidence", t.pts.penalty],
+    ["Accusation bonus", t.pts.accuse],
+  ];
+  return (
+    <div>
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Case closed</p>
+      <h2 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington is caught.</h2>
+      <p className="mt-2 text-neutral-400">Your clock is stopped. Here is how you did.</p>
+
+      <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+        {[["Final score", String(t.score)], ["Time", mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0))], ["Place", rank ? `#${rank} of ${board.rows.length}` : "..."]].map(([k, v]) => (
+          <div key={k} className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+            <p className="font-mono text-xs text-neutral-500">{k}</p>
+            <p className="mt-1 font-mono text-2xl text-green-400">{v}</p>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="mt-8 font-mono text-sm uppercase tracking-wide text-white">Score breakdown</h3>
+      <ul className="mt-3 divide-y divide-neutral-800 rounded-xl border border-neutral-800 text-sm">
+        {lines.map(([k, v]) => (
+          <li key={k} className="flex justify-between p-3"><span className="text-neutral-300">{k}</span><span className={`font-mono ${v < 0 ? "text-red-400" : "text-green-400"}`}>{v > 0 ? "+" : ""}{v}</span></li>
+        ))}
+        <li className="flex justify-between p-3 font-semibold"><span className="text-white">Total</span><span className="font-mono text-green-400">{t.score}</span></li>
+      </ul>
+
+      <div className="mt-8 rounded-xl border border-green-500/40 bg-green-500/5 p-4">
+        {board.over && winner ? (
+          <p className="text-white">Event over. Winner: <strong className="text-green-300">{winner.name}</strong> with {winner.score} points{winner.name === t.name && ". That's you!"}</p>
+        ) : (
+          <p className="text-neutral-300">Other teams are still playing. The winner is announced when every team has finished or run out of time. Leading now: <strong className="text-green-300">{winner?.name ?? "..."}</strong>.</p>
+        )}
+      </div>
+
+      <h3 className="mt-8 font-mono text-sm uppercase tracking-wide text-white">Leaderboard (live)</h3>
+      <Leaderboard board={board} me={t.name} />
+    </div>
+  );
+}

@@ -64,51 +64,96 @@ const team = (code) => {
   return (loadState()[code] = {
     name, startedAt: null, score: 0, solved: {}, misses: 0, lockedUntil: 0, accused: false,
     phase: "photo", found: false, hack: null, nextHackAt: 0,
+    finishedAt: null, kindBag: [], lastKind: null,
+    pts: { base: 0, time: 0, hack: 0, penalty: 0, accuse: 0 }, // score breakdown for the victory screen
+    crimeOrder: shuffle([...Array(loadConfig().answers.length).keys()]), // per-team display order for the accusation
+    evOrder: shuffle([...Array(loadConfig().answers.length).keys()]),
     ...loadState()[code],
   });
 };
 
-// ---- Bea's hack puzzles. The solution never leaves the server. ----
+// ---- Bea's hack puzzles. Generated fresh each time; kinds rotate so none repeats until all have appeared. ----
 const QUIZ = [
   ["What does the S in HTTPS stand for?", ["secure"]],
   ["Which attack tricks someone into giving up a password by pretending to be a trusted sender? (one word)", ["phishing"]],
-  ["What is 7 + 8 x 2?", ["23"]],
-  ["Next number: 2, 4, 8, 16, ?", ["32"]],
-  ["What is binary 101 in decimal?", ["5"]],
   ["What does the A in 2FA stand for?", ["authentication"]],
-  ["Next letter: A, C, E, G, ?", ["i"]],
   ["Trying every possible password is a ___ force attack.", ["brute"]],
   ["How many letters are in the English alphabet?", ["26"]],
-  ["What is 15 minus 9, times 3?", ["18"]],
+  ["What is binary 101 in decimal?", ["5"]],
+  ["What is binary 1000 in decimal?", ["8"]],
+  ["Software that locks your files until you pay is called what? (one word)", ["ransomware"]],
+  ["What does VPN stand for? (first word)", ["virtual"]],
+  ["A fake website made to steal logins is a ___ site. (one word)", ["phishing", "fake"]],
+  ["What does the P in IP address stand for?", ["protocol"]],
+  ["What do you call a program that secretly records your keystrokes? (one word)", ["keylogger"]],
+  ["Which cipher shifts every letter the same number of places? (first word)", ["caesar"]],
+  ["What is the opposite of encrypt? (one word)", ["decrypt"]],
+  ["A network of infected computers controlled by an attacker is a ___net.", ["bot"]],
+  ["What does the W in WPA2 Wi-Fi security stand for? (one word)", ["wi-fi", "wifi"]],
+  ["What kind of attack floods a site with traffic to knock it offline? (3 letters)", ["dos"]],
+  ["Which letter does the alphabet end with?", ["z"]],
 ];
+const WORDS = ["firewall", "phishing", "malware", "ransom", "password", "encryption", "network", "backdoor", "payload", "cipher", "hacker", "evidence", "keylogger", "trojan", "spyware", "botnet", "router", "token", "breach", "exploit", "forensics", "signature"];
 const KEYS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const KINDS = ["dots", "qte", "quiz", "memory", "unscramble", "math", "sequence", "decode"];
+const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
+const int = (a, b) => Math.floor(rand(a, b + 1));
 
-function makeHack(now) {
-  const kind = pick(["dots", "qte", "quiz"]);
+function makeHack(t, now) {
+  if (!t.kindBag?.length) { // refill; never start a new round with the kind that just ran
+    t.kindBag = shuffle(KINDS);
+    if (t.kindBag[0] === t.lastKind) t.kindBag.push(t.kindBag.shift());
+  }
+  const kind = t.kindBag.shift();
+  t.lastKind = kind;
   const h = { kind, issuedAt: now };
   if (kind === "dots") {
-    const n = 6;
-    const ids = [...Array(n).keys()].map((i) => i + 1).sort(() => Math.random() - 0.5);
-    h.data = { points: ids.map((id) => ({ id, x: Math.round(rand(8, 92)), y: Math.round(rand(8, 92)) })) };
-    h.solution = [...Array(n).keys()].map((i) => String(i + 1)).join(","); // click the dots in number order
+    const n = int(5, 8);
+    h.data = { points: shuffle([...Array(n).keys()].map((i) => i + 1)).map((id) => ({ id, x: int(8, 92), y: int(8, 92) })) };
+    h.solution = [...Array(n).keys()].map((i) => i + 1).join(","); // click the dots in number order
   } else if (kind === "qte") {
-    const keys = Array.from({ length: 6 }, () => pick([...KEYS])).join("");
+    const keys = Array.from({ length: int(6, 8) }, () => pick([...KEYS])).join("");
     h.data = { keys };
     h.solution = keys;
+  } else if (kind === "memory") {
+    const sequence = Array.from({ length: int(5, 6) }, () => int(0, 3));
+    h.data = { sequence };
+    h.solution = sequence.join("");
   } else {
-    const [q, a] = pick(QUIZ);
+    let q, sol;
+    if (kind === "quiz") [q, sol] = pick(QUIZ);
+    else if (kind === "unscramble") {
+      const w = pick(WORDS);
+      let sc = w;
+      while (sc === w) sc = shuffle([...w]).join("");
+      [q, sol] = [`Unscramble this cyber word: ${sc.toUpperCase()}`, [w]];
+    } else if (kind === "math") {
+      const [a, b, c] = [int(2, 9), int(2, 9), int(2, 6)];
+      [q, sol] = pick([[`What is ${a} + ${b} x ${c}?`, [String(a + b * c)]], [`What is (${a} + ${b}) x ${c}?`, [String((a + b) * c)]], [`What is ${a * c} - ${b} x ${c}?`, [String(a * c - b * c)]]]);
+    } else if (kind === "sequence") {
+      const [start, step] = [int(1, 9), int(2, 7)];
+      const arith = Array.from({ length: 5 }, (_, i) => start + i * step);
+      const geo = Array.from({ length: 5 }, (_, i) => start * 2 ** i);
+      const sq = Array.from({ length: 5 }, (_, i) => (start + i) ** 2);
+      const s = pick([arith, geo, sq]);
+      [q, sol] = [`What comes next? ${s.slice(0, 4).join(", ")}, ?`, [String(s[4])]];
+    } else {
+      const w = pick(WORDS), n = int(1, 6);
+      const enc = [...w].map((c) => String.fromCharCode(((c.charCodeAt(0) - 97 + n) % 26) + 97)).join("").toUpperCase();
+      [q, sol] = [`Each letter below was moved forward ${n} place${n > 1 ? "s" : ""} in the alphabet. What is the word? ${enc}`, [w]];
+    }
     h.data = { question: q };
-    h.solution = a;
+    h.solution = sol;
   }
   return h;
 }
 
 // Called after every state read or write; starts a hack on the random timer or after a wrong answer.
 function maybeHack(t, now, afterWrong) {
-  if (t.hack || !t.startedAt || now > t.startedAt + EVENT_MS) return;
+  if (t.hack || t.finishedAt || !t.startedAt || now > t.startedAt + EVENT_MS) return;
   if (!t.nextHackAt) t.nextHackAt = now + rand(...HACK_GAP_MS);
   if ((afterWrong && Math.random() < HACK_AFTER_WRONG) || now >= t.nextHackAt) {
-    t.hack = makeHack(now);
+    t.hack = makeHack(t, now);
     t.nextHackAt = now + rand(...HACK_GAP_MS);
   }
 }
@@ -129,6 +174,10 @@ const view = (t, now = Date.now()) => ({
   solved: t.solved, // stage -> evidence text
   lockedFor: Math.max(0, Math.ceil((t.lockedUntil - now) / 1000)),
   accused: t.accused,
+  finishedAt: t.finishedAt,
+  pts: t.pts,
+  crimeOrder: t.crimeOrder,
+  evOrder: t.evOrder,
   // ciphertext only in the cipher phase, and never which cipher it is
   ciphers: t.phase === "ciphers" ? (loadConfig().ciphers ?? []).map((c) => ({ text: c.text })) : [],
   hack: t.hack && { kind: t.hack.kind, data: t.hack.data, issuedAt: t.hack.issuedAt },
@@ -159,11 +208,17 @@ export function handleCase(req, res) {
   if (!loadConfig()) return send(res, 503, { error: "not configured" }), true;
 
   if (route === "scoreboard" && req.method === "GET") {
-    const rows = Object.values(loadState())
-      .filter((t) => t.startedAt)
-      .map((t) => ({ name: t.name, score: t.score, solved: Object.keys(t.solved).length, accused: t.accused }))
-      .sort((a, b) => b.score - a.score);
-    return send(res, 200, rows), true;
+    const now = Date.now();
+    const started = Object.values(loadState()).filter((t) => t.startedAt);
+    const end = (t) => t.finishedAt ?? Math.min(now, t.startedAt + EVENT_MS);
+    const rows = started
+      .map((t) => ({
+        name: t.name, score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
+        finished: !!t.finishedAt, active: !t.finishedAt && now <= t.startedAt + EVENT_MS, elapsed: end(t) - t.startedAt,
+      }))
+      .sort((a, b) => b.score - a.score || a.elapsed - b.elapsed); // ties go to the faster team
+    // Over when every team that has started has finished or run out of time (a team that never starts does not block).
+    return send(res, 200, { rows, over: rows.length > 0 && rows.every((r) => !r.active) }), true;
   }
   if (route === "state" && req.method === "GET") {
     const t = team(url.searchParams.get("code"));
@@ -185,6 +240,7 @@ export function handleCase(req, res) {
       return send(res, 200, view(t, now));
     }
     if (!t.startedAt) return send(res, 409, { error: "not started" });
+    if (t.finishedAt) return send(res, 409, { error: "finished", ...view(t, now) });
     if (now > t.startedAt + EVENT_MS) return send(res, 410, { error: "time is up", ...view(t, now) });
 
     if (route === "hack") {
@@ -195,7 +251,9 @@ export function handleCase(req, res) {
       if (!good) return send(res, 200, { ok: false, ...view(t, now) }); // retry freely, the clock keeps running
       const took = now - t.hack.issuedAt;
       const delta = took < HACK_FAST_MS ? HACK_POINTS : took > HACK_SLOW_MS ? -HACK_POINTS : 0;
-      t.score = Math.max(0, t.score + delta);
+      const applied = Math.max(delta, -t.score); // score floors at 0
+      t.score += applied;
+      t.pts.hack += applied;
       t.hack = null;
       save();
       return send(res, 200, { ok: true, delta, ...view(t, now) });
@@ -254,6 +312,8 @@ export function handleCase(req, res) {
       const bonus = Math.round(MAX_TIME_BONUS * Math.max(0, 1 - (now - t.startedAt) / EVENT_MS));
       t.misses = 0;
       t.score += STAGE_POINTS + bonus;
+      t.pts.base += STAGE_POINTS;
+      t.pts.time += bonus;
       t.solved[stage] = evidence[stage];
       save();
       return send(res, 200, { ok: true, points: STAGE_POINTS + bonus, ...view(t, now) });
@@ -267,11 +327,16 @@ export function handleCase(req, res) {
     for (const [crime, ev] of Object.entries(picks)) {
       if (!(Number(crime) in t.solved) || Number(ev) !== Number(crime) || !(Number(ev) in t.solved)) bad++;
     }
-    t.score = Math.max(0, t.score - bad * WRONG_EVIDENCE);
+    const fine = Math.min(t.score, bad * WRONG_EVIDENCE);
+    t.score -= fine;
+    t.pts.penalty -= fine;
     const complete = bad === 0 && Object.keys(picks).length === n;
     if (complete) {
       t.accused = true;
       t.score += ACCUSE_BONUS;
+      t.pts.accuse += ACCUSE_BONUS;
+      t.finishedAt = now; // pauses this team's clock; the victory screen takes over
+      t.hack = null;
     } else if (bad) maybeHack(t, now, true);
     save();
     send(res, 200, { ok: complete, wrong: bad, ...view(t, now) });
