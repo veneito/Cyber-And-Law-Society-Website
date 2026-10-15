@@ -1,0 +1,73 @@
+// Law logic puzzles asked after each cipher, three per crime (stage 0..5, same order as the ciphers).
+// Each gives a simplified GAME rule plus facts; the answer follows from the rule alone (not legal advice).
+// `answer` is the index into `options`. Kept server-side so the answers never reach the browser.
+const puzzle = (rule, facts, ask, options, answer) => ({ q: `Rule: ${rule}\nFacts: ${facts}\n${ask}`, options, answer });
+
+export const LAW = [
+  [ // 0: fake Wi-Fi network
+    puzzle("A person intercepts communications unlawfully only if they capture them without the consent of at least one party to the conversation.",
+      "Ana runs a hotspot named like the campus network and captures what students send; no student agreed. Ben runs the real campus network and logs traffic after every student accepted its monitoring policy.",
+      "Who intercepted unlawfully?", ["Ana only", "Ben only", "Both", "Neither"], 0),
+    puzzle("Access is unauthorized when the owner of a system has not given permission, whatever the user's intentions.",
+      "Cal uses a cafe's open guest Wi-Fi, which the owner invites customers to use. Dee uses a neighbor's private Wi-Fi without asking, only to check the weather.",
+      "Who accessed a network without authorization?", ["Cal only", "Dee only", "Both", "Neither"], 1),
+    puzzle("Pretending to be a trusted network is the offense of deception. Stealing data is a separate offense. Each is counted once per incident.",
+      "Eve set up a fake network named like the university's and copied the passwords of 40 students in one incident.",
+      "How many offenses under the rule?", ["1", "2", "3", "40"], 1),
+  ],
+  [ // 1: selling stolen logins
+    puzzle("Selling stolen login details is a crime for the seller, and for any buyer who knows they are stolen.",
+      "Fay sold 100 stolen logins to Gus, who knew they were stolen, and to Hal, who was told they came from a legitimate marketing list.",
+      "Who committed a crime?", ["Fay only", "Fay and Gus", "Fay, Gus and Hal", "Gus and Hal"], 1),
+    puzzle("Evidence is reliable only if its chain of custody is unbroken, meaning everyone who held it is recorded.",
+      "A log of the sale passed from Investigator Ito to Jan to Kim. Ito and Kim were recorded; Jan was not.",
+      "Is the log reliable under the rule?", ["Yes, the first and last holders are recorded", "No, the chain has a gap", "Yes, logs are always reliable", "Only if Kim testifies"], 1),
+    puzzle("Damages for data theft are three times the proven loss.",
+      "Each of 10 students lost $200.",
+      "What are the damages?", ["$2,000", "$6,000", "$600", "$200"], 1),
+  ],
+  [ // 2: ransomware
+    puzzle("Extortion needs both a threat and a demand.",
+      "Ivy locks the servers and demands payment to unlock them. Jo locks the servers by mistake and demands nothing. Kai demands payment but never locked anything or threatened anyone.",
+      "Who committed extortion?", ["Ivy only", "Ivy and Jo", "Ivy and Kai", "All three"], 0),
+    puzzle("A warrant is needed to search a server unless the owner consents or the data is already public.",
+      "Police want logs from the university's servers. The university's IT director agrees in writing to share them.",
+      "Do the police need a warrant?", ["Yes, always", "No, the owner consented", "Only if students object", "Only at night"], 1),
+    puzzle("Each separate organization harmed counts as one offense.",
+      "The ransomware locked servers in 3 departments: two belong to the university and one to a hospital partner.",
+      "How many offenses?", ["1", "2", "3", "6"], 1),
+  ],
+  [ // 3: blackmail of an IT employee
+    puzzle("Blackmail is threatening to reveal a secret unless the victim does something. Revealing a secret with no demand is not blackmail.",
+      "Lee threatens to leak Max's files unless Max stays quiet. Nia leaks Oz's files with no demand at all.",
+      "Who committed blackmail?", ["Lee only", "Nia only", "Both", "Neither"], 0),
+    puzzle("An employee who reports a crime to the proper authority is protected from being fired for it.",
+      "IT worker Pat is fired the day after reporting the attack to campus police.",
+      "Was the firing allowed under the rule?", ["Yes", "No, Pat is protected", "Only if Bea agrees", "Only if the report was wrong"], 1),
+    puzzle("A threat is punishable only if the victim is told about it.",
+      "Quinn writes a threat in a private notebook and never shows anyone. Rae sends a threat message to Sam.",
+      "Who made a punishable threat?", ["Quinn only", "Rae only", "Both", "Neither"], 1),
+  ],
+  [ // 4: laundering the ransom
+    puzzle("Money laundering means moving money you know came from a crime in order to hide where it came from.",
+      "Tess moves $5,000 of ransom through three accounts to hide it. Uma deposits her own wages. Vic moves money he honestly believes is a lottery win.",
+      "Who laundered money?", ["Tess only", "Tess and Uma", "Tess and Vic", "All three"], 0),
+    puzzle("Every transfer made to hide the same money is a separate offense.",
+      "Wes moves ransom money from account A to B, then B to C, then C to D.",
+      "How many offenses?", ["1", "2", "3", "4"], 2),
+    puzzle("Proceeds of a crime that police seize are returned to the victim.",
+      "Police seize $8,000 laundered from a ransom the university paid.",
+      "Who receives the money?", ["Bea", "The university", "The police", "The buyer of the logins"], 1),
+  ],
+  [ // 5: cover-up and framing
+    puzzle("Deleting records to hide a crime from an investigation is obstruction. Routine deletion on a normal schedule is not.",
+      "Xan deletes the server logs after the attack to hide traces. Yui deletes old logs on the university's normal monthly schedule.",
+      "Who obstructed an investigation?", ["Xan only", "Yui only", "Both", "Neither"], 0),
+    puzzle("Planting false evidence to blame someone is a separate offense for each person blamed.",
+      "Zed plants a fake file on one student's laptop, and another fake file on a second student's laptop.",
+      "How many offenses?", ["1", "2", "3", "4"], 1),
+    puzzle("A person is presumed innocent until proven guilty.",
+      "A student is accused, but no proof has been shown.",
+      "Under the rule, what is the student's status?", ["Guilty", "Innocent until proven guilty", "Guilty unless they prove otherwise", "Automatically suspended"], 1),
+  ],
+];

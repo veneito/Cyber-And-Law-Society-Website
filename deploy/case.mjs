@@ -6,6 +6,7 @@
 //   POST /api/case/key       {code}                     -> sonar phase: "Key Obtained" (needs found)
 //   POST /api/case/unlock    {code, sig}                -> drive phase: flash-drive signature check
 //   POST /api/case/answer    {code, stage, answer}      -> ciphers phase
+//   POST /api/case/law       {code, choice}             -> law check asked after each cipher; blocks everything until answered
 //   POST /api/case/accuse    {code, picks:{crime:evidence}}
 //   POST /api/case/hack      {code, solution}           -> solve Bea's hack puzzle
 //   GET  /api/case/state?code=   GET /api/case/scoreboard
@@ -13,6 +14,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LAW } from "./law.mjs";
 
 const CONFIG_FILE = process.env.CASE_CONFIG || fileURLToPath(new URL("../data/case-config.json", import.meta.url));
 const STATE_FILE = process.env.CASE_STATE || fileURLToPath(new URL("../data/case-state.json", import.meta.url));
@@ -63,7 +65,7 @@ const team = (code) => {
   // Spread over the defaults so a record saved by an older version still gets any new fields.
   return (loadState()[code] = {
     name, startedAt: null, score: 0, solved: {}, misses: 0, lockedUntil: 0, accused: false,
-    phase: "photo", found: false, hack: null, nextHackAt: 0,
+    phase: "photo", found: false, hack: null, law: null, nextHackAt: 0,
     finishedAt: null, kindBag: [], lastKind: null,
     pts: { base: 0, time: 0, hack: 0, penalty: 0, accuse: 0 }, // score breakdown for the victory screen
     crimeOrder: shuffle([...Array(loadConfig().answers.length).keys()]), // per-team display order for the accusation
@@ -181,6 +183,7 @@ const view = (t, now = Date.now()) => ({
   // ciphertext only in the cipher phase, and never which cipher it is
   ciphers: t.phase === "ciphers" ? (loadConfig().ciphers ?? []).map((c) => ({ text: c.text })) : [],
   hack: t.hack && { kind: t.hack.kind, data: t.hack.data, issuedAt: t.hack.issuedAt },
+  law: t.law && { stage: t.law.stage, question: t.law.q, options: t.law.options }, // never the answer
 });
 
 function readBody(req, cb, fail) {
@@ -198,7 +201,7 @@ function readBody(req, cb, fail) {
   });
 }
 
-const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "accuse", "hack"];
+const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack"];
 
 // Returns true if the request was handled.
 export function handleCase(req, res) {
@@ -259,9 +262,10 @@ export function handleCase(req, res) {
       return send(res, 200, { ok: true, delta, ...view(t, now) });
     }
     if (t.hack) return send(res, 423, { error: "hacked", ...view(t, now) });
+    if (t.law && route !== "law") return send(res, 423, { error: "law check", ...view(t, now) });
     if (t.lockedUntil > now && route !== "ping") return send(res, 429, { error: "locked", ...view(t, now) });
 
-    const need = { building: "photo", ping: "sonar", key: "sonar", unlock: "drive", answer: "ciphers", accuse: "ciphers" }[route];
+    const need = { building: "photo", ping: "sonar", key: "sonar", unlock: "drive", answer: "ciphers", law: "ciphers", accuse: "ciphers" }[route];
     if (t.phase !== need) return send(res, 403, { error: "wrong step", ...view(t, now) });
 
     if (route === "building") {
@@ -299,6 +303,19 @@ export function handleCase(req, res) {
       return send(res, 200, { ok: true, ...view(t, now) });
     }
 
+    if (route === "law") {
+      if (!t.law) return send(res, 200, { ok: true, ...view(t, now) });
+      if (Number(body.choice) !== t.law.answer) {
+        wrong(t, now);
+        save();
+        return send(res, 200, { ok: false, ...view(t, now) });
+      }
+      t.misses = 0;
+      t.law = null;
+      save();
+      return send(res, 200, { ok: true, ...view(t, now) });
+    }
+
     if (route === "answer") {
       const stage = Number(body.stage);
       const { answers, evidence } = config;
@@ -315,6 +332,7 @@ export function handleCase(req, res) {
       t.pts.base += STAGE_POINTS;
       t.pts.time += bonus;
       t.solved[stage] = evidence[stage];
+      t.law = { stage, ...pick(LAW[stage] ?? LAW[0]) }; // a law check must be answered before anything else
       save();
       return send(res, 200, { ok: true, points: STAGE_POINTS + bonus, ...view(t, now) });
     }

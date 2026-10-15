@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Decoders } from "./Decoders";
 import { Hack, type HackState } from "./Hack";
 import { Sonar } from "./Sonar";
+import { LawCheck, type LawState } from "./LawCheck";
 import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
 // What Bea did, in cipher order. Players attach the decoded message that proves each one.
@@ -19,7 +20,7 @@ type TeamState = {
   phase: "photo" | "sonar" | "drive" | "ciphers"; found: boolean;
   solved: Record<string, string>; lockedFor: number; accused: boolean;
   ciphers: { text: string }[]; hack: HackState | null;
-  finishedAt: number | null; crimeOrder: number[]; evOrder: number[];
+  law: LawState | null; finishedAt: number | null; crimeOrder: number[]; evOrder: number[];
   pts: { base: number; time: number; hack: number; penalty: number; accuse: number };
 };
 
@@ -226,6 +227,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
       answer: [`Decoded.${data.points ? ` +${data.points} points` : ""}`, "Wrong. Locked out for a moment."],
       accuse: ["Accusation correct. +300 points", `Not quite: ${data.wrong ?? 0} wrong pairing(s), -10 each.`],
       key: ["Key obtained.", "No key yet."],
+      law: ["Correct.", "Wrong. Locked out for a moment."],
     };
     setMsg(status === 410 ? "Time is up." : status === 423 ? "" : status === 429 ? "Locked out. Wait." : (text[route]?.[ok ? 0 : 1] ?? ""));
     return ok;
@@ -267,6 +269,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
         <Scoreboard me={t.name} />
       </aside>
+      {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} onPick={(choice) => send("law", { choice })} />}
       {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}
     </div>
   );

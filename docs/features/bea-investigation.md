@@ -117,6 +117,11 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - **Leaderboard/winner:** scoreboard returns `{rows, over}`, ordered by score then faster time. `over` is true when every team that has started has finished or timed out (a team that never starts does not block the announcement; a late starter could change the result).
 - **Redeploy:** `evidence` changed in `data/case-config.json`, so re-copy it to the Mint PC, then reset state and restart.
 
+## Law checks (built)
+- After every correct cipher the team gets a **legal check**: a full-screen multiple-choice logic puzzle that blocks all other actions until answered (server returns 423 for everything but `law`). Wrong = the usual growing lockout (same puzzle stays); correct = no extra points, just clears the block. A hack puzzle takes priority if both are pending.
+- 18 puzzles in `deploy/law.mjs` (3 per crime, in cipher order). Each states a simplified GAME rule plus facts, and the answer follows from the rule alone; the popup says "Simplified game rules, not legal advice". One is picked at random per cipher. Answers stay server-side.
+- To add or edit puzzles, edit `deploy/law.mjs` (index `answer` points into `options`); redeploy and restart. No config change needed.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.
