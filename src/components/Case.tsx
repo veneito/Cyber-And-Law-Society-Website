@@ -301,7 +301,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
         <Scoreboard me={t.name} />
       </aside>
-      {verdict && !arrest && <Gavel text="SO ORDERED." sub="Legal check passed." onDone={() => setVerdict(false)} />}
+      {verdict && !arrest && <Gavel text="CASE ADJOURNED." sub="Legal check passed." onDone={() => setVerdict(false)} />}
       {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => setCele(null)} />}
       {arrest && <Arrest onDone={() => setArrest(false)} />}
       {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} onPick={(choice) => send("law", { choice })} />}
