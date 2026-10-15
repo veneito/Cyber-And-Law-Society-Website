@@ -122,6 +122,15 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - 18 puzzles in `deploy/law.mjs` (3 per crime, in cipher order). Each states a simplified GAME rule plus facts, and the answer follows from the rule alone; the popup says "Simplified game rules, not legal advice". One is picked at random per cipher. Answers stay server-side.
 - To add or edit puzzles, edit `deploy/law.mjs` (index `answer` points into `options`); redeploy and restart. No config change needed.
 
+## Animations (built)
+- **Team code screen:** animated double helix of code letters on the right (`Ambient.tsx` Helix); a valid code (checked without starting the clock) triggers a 3-2-1-GO countdown, and the clock starts when the case opens.
+- **Background:** dim matrix rain behind the case page (`Rain`, about 16 fps; skipped under reduced motion). The home page's code rain is a separate one-time intro.
+- **Bea's hack:** the page glitches and shakes with red scanlines and "SYSTEM BREACH" for about 0.9 s, then an ASCII skull pops up with its jaw opening and closing ("HA HA HA") (`Skull.tsx`).
+- **Step completion, one unique animation each (`StepDone.tsx`):** photo = map pin drops with ripples ("LOCATION CONFIRMED"), sonar = golden key spins in ("KEY OBTAINED"), drive = padlock opens ("ACCESS GRANTED"), ciphers = six evidence tiles flip to check marks ("ALL EVIDENCE DECODED", after the last law check). Triggered when the state changes, so a page reload does not replay them.
+- **Win animation (`Arrest.tsx`):** ASCII scene of Bea hacking, police ("FREEZE"), handcuffs, a cell closing, then "BUSTED" stamped; skippable. Every team plays it when it finishes its own accusation, then the victory screen shows.
+- **Sound (`sound.ts`):** synthesized beeps, glitch, laugh, siren, slam, chimes and jingle. Off by default; "sound: off/on" link at the top right of the case page, remembered in the browser.
+- Timers in the animation components keep the latest callback in a ref; a parent re-render (the clock ticks every second) must not restart them.
+
 ## Still open
 - ~~Deduction amount~~ decided: 10 points per wrong pairing (score floors at 0).
 - Event length: **max 1h30m (90 min) per team, starting when that team begins** (server records the start time), server-enforced cutoff.

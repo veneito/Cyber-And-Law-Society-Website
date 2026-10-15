@@ -163,7 +163,11 @@ export const siteConfig = {
       email: "aop2322@jagmail.southalabama.edu",
       bio: "Digital forensics taught me that every click leaves a trail, and that those trails matter in court. I help lead the society to give students hands-on experience tracing evidence and understanding the law behind it.",
     },
-    { name: "Professor Wang", role: "Advisor", major: "Criminal Justice Professor", image: null, email: "wang@southalabama.edu", bio: "" },
+    {
+      name: "Michelle", role: "Social Media Manager", major: "Biology", image: "/assets/officers/michelle.webp",
+      bio: "Originally from Venezuela, I am bilingual in Spanish and English, creative and passionate about painting, learning, and art.",
+    },
+    { name: "Professor Wang", role: "Advisor", major: "Criminal Justice Professor", image: "/assets/officers/wang.webp", email: "wang@southalabama.edu", bio: "" },
   ] satisfies Officer[] as Officer[],
 
   faq: [

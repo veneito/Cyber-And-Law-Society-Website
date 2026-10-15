@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Skull } from "./Skull";
+import { sfx } from "./sound";
 
 export type HackState = {
   kind: "dots" | "qte" | "quiz" | "memory" | "unscramble" | "math" | "sequence" | "decode";
@@ -14,7 +16,14 @@ export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: s
   const [next, setNext] = useState(1);
   const [bad, setBad] = useState(false);
   const [mem, setMem] = useState<{ stage: "ready" | "show" | "input"; lit: number; entered: number[] }>({ stage: "ready", lit: -1, entered: [] });
+  const [glitching, setGlitching] = useState(true); // the screen breaks for a moment before the skull appears
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(i); }, []);
+  useEffect(() => {
+    document.body.classList.add("glitch-shake");
+    sfx.glitch();
+    const t = setTimeout(() => { setGlitching(false); document.body.classList.remove("glitch-shake"); }, 900);
+    return () => { clearTimeout(t); document.body.classList.remove("glitch-shake"); };
+  }, []);
   const secs = Math.max(0, Math.floor((now - hack.issuedAt) / 1000));
 
   const submit = async (s: string | string[]) => {
@@ -42,10 +51,18 @@ export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: s
     if (entered.length === seq.length) submit(entered.map(String));
   };
 
+  if (glitching) {
+    return (
+      <div className="glitch-overlay fixed inset-0 z-50 flex items-center justify-center">
+        <p className="font-mono text-4xl font-extrabold tracking-widest text-red-400" style={{ textShadow: "3px 0 #22d3ee, -3px 0 #ef4444" }}>SYSTEM BREACH</p>
+      </div>
+    );
+  }
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-      <div className="w-full max-w-md rounded-xl border border-red-500/60 bg-neutral-950 p-6">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-red-400">You have been hacked</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/90 p-4">
+      <div className="my-auto w-full max-w-md rounded-xl border border-red-500/60 bg-neutral-950 p-6">
+        <Skull />
+        <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-red-400">You have been hacked</p>
         <p className="mt-1 text-white">Bea F. Wellington locked your screen. Solve this to get back in.</p>
         <p className="mt-1 font-mono text-xs text-neutral-500">{secs}s. Under 20s: +20 points. Over 60s: -20 points.</p>
         {bad && <p className="mt-2 text-sm text-red-400">Not right. Try again.</p>}

@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Arrest } from "./Arrest";
+import { Countdown, Helix, Rain } from "./Ambient";
 import { Decoders } from "./Decoders";
 import { Hack, type HackState } from "./Hack";
 import { Sonar } from "./Sonar";
+import { soundOn, setSound } from "./sound";
+import { StepDone, type StepKind } from "./StepDone";
 import { LawCheck, type LawState } from "./LawCheck";
 import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
@@ -48,20 +52,25 @@ function Scoreboard({ me }: { me: string }) {
 function Gate({ onCode }: { onCode: (c: string) => void }) {
   const [v, setV] = useState("");
   const [err, setErr] = useState("");
+  const [counting, setCounting] = useState(false);
   const go = async () => {
-    const code = v.trim();
-    const { status } = await api("start", { code });
-    if (status === 200) onCode(code);
+    // The state call checks the code without starting the clock; the clock starts once the case opens.
+    const { status } = await api("state?code=" + encodeURIComponent(v.trim()));
+    if (status === 200) setCounting(true);
     else setErr(status === 503 ? "Case not open yet." : "Unknown team code.");
   };
   return (
-    <div className="mt-8">
-      <p className="text-neutral-400">Enter your team code to start. Your 90 minutes begin when you do.</p>
-      <div className="mt-3 flex max-w-md gap-2">
-        <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="TEAM CODE" className={`${field} font-mono`} />
-        <button onClick={go} className={btn}>Start</button>
+    <div className="relative mt-8 min-h-[26rem]">
+      <Helix />
+      <div className="relative">
+        <p className="text-neutral-400">Enter your team code to start. Your 90 minutes begin when you do.</p>
+        <div className="mt-3 flex max-w-md gap-2">
+          <input value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} placeholder="TEAM CODE" className={`${field} font-mono`} />
+          <button onClick={go} className={btn}>Start</button>
+        </div>
+        {err && <p className="mt-2 text-sm text-red-400">{err}</p>}
       </div>
-      {err && <p className="mt-2 text-sm text-red-400">{err}</p>}
+      {counting && <Countdown onDone={() => onCode(v.trim())} />}
     </div>
   );
 }
@@ -191,7 +200,23 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   const [seenAt, setSeenAt] = useState(0);
   const [msg, setMsg] = useState("");
 
-  const apply = useCallback((d: TeamState) => { setT(d); setSeenAt(Date.now()); }, []);
+  const [cele, setCele] = useState<StepKind | null>(null);
+  const [arrest, setArrest] = useState(false);
+  const prev = useRef<{ phase: string; all: boolean; done: boolean } | null>(null);
+
+  const apply = useCallback((d: TeamState) => {
+    // Compare with the last state we saw, so each step completion plays its animation once (never on a page reload).
+    const cur = { phase: d.phase, all: Object.keys(d.solved).length >= CRIMES.length && !d.law, done: !!d.finishedAt };
+    const p = prev.current;
+    prev.current = cur;
+    if (p) {
+      if (p.phase !== cur.phase) setCele(p.phase as StepKind);
+      else if (!p.all && cur.all) setCele("ciphers");
+      if (!p.done && cur.done) setArrest(true);
+    }
+    setT(d);
+    setSeenAt(Date.now());
+  }, []);
   const poll = useCallback(async () => {
     const r = await api("state?code=" + encodeURIComponent(code));
     if (r.status !== 200) return;
@@ -269,6 +294,8 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
         <Scoreboard me={t.name} />
       </aside>
+      {cele && !arrest && <StepDone key={cele} kind={cele} onDone={() => setCele(null)} />}
+      {arrest && <Arrest onDone={() => setArrest(false)} />}
       {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} onPick={(choice) => send("law", { choice })} />}
       {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}
     </div>
@@ -278,12 +305,19 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
 export function CasePage() {
   const [code, setCode] = useState(() => { try { return localStorage.getItem(CODE_KEY) ?? ""; } catch { return ""; } });
   const set = (c: string) => { try { localStorage.setItem(CODE_KEY, c); } catch { /* private mode */ } setCode(c); };
+  const [snd, setSnd] = useState(soundOn);
   return (
-    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">&larr; Activities</a>
+    <>
+    <Rain />
+    <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="flex items-center justify-between">
+        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">&larr; Activities</a>
+        <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500 hover:text-white">sound: {snd ? "on" : "off"}</button>
+      </div>
       <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">Case file</p>
       <h1 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington</h1>
       {code ? <Game code={code} onLeave={() => set("")} /> : <Gate onCode={set} />}
     </main>
+    </>
   );
 }
