@@ -119,8 +119,8 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 
 ## Law checks (built)
 - After every correct cipher the team gets a **legal check**: a full-screen multiple-choice logic puzzle that blocks all other actions until answered (server returns 423 for everything but `law`). Wrong = the usual growing lockout (same puzzle stays); correct = no extra points, just clears the block. A hack puzzle takes priority if both are pending.
-- 18 puzzles in `deploy/law.mjs` (3 per crime, in cipher order). Each states a simplified GAME rule plus facts, and the answer follows from the rule alone; the popup says "Simplified game rules, not legal advice". One is picked at random per cipher. Answers stay server-side.
-- To add or edit puzzles, edit `deploy/law.mjs` (index `answer` points into `options`); redeploy and restart. No config change needed.
+- 18 puzzles in `deploy/law.json` (3 per crime, in cipher order; `law.mjs` loads it, and the organizer dashboard reads the same JSON). Each states a simplified GAME rule plus facts, and the answer follows from the rule alone; the popup says "Simplified game rules, not legal advice". One is picked at random per cipher. Answers stay server-side.
+- To add or edit puzzles, edit `deploy/law.json` (index `answer` points into `options`); redeploy and restart. No config change needed.
 
 ## Animations (built)
 - **Team code screen:** animated double helix of code letters on the right (`Ambient.tsx` Helix); a valid code (checked without starting the clock) triggers a 3-2-1-GO countdown, and the clock starts when the case opens.
