@@ -25,23 +25,39 @@ export function Rain() {
     const size = w() < 640 ? 14 : 18;
     const drops = Array.from({ length: Math.ceil(w() / size) }, () => Math.random() * -40);
     let raf = 0, last = 0;
+    const ripples: { x: number; y: number; t: number }[] = [];
+    const click = (e: PointerEvent) => { ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() }); };
+    addEventListener("pointerdown", click);
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       if (now - last < 60) return; // about 16 fps keeps it calm and cheap
       last = now;
+      g.globalAlpha = 1;
       g.fillStyle = "rgba(0,0,0,0.12)";
       g.fillRect(0, 0, w(), h());
       g.font = `${size}px "JetBrains Mono", monospace`;
       g.fillStyle = "#4ade80";
+      g.globalAlpha = 0.3; // canvas opacity is high so ripples can glow; the base rain stays dim
       drops.forEach((y, i) => {
         g.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], i * size, y * size);
         drops[i] = y * size > h() && Math.random() > 0.975 ? 0 : y + 1;
       });
+      // a click sends a ring of bright glyphs outward from the cursor
+      g.globalAlpha = 1;
+      g.fillStyle = "#bbf7d0";
+      for (let n = ripples.length - 1; n >= 0; n--) {
+        const { x, y, t } = ripples[n], r = (now - t) * 0.5;
+        if (r > 600) { ripples.splice(n, 1); continue; }
+        for (let cx = Math.floor((x - r - size * 2) / size); cx * size < x + r + size * 2; cx++)
+          for (let cy = Math.floor((y - r - size * 2) / size); cy * size < y + r + size * 2; cy++)
+            if (Math.abs(Math.hypot(cx * size - x, cy * size - y) - r) < size * 1.5)
+              g.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], cx * size, cy * size);
+      }
     };
     raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); off(); };
+    return () => { cancelAnimationFrame(raf); removeEventListener("pointerdown", click); off(); };
   }, []);
-  return <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-[0.16]" />;
+  return <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-60" />;
 }
 
 // A rotating double helix made of code letters, for the team code screen.
