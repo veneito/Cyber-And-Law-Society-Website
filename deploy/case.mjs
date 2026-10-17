@@ -22,7 +22,7 @@ const STATE_FILE = process.env.CASE_STATE || fileURLToPath(new URL("../data/case
 const EVENT_MS = 90 * 60_000;
 const STAGE_POINTS = 150, MAX_TIME_BONUS = 100, ACCUSE_BONUS = 300, WRONG_EVIDENCE = 10;
 const LOCK_BASE_S = 15, LOCK_MAX_S = 120;
-const HACK_AFTER_WRONG = 0.2, HACK_GAP_MS = [8 * 60_000, 12 * 60_000]; // random hack after a miss, and roughly every 10 min
+const HACK_AFTER_WRONG = 1, HACK_GAP_MS = [8 * 60_000, 12 * 60_000]; // hack after every miss, and roughly every 10 min
 const HACK_FAST_MS = 20_000, HACK_SLOW_MS = 60_000, HACK_POINTS = 20;
 const SONAR_W = 820, SONAR_H = 820, FOUND_RADIUS = 22, SONAR_RANGE = 700; // plan units, see src/components/floorplan.ts
 
@@ -154,10 +154,11 @@ function makeHack(t, now) {
 // Called after every state read or write; starts a hack on the random timer or after a wrong answer.
 function maybeHack(t, now, afterWrong) {
   if (t.hack || t.finishedAt || !t.startedAt || now > t.startedAt + EVENT_MS) return;
-  if (!t.nextHackAt) t.nextHackAt = now + rand(...HACK_GAP_MS);
-  if ((afterWrong && Math.random() < HACK_AFTER_WRONG) || now >= t.nextHackAt) {
+  const timed = t.phase === "ciphers"; // the random timer starts once the flash-drive key is entered
+  if (timed && !t.nextHackAt) t.nextHackAt = now + rand(...HACK_GAP_MS);
+  if ((afterWrong && Math.random() < HACK_AFTER_WRONG) || (timed && now >= t.nextHackAt)) {
     t.hack = makeHack(t, now);
-    t.nextHackAt = now + rand(...HACK_GAP_MS);
+    if (timed) t.nextHackAt = now + rand(...HACK_GAP_MS);
   }
 }
 
