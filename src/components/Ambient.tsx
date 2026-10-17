@@ -43,8 +43,8 @@ export function Rain() {
         drops[i] = y * size > h() && Math.random() > 0.975 ? 0 : y + 1;
       });
       // a click sends a ring of bright glyphs outward from the cursor
-      g.globalAlpha = 1;
-      g.fillStyle = "#bbf7d0";
+      g.globalAlpha = 0.5;
+      g.fillStyle = "#86efac";
       for (let n = ripples.length - 1; n >= 0; n--) {
         const { x, y, t } = ripples[n], r = (now - t) * 0.5;
         if (r > 600) { ripples.splice(n, 1); continue; }
