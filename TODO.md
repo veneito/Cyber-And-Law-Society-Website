@@ -29,6 +29,10 @@
 - [ ] Planning only so far, nothing built. Settle the open decisions in the doc, then prototype the sonar scene
 - [ ] Get Marx Library floor plans (requested) and pick the flash-drive hiding spot
 
+## Flash drive prep (see docs/features/flash-drive-prep.md)
+- [ ] Run tools/PrepDrive.ps1 on a real drive end to end; confirm old files gone and `manage-bde -status` shows decrypted
+- [ ] Prep all 9 team drives (team-1 … team-9 folders in C:\Drives)
+
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
