@@ -30,7 +30,7 @@
 - [ ] Get Marx Library floor plans (requested) and pick the flash-drive hiding spot
 
 ## Flash drive prep (see docs/features/flash-drive-prep.md)
-- [ ] Run tools/PrepDrive.ps1 on a real drive end to end; confirm old files gone and `manage-bde -status` shows decrypted
+- [x] tools/PrepDrive.ps1 works on a real drive
 - [ ] Prep all 9 team drives (team-1 … team-9 folders in C:\Drives)
 
 ## Ideas

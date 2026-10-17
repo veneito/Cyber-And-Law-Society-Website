@@ -15,4 +15,4 @@
 - The BitLocker password is never stored in the script or repo.
 
 ## Status
-Untested end to end on a real drive. The 2 GB test drive failed repeatedly (BitLocker lock); check one drive with `manage-bde -status X:` after a run.
+Works on a real drive (confirmed by the user). Still to do: prep all 9 team drives.
