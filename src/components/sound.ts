@@ -33,7 +33,13 @@ function tone(freq: number, at: number, dur: number, type: OscillatorType = "squ
 export const sfx = {
   beep: (high = false) => tone(high ? 880 : 440, 0, 0.18),
   glitch: () => { for (let i = 0; i < 8; i++) tone(120 + Math.random() * 900, i * 0.07, 0.06, "sawtooth", 0.1); },
-  laugh: () => { for (let i = 0; i < 4; i++) tone(260 - i * 25, i * 0.26, 0.16, "sawtooth", 0.14, 190 - i * 25); }, // ha ha ha ha
+  laugh: () => { // slow, low, descending "HA HA HA HA" with a growl at the end
+    for (let i = 0; i < 7; i++) {
+      tone(210 - i * 16, i * 0.28, 0.2, "sawtooth", 0.16, 130 - i * 12);
+      tone(105 - i * 8, i * 0.28, 0.2, "square", 0.08, 65 - i * 5);
+    }
+    tone(80, 2, 0.9, "sawtooth", 0.18, 35);
+  },
   siren: () => { for (let i = 0; i < 4; i++) tone(i % 2 ? 640 : 880, i * 0.3, 0.28, "triangle", 0.12); },
   type: () => { for (let i = 0; i < 14; i++) tone(1800 + Math.random() * 600, i * 0.12, 0.03, "square", 0.05); },
   approach: () => tone(300, 0, 1.4, "triangle", 0.04, 800), // distant siren swelling

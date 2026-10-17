@@ -184,7 +184,7 @@ body {
 @keyframes skull-pop { 0% { transform: scale(0.2) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.12) rotate(3deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
 .skull-pop { animation: skull-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; text-shadow: 0 0 8px #f87171; }
 @keyframes glitch-shake { 0% { transform: translate(0); } 20% { transform: translate(-6px, 3px) skewX(2deg); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-4px, -2px) skewX(-3deg); } 80% { transform: translate(6px, 4px); } 100% { transform: translate(0); } }
-body.glitch-shake { animation: glitch-shake 0.18s linear infinite; }
+#root.glitch-shake { animation: glitch-shake 0.18s linear infinite; }
 @keyframes glitch-bars { 0% { background-position: 0 0; } 100% { background-position: 0 -120px; } }
 .glitch-overlay { background: repeating-linear-gradient(0deg, rgba(248, 113, 113, 0.28) 0 3px, rgba(0, 0, 0, 0.7) 3px 9px); animation: glitch-bars 0.25s linear infinite; mix-blend-mode: screen; }
 @keyframes pin-drop { 0% { transform: translateY(-160px); opacity: 0; } 55% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(-26px); } 85% { transform: translateY(0); } 93% { transform: translateY(-8px); } 100% { transform: translateY(0); } }
@@ -201,3 +201,9 @@ body.glitch-shake { animation: glitch-shake 0.18s linear infinite; }
 .stamp-slam { animation: stamp-slam 0.45s ease-in both; }
 @keyframes siren-flash { 0%, 100% { background: rgba(239, 68, 68, 0.25); } 50% { background: rgba(59, 130, 246, 0.25); } }
 .siren-flash { animation: siren-flash 0.5s linear infinite; }
+
+/* Skull: pulsing red glow, and a violent shake while the jaw is open */
+@keyframes skull-glow { 0%, 100% { text-shadow: 0 0 6px #ef4444, 0 0 18px #7f1d1d; } 50% { text-shadow: 0 0 14px #ef4444, 0 0 40px #dc2626, 0 0 70px #7f1d1d; } 40%, 45% { opacity: 0.75; } }
+.skull-glow { animation: skull-glow 0.7s infinite; }
+@keyframes skull-shake { 0% { transform: translate(0, 0); } 25% { transform: translate(-3px, 2px) rotate(-1deg); } 50% { transform: translate(3px, -2px) rotate(1deg); } 75% { transform: translate(-2px, -3px); } 100% { transform: translate(0, 0); } }
+.skull-shake { animation: skull-glow 0.7s infinite, skull-shake 0.12s infinite; }

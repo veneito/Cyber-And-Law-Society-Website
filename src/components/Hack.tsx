@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Skull } from "./Skull";
 import { sfx } from "./sound";
 
@@ -19,10 +20,12 @@ export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: s
   const [glitching, setGlitching] = useState(true); // the screen breaks for a moment before the skull appears
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(i); }, []);
   useEffect(() => {
-    document.body.classList.add("glitch-shake");
+    // Shake the app root, not the body: a transformed body would pin fixed overlays to the top of the page.
+    const root = document.getElementById("root");
+    root?.classList.add("glitch-shake");
     sfx.glitch();
-    const t = setTimeout(() => { setGlitching(false); document.body.classList.remove("glitch-shake"); }, 900);
-    return () => { clearTimeout(t); document.body.classList.remove("glitch-shake"); };
+    const t = setTimeout(() => { setGlitching(false); root?.classList.remove("glitch-shake"); }, 900);
+    return () => { clearTimeout(t); root?.classList.remove("glitch-shake"); };
   }, []);
   const secs = Math.max(0, Math.floor((now - hack.issuedAt) / 1000));
 
@@ -52,10 +55,11 @@ export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: s
   };
 
   if (glitching) {
-    return (
+    return createPortal(
       <div className="glitch-overlay fixed inset-0 z-50 flex items-center justify-center">
         <p className="font-mono text-4xl font-extrabold tracking-widest text-red-400" style={{ textShadow: "3px 0 #22d3ee, -3px 0 #ef4444" }}>SYSTEM BREACH</p>
-      </div>
+      </div>,
+      document.body,
     );
   }
   return (
