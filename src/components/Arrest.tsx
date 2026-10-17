@@ -4,44 +4,78 @@ import { sfx } from "./sound";
 // ASCII scene of Bea being caught. Played for every team when it finishes its own accusation.
 const SCENES: { art: string; caption: string; ms: number; sound?: () => void }[] = [
   {
-    ms: 1500, caption: "Bea F. Wellington, mid-hack...",
+    ms: 2000, caption: "Bea F. Wellington, mid-hack...", sound: sfx.type,
     art: String.raw`
-          O
-         /|\      ___________
-         / \     |  $ $ $ $  |
-      ___|_|___  |_ L A P T O P_|
+   .----------------------------.
+   | 01101 $$$ 10110 ACCESS 0110|
+   | > transferring funds...    |
+   | > covering tracks...  97%  |
+   '----------------------------'
+          O     ___________
+         /|\___|  $ $ $ $  |
+         / \    |_L A P T O P_|
+      ___|_|___
      [ typing... ]`,
   },
   {
-    ms: 1700, caption: "FREEZE! YOU ARE UNDER ARREST!", sound: sfx.siren,
+    ms: 1600, caption: "A siren, somewhere down the street...", sound: sfx.approach,
     art: String.raw`
-   *WEE-OOH*   *WEE-OOH*
-      _____________
-     |   POLICE    |
-     |_____________|
-          \O/
-           |
-          / \
-`,
+     .  *  .       .   *     .
+   .     ~~ WEE-OOH ~~    .
+         ____
+        / || \     <- headlights
+       |_o__o_|
+      ~~~~~~~~~~~~~~~~~~~~`,
   },
   {
-    ms: 1300, caption: "Click.",
+    ms: 2100, caption: "FREEZE! YOU ARE UNDER ARREST!", sound: sfx.siren,
+    art: String.raw`
+   *WEE-OOH*       *WEE-OOH*
+   _____________________________
+  |  [P]  P O L I C E   [P]      |
+  |_____________________________|
+       O/        \O
+      /|          |\      <- badge up
+      / \        / \
+   [ DETECTIVE ]  [ BEA ]`,
+  },
+  {
+    ms: 1700, caption: "Hands up. Slowly.", sound: () => sfx.beep(),
+    art: String.raw`
+          \O/
+           |        <- laptop abandoned
+          / \     ___________
+                 | ERROR 404 |
+                 |__CLEARED?_|`,
+  },
+  {
+    ms: 1700, caption: "Click.", sound: sfx.cuff,
     art: String.raw`
           O
          /|\
-        (o)-(o)
+        (o)=(o)      <- cuffs on
          / \
-     [ cuffed ]`,
+     [ cuffed ]   *click* *click*`,
   },
   {
-    ms: 700, caption: "",
+    ms: 1300, caption: "Evidence logged.", sound: sfx.tick,
+    art: String.raw`
+   .-------------------.
+   | EVIDENCE  #0001   |
+   | laptop ........ OK|
+   | logs .......... OK|
+   | alibi ........ N/A|
+   '-------------------'`,
+  },
+  {
+    ms: 900, caption: "",
     art: String.raw`
   ||    ||    ||    ||    ||
   ||    ||    ||    ||    ||
   ||    ||    ||    ||    ||`,
   },
   {
-    ms: 700, caption: "",
+    ms: 900, caption: "",
     art: String.raw`
   ||    ||    ||    ||    ||
   ||    ||    O     ||    ||
@@ -50,13 +84,14 @@ const SCENES: { art: string; caption: string; ms: number; sound?: () => void }[]
   ||    ||    ||    ||    ||`,
   },
   {
-    ms: 2300, caption: "BEA F. WELLINGTON: BUSTED", sound: () => { sfx.slam(); setTimeout(sfx.jingle, 350); },
+    ms: 3000, caption: "BEA F. WELLINGTON: BUSTED", sound: () => { sfx.slam(); setTimeout(sfx.jingle, 350); },
     art: String.raw`
   ||====||====||====||====||
   ||    ||    ||    ||    ||
   ||    ||    O     ||    ||
   ||    ||   /|\    ||    ||
-  ||====||====||====||====||`,
+  ||====||====||====||====||
+        [ CASE CLOSED ]`,
   },
 ];
 
