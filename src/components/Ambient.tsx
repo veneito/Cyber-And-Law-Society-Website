@@ -52,21 +52,21 @@ export function Helix() {
     const CH = "ATCG0123456789ABCDEF{}<>/=+*";
     let raf = 0;
     const frame = (now: number) => {
-      const t = now / 1000, W = w(), R = Math.min(W * 0.32, 70);
+      const t = now / 1000, W = w(), R = Math.min(W * 0.34, 120);
       g.clearRect(0, 0, W, h());
       g.textAlign = "center";
-      for (let y = 12, i = 0; y < h(); y += 18, i++) {
+      for (let y = 12, i = 0; y < h(); y += 24, i++) {
         const a = t * 1.5 + y * 0.034, x1 = W / 2 + Math.cos(a) * R, x2 = W / 2 - Math.cos(a) * R, z = Math.sin(a);
         if (i % 3 === 0) {
           g.fillStyle = "#4ade80";
           g.globalAlpha = 0.25;
-          g.font = '12px "JetBrains Mono", monospace';
+          g.font = '18px "JetBrains Mono", monospace';
           for (let k = 1; k < 7; k++) g.fillText("·", x1 + ((x2 - x1) * k) / 7, y);
         }
         ([[x1, z, 0], [x2, -z, 1]] as const).forEach(([x, d, s]) => {
           g.globalAlpha = 0.3 + 0.7 * ((d + 1) / 2);
           g.fillStyle = d > 0 ? "#86efac" : "#16a34a";
-          g.font = `${11 + d * 3}px "JetBrains Mono", monospace`;
+          g.font = `${17 + d * 5}px "JetBrains Mono", monospace`;
           g.fillText(CH[(Math.floor(t * 4) + i * 7 + s * 13) % CH.length], x, y);
         });
       }
@@ -76,7 +76,7 @@ export function Helix() {
     raf = requestAnimationFrame(frame);
     return () => { cancelAnimationFrame(raf); off(); };
   }, []);
-  return <canvas ref={ref} aria-hidden className="pointer-events-none absolute right-0 top-0 hidden h-full w-64 md:block" />;
+  return <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-y-0 right-0 hidden h-full w-96 md:block" />;
 }
 
 // 3, 2, 1 before the case opens.
