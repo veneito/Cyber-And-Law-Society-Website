@@ -31,7 +31,7 @@
 
 ## Flash drive prep (see docs/features/flash-drive-prep.md)
 - [x] tools/PrepDrive.ps1 works on a real drive
-- [ ] Prep all 9 team drives (team-1 … team-9 folders in C:\Drives)
+- [x] Prep all 9 team drives (done)
 
 ## Ideas
 - [ ] Crest logo with a transparent background (looks better on black)

@@ -15,4 +15,4 @@
 - The BitLocker password is never stored in the script or repo.
 
 ## Status
-Works on a real drive (confirmed by the user). Still to do: prep all 9 team drives.
+Works on a real drive (confirmed by the user). All 9 team drives prepped.
