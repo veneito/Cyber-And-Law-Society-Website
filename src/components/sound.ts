@@ -14,8 +14,8 @@ export function setSound(on: boolean) {
   }
 }
 
-function tone(freq: number, at: number, dur: number, type: OscillatorType = "square", vol = 0.12, to = freq) {
-  if (!soundOn()) return;
+function tone(freq: number, at: number, dur: number, type: OscillatorType = "square", vol = 0.12, to = freq, force = false) {
+  if (!force && !soundOn()) return;
   ctx ??= new AudioContext(); // sound can be on from an earlier visit, before this page load had a click
   if (ctx.state === "suspended") void ctx.resume();
   const t = ctx.currentTime + at;
@@ -30,7 +30,16 @@ function tone(freq: number, at: number, dur: number, type: OscillatorType = "squ
   o.stop(t + dur);
 }
 
+// Phone ring for an incoming call: plays even when effects are muted (it is the call's own audio) and repeats until the returned stop is called.
+function ring() {
+  const once = () => { for (const at of [0, 0.5]) { tone(440, at, 0.4, "sine", 0.1, 440, true); tone(480, at, 0.4, "sine", 0.1, 480, true); } };
+  once();
+  const id = setInterval(once, 2400);
+  return () => clearInterval(id);
+}
+
 export const sfx = {
+  ring,
   beep: (high = false) => tone(high ? 880 : 440, 0, 0.18),
   glitch: () => { for (let i = 0; i < 8; i++) tone(120 + Math.random() * 900, i * 0.07, 0.06, "sawtooth", 0.1); },
   laugh: () => { // slow, low, descending "HA HA HA HA" with a growl at the end

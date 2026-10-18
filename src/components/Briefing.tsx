@@ -1,3 +1,4 @@
+import { sfx } from "./sound";
 import { useEffect, useRef, useState } from "react";
 import baconArt from "./bacon.txt?raw";
 import rookieArt from "./rookie.txt?raw";
@@ -72,6 +73,7 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
   const box = useRef<HTMLDivElement>(null);
   const stop = useRef(() => {});
   useEffect(() => () => stop.current(), []);
+  useEffect(() => (started ? undefined : sfx.ring()), [started]); // rings until the call is answered
   const answer = () => {
     setStarted(true);
     try { // Chris's portrait pulses with the loudness of his voice
