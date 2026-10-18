@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
 
 // ASCII scene of Bea being caught. Played for every team when it finishes its own accusation.
-const SCENES: { art: string; caption: string; ms: number; sound?: () => void }[] = [
+// The jail cell animation (23 frames, ASCII Animator export) plays once in the second-to-last scene, then holds on its last frame under the BUSTED stamp.
+const JAIL_URL = "/case/jail-frames.json";
+const JAIL_FPS = 8;
+const JAIL_MS = Math.round((23 / JAIL_FPS) * 1000);
+let jailFrames: Promise<string[]> | null = null;
+export const preloadJail = () => (jailFrames ??= fetch(JAIL_URL).then((r) => r.json() as Promise<string[]>));
+
+const SCENES: { art: string; caption: string; ms: number; sound?: () => void; jail?: boolean }[] = [
   {
     ms: 2000, caption: "Bea F. Wellington, mid-hack...", sound: sfx.type,
     art: String.raw`
@@ -67,31 +74,10 @@ const SCENES: { art: string; caption: string; ms: number; sound?: () => void }[]
    | alibi ........ N/A|
    '-------------------'`,
   },
-  {
-    ms: 900, caption: "",
-    art: String.raw`
-  ||    ||    ||    ||    ||
-  ||    ||    ||    ||    ||
-  ||    ||    ||    ||    ||`,
-  },
-  {
-    ms: 900, caption: "",
-    art: String.raw`
-  ||    ||    ||    ||    ||
-  ||    ||    O     ||    ||
-  ||    ||    ||    ||    ||
-  ||    ||    ||    ||    ||
-  ||    ||    ||    ||    ||`,
-  },
+  { ms: JAIL_MS, caption: "", art: "", jail: true },
   {
     ms: 3000, caption: "BEA F. WELLINGTON: BUSTED", sound: () => { sfx.slam(); setTimeout(sfx.jingle, 350); },
-    art: String.raw`
-  ||====||====||====||====||
-  ||    ||    ||    ||    ||
-  ||    ||    O     ||    ||
-  ||    ||   /|\    ||    ||
-  ||====||====||====||====||
-        [ CASE CLOSED ]`,
+    art: "", jail: true,
   },
 ];
 
@@ -113,10 +99,26 @@ export function Arrest({ onDone }: { onDone: () => void }) {
     const t = setTimeout(() => setI(i + 1), SCENES[i].ms);
     return () => clearTimeout(t);
   }, [i]);
+  const [jail, setJail] = useState<string[] | null>(null);
+  const [jf, setJf] = useState(0);
+  useEffect(() => { preloadJail().then(setJail).catch(() => {}); }, []);
   const s = SCENES[i], last = i === SCENES.length - 1;
+  const jailI = last ? (jail?.length ?? 1) - 1 : jf;
+  useEffect(() => {
+    if (!s.jail || last || !jail) return;
+    setJf(0);
+    const t = setInterval(() => setJf((n) => Math.min(n + 1, jail.length - 1)), 1000 / JAIL_FPS);
+    return () => clearInterval(t);
+  }, [i, jail]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Same sizing as the exported player: char width 0.6em, line height 0.6em, scaled to fill the width.
+  const cols = jail ? Math.max(...jail[0].split("\n").map((l) => l.length)) : 1;
+  const fs = Math.min(900, window.innerWidth * 0.95) / (cols * 0.6);
   return (
     <div className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black p-4 ${i === 1 ? "siren-flash" : ""}`}>
-      <pre key={i} className="q-fade min-h-[11rem] font-mono text-xs leading-tight text-green-400 sm:text-base">{s.art}</pre>
+      {s.jail
+        // The art is dark ink on white: invert it, then multiply onto green so it reads green-on-black.
+        ? <div className="isolate overflow-hidden rounded-lg border-2 border-green-400 bg-green-400"><pre aria-hidden className="m-0 bg-white font-mono text-black" style={{ fontSize: fs, lineHeight: 0.6, filter: "invert(1) brightness(2.5)", mixBlendMode: "multiply" }}>{jail?.[jailI]}</pre></div>
+        : <pre key={i} className="q-fade min-h-[11rem] font-mono text-xs leading-tight text-green-400 sm:text-base">{s.art}</pre>}
       <p key={`c${i}`} className={`q-rise mt-6 font-mono tracking-widest ${last ? "stamp-slam text-3xl font-extrabold text-red-500" : "text-sm text-neutral-300"}`}>{s.caption}</p>
       <button onClick={onDone} className="absolute bottom-6 right-6 font-mono text-xs text-neutral-600 hover:text-white">skip</button>
     </div>
