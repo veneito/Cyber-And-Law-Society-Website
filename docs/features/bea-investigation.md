@@ -95,14 +95,14 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 3. **Drive:** flash-drive signature (folder picker, file picker, typed code).
 4. **Ciphers:** ciphertext only, **no cipher type hints**. Left sidebar of decoders (shift brute-force list, number decoder, stepping shift, symbol mapper). Accusation as before.
 - **Bea hacks:** 20% chance after each wrong answer, plus roughly every 8 to 12 minutes at random. A full-screen puzzle (connect the dots, type the key sequence, or a quick cyber/logic question) blocks all actions until solved. Solved under 20 s: +20 points; over 60 s: -20 points (floor 0); in between: 0. Wrong attempts can retry. Solutions never leave the server. The page polls state every 4 s, which is how a random hack reaches the player.
-- Config keys added: `building`, `sonar` (written by `make-ciphers.mjs` if missing). **Copy the updated `data/case-config.json` to the Mint PC and restart** (the live one lacks them, so the building question would reject every answer).
+- Config keys added: `building`, `sonar` (written by `make-ciphers.mjs` if missing). **Copy the updated `data/case-config.json` to the live server (the brother's Mint PC, `grenudo@100.69.35.72`) and restart** (the live one lacks them, so the building question would reject every answer).
 
 ## Floor plan and 3D sonar (built)
 - Traced from the user's hand sketch (north up, 2nd floor): `src/components/floorplan.ts` holds the walkable floor, blocked areas (open stairwell/voids, office, study rooms, elevator), shelves, desks, pillars, dividers and the bookstand. One unit = one sketch pixel from the sketch origin; the plan is 820x820.
 - `Sonar3D.tsx` (three.js, lazy loaded) draws it as a tilted 3D wireframe view with rotate buttons; `Sonar.tsx` falls back to a flat SVG of the same plan when WebGL is missing (fallback not tested). The scanner can only stand on walkable floor.
 - Target = the bookstand marked X in the north wing, `config.sonar = {x: 312, y: 175}` in plan units (server: found radius 22, signal fades over 700 units). It lives only on the server. Caveat: anyone scripting the ping API could triangulate it; accepted for a club event.
 - Rough trace, not a survey: check the layout against the real floor before the event and nudge `floorplan.ts` and the target if the bookstand is off.
-- Updated config keys: `sonar` changed. **Re-copy `data/case-config.json` to the Mint PC** before the event.
+- Updated config keys: `sonar` changed. **Re-copy `data/case-config.json` to the live server (the brother's Mint PC, `grenudo@100.69.35.72`)** before the event.
 
 ## Flash drive contents
 - Each `data/drives/team-N/` folder holds what goes on drive N: `wellington.sig` (that team's signature) plus `symbol-key.png` and `symbol-key.pdf` (printable A4 key sheet for the symbol cipher, evidence 4).
@@ -115,7 +115,7 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - **Accusation:** crimes are worded as what Bea did (not the evidence labels) and shown in a per-team random order; the evidence list is shuffled per team and picked by its text. Evidence shown after solving is now the decoded message itself (config `evidence` = plaintexts), so teams must read and match. Wrong pairing still costs 10.
 - **Finish:** a correct full accusation sets `finishedAt` (clock stops, no more hacks, further actions return 409) and the page switches to the victory screen: final score, time, place, score breakdown (stages, time bonuses, hacks, wrong evidence, accusation bonus), winner banner, live leaderboard.
 - **Leaderboard/winner:** scoreboard returns `{rows, over}`, ordered by score then faster time. `over` is true when every team that has started has finished or timed out (a team that never starts does not block the announcement; a late starter could change the result).
-- **Redeploy:** `evidence` changed in `data/case-config.json`, so re-copy it to the Mint PC, then reset state and restart.
+- **Redeploy:** `evidence` changed in `data/case-config.json`, so re-copy it to the live server (the brother's Mint PC, `grenudo@100.69.35.72`), then reset state and restart.
 
 ## Law checks (built)
 - After every correct cipher the team gets a **legal check**: a full-screen multiple-choice logic puzzle that blocks all other actions until answered (server returns 423 for everything but `law`). Wrong = the usual growing lockout (same puzzle stays); correct = no extra points, just clears the block. A hack puzzle takes priority if both are pending.
@@ -132,7 +132,7 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - Timers in the animation components keep the latest callback in a ref; a parent re-render (the clock ticks every second) must not restart them.
 
 ## Resetting progress (use this, not rm)
-- `node deploy/reset-case.mjs` wipes all team progress on the live site (needs `adminKey`, written into `data/case-config.json` by `make-ciphers.mjs`; copy the config to the Mint PC once so the server knows the key). Pass a base URL to target another server.
+- `node deploy/reset-case.mjs` wipes all team progress on the live site (needs `adminKey`, written into `data/case-config.json` by `make-ciphers.mjs`; copy the config to the live server (the brother's Mint PC, `grenudo@100.69.35.72`) once so the server knows the key). Pass a base URL to target another server.
 - Why not `rm data/case-state.json`: the server keeps state in memory and re-saves it on every poll, so any open case page writes the old progress straight back (and a restart then reloads it).
 - Open pages with a remembered team code re-create their team and restart its clock on the next poll (every 4 s). Before a reset, close the case pages or click "switch team", and do not reopen them afterwards.
 
