@@ -12,6 +12,7 @@ Two people (Vene and his brother) work on this repo, using Claude Code and ChatG
 - **`main` is protected on GitHub: changes need a pull request with 1 approval from the other person (Vene can bypass as admin). The repo is public, so never commit secrets or private data.**
 - **Pushing to `main` deploys to the live site.** The server pulls `main` every 5 minutes, runs `npm ci`, builds and restarts. The server only runs `vite build` (no type-check), and a failed build can leave the site half-built, so a bad push can take the live site down.
 - So: work on a branch, open a pull request, and merge to `main` only when `npm run build` and `npm run lint` pass locally. Do not push straight to `main` unless you have told the other person.
+- Merge pull requests with **Squash and merge** (the only option the repo allows). Give the PR a clear title, since it becomes the one commit on `main`. The branch deletes itself afterward.
 - Check the result at the live URL about 5 minutes after merging. The server's log is `~/cls-site/update.log`.
 - Cloudflare caches `/assets/*` for a year and nobody can purge it. Give replaced images a new filename, and never request an asset URL before it is deployed.
 
