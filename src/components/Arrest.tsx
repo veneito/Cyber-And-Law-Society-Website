@@ -2,30 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
 
 // ASCII scene of Bea being caught. Played for every team when it finishes its own accusation.
-// Two ASCII Animator exports play once inside their scenes and then hold on the last frame: the handcuffs ("Click.") and the jail cell (under the BUSTED stamp).
-const ANIMS = {
+// ASCII Animator exports play inside their scenes (the typing loops; the others play once and hold on the last frame): the handcuffs ("Click.") and the jail cell (under the BUSTED stamp).
+const ANIMS: Record<string, { url: string; fps: number; n: number; loop?: boolean }> = {
+  hack: { url: "/case/hack-frames.json", fps: 12, n: 5, loop: true }, // Bea typing; loops for the whole scene
   cuffs: { url: "/case/cuffs-frames.json", fps: 7, n: 9 },
   jail: { url: "/case/jail-frames.json", fps: 8, n: 23 },
 };
-type Anim = keyof typeof ANIMS;
+type Anim = "hack" | "cuffs" | "jail";
 const animMs = (a: Anim) => Math.round((ANIMS[a].n / ANIMS[a].fps) * 1000);
 const loaded: Partial<Record<Anim, Promise<string[]>>> = {};
 export const preloadAnim = (a: Anim) => (loaded[a] ??= fetch(ANIMS[a].url).then((r) => r.json() as Promise<string[]>));
 
 const SCENES: { art: string; caption: string; ms: number; sound?: () => void; anim?: Anim }[] = [
   {
-    ms: 2000, caption: "Bea F. Wellington, mid-hack...", sound: sfx.type,
-    art: String.raw`
-   .----------------------------.
-   | 01101 $$$ 10110 ACCESS 0110|
-   | > transferring funds...    |
-   | > covering tracks...  97%  |
-   '----------------------------'
-          O     ___________
-         /|\___|  $ $ $ $  |
-         / \    |_L A P T O P_|
-      ___|_|___
-     [ typing... ]`,
+    ms: 2000, caption: "Bea F. Wellington, mid-hack...", sound: sfx.type, art: "", anim: "hack",
   },
   {
     ms: 1600, caption: "A siren, somewhere down the street...", sound: sfx.approach,
@@ -104,7 +94,7 @@ export function Arrest({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     if (!s.anim || last || !frames) return;
     setJf(0);
-    const t = setInterval(() => setJf((n) => Math.min(n + 1, frames.length - 1)), 1000 / ANIMS[s.anim!].fps);
+    const t = setInterval(() => setJf((n) => (ANIMS[s.anim!].loop ? (n + 1) % frames.length : Math.min(n + 1, frames.length - 1))), 1000 / ANIMS[s.anim!].fps);
     return () => clearInterval(t);
   }, [i, frames]); // eslint-disable-line react-hooks/exhaustive-deps
   const frame = frames?.[last ? frames.length - 1 : jf];
