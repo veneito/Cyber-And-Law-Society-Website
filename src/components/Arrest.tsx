@@ -95,12 +95,17 @@ const SCENES: { art: string; caption: string; ms: number; sound?: () => void }[]
   },
 ];
 
+const ARREST_SCENE = 4; // "Click." (cuffed): Bea says "I want to talk to my lawyer" here; it lasts about as long as the next scenes
+
 export function Arrest({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
   const done = useRef(onDone); // latest callback, so a parent re-render never restarts the timers
   useEffect(() => { done.current = onDone; });
+  const voice = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => () => voice.current?.pause(), []); // skipping or finishing cuts the voice
   useEffect(() => {
     SCENES[i].sound?.();
+    if (i === ARREST_SCENE) { voice.current = new Audio("/case/talk-layer.mp3"); voice.current.play().catch(() => {}); }
     if (i >= SCENES.length - 1) {
       const t = setTimeout(() => done.current(), SCENES[i].ms);
       return () => clearTimeout(t);

@@ -41,7 +41,7 @@ export function Leaderboard({ board, me }: { board: Board; me?: string }) {
   );
 }
 
-export function Victory({ t }: { t: Finished }) {
+export function Victory({ t, timeout }: { t: Finished; timeout?: boolean }) {
   const board = useScoreboard();
   const rank = board.rows.findIndex((r) => r.name === t.name) + 1;
   const winner = board.rows[0];
@@ -54,9 +54,9 @@ export function Victory({ t }: { t: Finished }) {
   ];
   return (
     <div>
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Case closed</p>
-      <h2 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington is caught.</h2>
-      <p className="mt-2 text-neutral-400">Your clock is stopped. Here is how you did.</p>
+      <p className={`font-mono text-xs uppercase tracking-[0.2em] ${timeout ? "text-red-400" : "text-green-400"}`}>{timeout ? "Game over" : "Case closed"}</p>
+      <h2 className="mt-2 text-3xl font-bold text-white">{timeout ? "Bea F. Wellington got away." : "Bea F. Wellington is caught."}</h2>
+      <p className="mt-2 text-neutral-400">{timeout ? "Your 90 minutes are up. Here is how you did." : "Your clock is stopped. Here is how you did."}</p>
 
       <div className="mt-6 grid grid-cols-3 gap-3 text-center">
         {[["Final score", String(t.score)], ["Time", mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0))], ["Place", rank ? `#${rank} of ${board.rows.length}` : "..."]].map(([k, v]) => (

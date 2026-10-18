@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Skull } from "./Skull";
+import { Portrait } from "./Briefing";
 import { sfx } from "./sound";
 
 export type HackState = {
@@ -11,7 +12,7 @@ export type HackState = {
 
 const PADS = ["#ef4444", "#22c55e", "#3b82f6", "#eab308"];
 
-export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: string | string[]) => Promise<boolean> }) {
+export function Hack({ hack, onSolve, mood }: { mood?: "happy" | "angry" | "scared"; hack: HackState; onSolve: (solution: string | string[]) => Promise<boolean> }) {
   const [now, setNow] = useState(() => Date.now());
   const [answer, setAnswer] = useState("");
   const [next, setNext] = useState(1);
@@ -64,6 +65,7 @@ export function Hack({ hack, onSolve }: { hack: HackState; onSolve: (solution: s
   }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/90 p-4">
+      <div className="fixed right-6 top-1/2 hidden -translate-y-1/2 lg:block"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
       <div className="my-auto w-full max-w-md rounded-xl border border-red-500/60 bg-neutral-950 p-6">
         <Skull />
         <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-red-400">You have been hacked</p>

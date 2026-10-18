@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Arrest } from "./Arrest";
 import { Countdown, Helix, Rain } from "./Ambient";
+import { Briefing, FoundBuilding, Portrait, ToCourt, EndCall } from "./Briefing";
 import { Decoders } from "./Decoders";
 import { Hack, type HackState } from "./Hack";
 import { Sonar } from "./Sonar";
 import { soundOn, setSound } from "./sound";
 import { StepDone, type StepKind } from "./StepDone";
 import { LawCheck, type LawState } from "./LawCheck";
-import { Gavel } from "./Gavel";
+import { Gavel, preloadGavel } from "./Gavel";
+import { GameOver } from "./GameOver";
+import { Preview } from "./Preview";
 import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
 // What Bea did, in cipher order. Players attach the decoded message that proves each one.
@@ -54,11 +57,12 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
   const [v, setV] = useState("");
   const [err, setErr] = useState("");
   const [counting, setCounting] = useState(false);
+  const [briefing, setBriefing] = useState(false);
   const [name, setName] = useState("");
   const go = async () => {
     // The state call checks the code without starting the clock; the clock starts once the case opens.
     const { status } = await api("state?code=" + encodeURIComponent(v.trim()));
-    if (status === 200) setCounting(true);
+    if (status === 200) setBriefing(true);
     else setErr(status === 503 ? "Case not open yet." : "Unknown team code.");
   };
   return (
@@ -75,6 +79,7 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
         </div>
         {err && <p className="mt-2 text-sm text-red-400">{err}</p>}
       </div>
+      {briefing && !counting && <Briefing onDone={() => setCounting(true)} />}
       {counting && <Countdown onDone={async () => { await api("start", { code: v.trim(), name }); onCode(v.trim()); }} />}
     </div>
   );
@@ -138,11 +143,26 @@ function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
   );
 }
 
-function CipherStep({ t, send, over }: { t: TeamState; send: (route: string, body: object) => Promise<boolean>; over: boolean }) {
+type Send = (route: string, body: object) => Promise<boolean>;
+
+const wrongSound = () => { new Audio("/case/incorrect.mp3").play().catch(() => {}); };
+
+type Mood = "happy" | "angry" | "scared" | undefined;
+
+function CipherStep({ t, send, over, onAccuse, mood, setMood }: { t: TeamState; send: Send; over: boolean; onAccuse: () => void; mood: Mood; setMood: (m: Mood) => void }) {
   const [answers, setAnswers] = useState<string[]>(Array(CRIMES.length).fill(""));
-  const [picks, setPicks] = useState<Record<number, number | "">>({});
+  const [calling, setCalling] = useState(false); // Chris's call between the evidence list and the accusation
+  const ready = Object.keys(t.solved).length >= CRIMES.length && !t.law && !t.accused;
+  // Chris reacts to each decoded message and keeps that face until the next one.
+  const submit = async (stage: number) => {
+    const ok = await send("answer", { stage, answer: answers[stage] });
+    setMood(ok ? "happy" : "angry");
+    if (ok) new Audio("/case/correct.mp3").play().catch(() => {});
+  };
   return (
     <>
+      <div className="flex flex-col-reverse gap-6 md:flex-row md:items-start">
+      <div className="min-w-0 flex-1">
       <h2 className={h2}>Step 4: Evidence</h2>
       <ol className="mt-4 space-y-3">
         {CRIMES.map((c, i) => (
@@ -159,43 +179,112 @@ function CipherStep({ t, send, over }: { t: TeamState; send: (route: string, bod
                 <div className="mt-2 flex gap-2">
                   <input value={answers[i]} disabled={over}
                     onChange={(e) => setAnswers(answers.map((a, j) => (j === i ? e.target.value : a)))}
-                    onKeyDown={(e) => e.key === "Enter" && send("answer", { stage: i, answer: answers[i] })}
+                    onKeyDown={(e) => e.key === "Enter" && submit(i)}
                     placeholder="Decoded message" className={field} />
-                  <button onClick={() => send("answer", { stage: i, answer: answers[i] })} disabled={over} className={ghost}>Submit</button>
+                  <button onClick={() => submit(i)} disabled={over} className={ghost}>Submit</button>
                 </div>
               </>
             )}
           </li>
         ))}
       </ol>
-
-      <h2 className={`${h2} mt-12`}>Accusation</h2>
-      {t.accused ? (
-        <p className="mt-3 text-green-300">Bea F. Wellington is accused of all crimes.</p>
-      ) : (
-        <>
-          <p className="mt-2 text-sm text-neutral-400">Tick each crime and attach the decoded message that proves it. A wrong pairing costs 10 points.</p>
-          <ul className="mt-4 space-y-2">
-            {t.crimeOrder.map((i) => [i, CRIMES[i]] as const).map(([i, c]) => (
-              <li key={c} className="flex flex-wrap items-center gap-3 text-sm">
-                <input type="checkbox" checked={i in picks} disabled={over}
-                  onChange={(e) => setPicks((p) => { const n = { ...p }; if (e.target.checked) n[i] = ""; else delete n[i]; return n; })} />
-                <span className="w-full text-neutral-300 sm:w-72">{c}</span>
-                {i in picks && (
-                  <select value={picks[i]} onChange={(e) => setPicks((p) => ({ ...p, [i]: e.target.value === "" ? "" : Number(e.target.value) }))}
-                    className="max-w-full rounded border border-neutral-700 bg-black px-2 py-1 text-neutral-300">
-                    <option value="">Attach evidence...</option>
-                    {t.evOrder.filter((k) => k in t.solved).map((k) => <option key={k} value={k}>{t.solved[k].slice(0, 70)}</option>)}
-                  </select>
-                )}
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => send("accuse", { picks: Object.fromEntries(Object.entries(picks).filter(([, v]) => v !== "")) })}
-            disabled={over || Object.keys(picks).length === 0} className={`${btn} mt-4`}>Accuse</button>
-        </>
-      )}
+      {ready && <button onClick={() => setCalling(true)} className={`${btn} mt-8`}>Make your accusation</button>}
+      </div>
+      {calling && <ToCourt onDone={() => { setCalling(false); onAccuse(); }} />}
+      <div className="mx-auto md:sticky md:top-6"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
+      </div>
     </>
+  );
+}
+
+// Crimes Bea did not commit, mixed into the list as wrong answers (ids 100+; the server counts them as wrong pairings).
+const DECOYS = [
+  "Defaced the university website",
+  "Planted a keylogger on the library computers",
+  "Sent phishing emails posing as the bursar's office",
+];
+const crimeText = (id: number) => (id >= 100 ? DECOYS[id - 100] : CRIMES[id]);
+
+// Its own screen, reached from the evidence list once all six messages are decoded.
+// Pick a crime from the list (some are wrong), attach the decoded message that proves it, come back, repeat, then review and accuse.
+function AccuseStep({ t, send, over, onBack, mood }: { t: TeamState; send: Send; over: boolean; onBack: () => void; mood: Mood }) {
+  const [picks, setPicks] = useState<Record<number, number>>({});
+  const [view, setView] = useState<"list" | "review" | number>("list"); // a number is the crime being charged
+  const list = [...t.crimeOrder];
+  DECOYS.forEach((_, d) => list.splice((t.crimeOrder[d] * 3 + d * 2 + 1) % (list.length + 1), 0, 100 + d)); // stable per team
+  const filed = Object.keys(picks).length;
+  const usedBy = (k: number) => Object.keys(picks).map(Number).find((c) => picks[c] === k);
+  const card = "rounded-xl border border-neutral-800 bg-neutral-900/50 p-4";
+  const attach = (crime: number, k: number) => { setPicks((p) => ({ ...p, [crime]: k })); setView("list"); };
+  const detach = (crime: number) => { setPicks((p) => { const q = { ...p }; delete q[crime]; return q; }); setView("list"); };
+  return (
+    <div className="flex flex-col-reverse gap-6 md:flex-row md:items-start">
+      <div className="min-w-0 flex-1">
+        <button onClick={view === "list" ? onBack : () => setView("list")} className="font-mono text-xs text-neutral-500 hover:text-white">
+          &larr; {view === "list" ? "Back to evidence" : "Back to the crimes"}
+        </button>
+        <h2 className={`${h2} mt-3`}>Accusation</h2>
+        {t.accused ? (
+          <p className="mt-3 text-green-300">Bea F. Wellington is accused of all crimes.</p>
+        ) : view === "list" ? (
+          <>
+            <p className="mt-2 text-sm text-neutral-400">Choose a crime to charge Bea with. Careful: she did not commit all of these.</p>
+            <ul className="mt-4 space-y-2">
+              {list.map((c) => (
+                <li key={c}>
+                  <button onClick={() => setView(c)} disabled={over} className={`${card} w-full text-left hover:border-green-400 disabled:opacity-40 ${c in picks ? "border-green-400/60" : ""}`}>
+                    <span className="text-sm text-white">{crimeText(c)}</span>
+                    {c in picks && <p className="mt-1 text-sm text-green-300">{t.solved[picks[c]]}</p>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 font-mono text-xs text-neutral-500">{filed} charge{filed === 1 ? "" : "s"} filed</p>
+            <button onClick={() => setView("review")} disabled={filed === 0} className={`${btn} mt-2`}>Review accusation</button>
+          </>
+        ) : view === "review" ? (
+          <>
+            <p className="mt-2 text-sm text-neutral-400">Your case. Check each charge, then accuse. A wrong pairing, or a crime she did not commit, costs 10 points.</p>
+            <ul className="mt-4 space-y-2">
+              {Object.keys(picks).map(Number).map((c) => (
+                <li key={c} className={card}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-sm text-white">{crimeText(c)}</span>
+                    <button onClick={() => setView(c)} className="shrink-0 font-mono text-xs text-neutral-500 hover:text-white">change</button>
+                  </div>
+                  <p className="mt-1 text-sm text-green-300">{t.solved[picks[c]]}</p>
+                </li>
+              ))}
+            </ul>
+            <button onClick={() => send("accuse", { picks })} disabled={over || filed === 0}
+              className="mt-6 -rotate-2 rounded-md border-4 border-red-500 px-8 py-2 font-mono text-2xl font-extrabold tracking-widest text-red-500 hover:bg-red-500/10 disabled:opacity-40">ACCUSE</button>
+          </>
+        ) : (
+          <>
+            <p className="mt-4 font-mono text-xs text-neutral-500">CHARGE</p>
+            <div className={`${card} mt-2 border-amber-300/50`}>
+              <p className="text-lg text-white">{crimeText(view)}</p>
+              <p className="mt-1 text-sm text-neutral-400">Which decoded message proves it?</p>
+            </div>
+            <div className="mt-4 grid gap-2">
+              {t.evOrder.filter((k) => k in t.solved).map((k) => {
+                const other = usedBy(k);
+                const taken = other !== undefined && other !== view;
+                return (
+                  <button key={k} onClick={() => attach(view, k)} disabled={over || taken}
+                    className={`${card} text-left text-sm text-neutral-200 hover:border-green-400 disabled:opacity-40 ${picks[view] === k ? "border-green-400" : ""}`}>
+                    {t.solved[k]}
+                    {taken && <span className="ml-2 font-mono text-xs text-neutral-500">(used for another charge)</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {view in picks && <button onClick={() => detach(view)} className="mt-4 text-sm text-neutral-500 hover:text-white">Remove this charge</button>}
+          </>
+        )}
+      </div>
+      <div className="mx-auto md:sticky md:top-6"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
+    </div>
   );
 }
 
@@ -206,6 +295,11 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   const [msg, setMsg] = useState("");
 
   const [cele, setCele] = useState<StepKind | null>(null);
+  const [savedMood, setMood] = useState<Mood>(); // Chris's face, shared by the evidence page and the popups
+  useEffect(() => { preloadGavel().catch(() => {}); }, []); // so the gavel frames are cached before the first legal check
+  const [accusing, setAccusing] = useState(false); // separate accusation screen
+  const [endCall, setEndCall] = useState(false); // Chris's closing call after the arrest
+  const [call, setCall] = useState(false); // Chris P. Bacon calls after the building is found
   const [arrest, setArrest] = useState(false);
   const [verdict, setVerdict] = useState(false);
   const prev = useRef<{ phase: string; all: boolean; done: boolean; law: boolean } | null>(null);
@@ -217,7 +311,8 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     prev.current = cur;
     if (p) {
       if (p.law && !cur.law) setVerdict(true);
-      if (p.phase !== cur.phase) setCele(p.phase as StepKind);
+      if (p.phase === "sonar" && cur.phase !== "sonar") new Audio("/case/found-key.mp3").play().catch(() => {}); // voice only, no popup; silent until the file exists
+      else if (p.phase !== cur.phase) setCele(p.phase as StepKind);
       else if (!p.all && cur.all) setCele("ciphers");
       if (!p.done && cur.done) setArrest(true);
     }
@@ -226,6 +321,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   }, []);
   const poll = useCallback(async () => {
     const r = await api("state?code=" + encodeURIComponent(code));
+    if (r.status === 403) { onLeave(); return; } // remembered code no longer exists (e.g. config replaced)
     if (r.status !== 200) return;
     // A remembered code with no server-side start (e.g. progress was reset) starts the clock instead of showing TIME UP.
     apply(r.data.startedAt ? r.data : (await api("start", { code })).data);
@@ -242,10 +338,20 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     return r.status === 200 ? (r.data as { strength: number; found: boolean }) : null;
   }, [code]);
 
+  const prevOver = useRef<boolean | null>(null);
+  const [showOver, setShowOver] = useState(false);
+  const timedOut = !!t && !t.finishedAt && !!t.endsAt && t.endsAt - now <= 0;
+  // GAME OVER popup only when the clock runs out while playing, not when a page loads already out of time.
+  useEffect(() => {
+    if (!t) return;
+    if (prevOver.current === false && timedOut) setShowOver(true);
+    prevOver.current = timedOut;
+  }, [t, timedOut]);
   if (!t) return null;
   const done = !!t.finishedAt;
   const left = t.endsAt ? t.endsAt - now : 0;
   const over = !done && left <= 0;
+  const mood: Mood = t.hack && !over && !done ? "scared" : savedMood; // scared during a hack, happy once it is solved
   const lock = t.lockedFor && Math.max(0, t.lockedFor - Math.floor(Math.max(0, now - seenAt) / 1000)); // now can lag seenAt
 
   // Sends a game action; returns whether the server accepted it.
@@ -262,33 +368,37 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
       law: ["Correct.", "Wrong. Locked out for a moment."],
     };
     setMsg(status === 410 ? "Time is up." : status === 423 ? "" : status === 429 ? "Locked out. Wait." : (text[route]?.[ok ? 0 : 1] ?? ""));
+    if (!ok && status === 200 && route !== "key") wrongSound(); // a wrong answer anywhere, not only on the evidence list
     return ok;
   };
 
   const solveHack = async (solution: string | string[]) => {
     const { data } = await api("hack", { code, solution });
     if (data.name) apply(data);
+    if (data.ok) { setMood("happy"); new Audio("/case/solveHack.mp3").play().catch(() => {}); }
     if (data.ok) setMsg(data.delta ? `Back in. ${data.delta > 0 ? "+" : ""}${data.delta} points` : "Back in.");
+    if (!data.ok) wrongSound();
     return !!data.ok;
   };
 
   return (
-    <div className={`mt-8 grid gap-8 ${!done && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
-      {!done && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
+    <div className={`mt-8 grid gap-8 ${!done && !over && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
+      {!done && !over && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
       <section className="order-1 min-w-0 lg:order-none">
         {msg && <p className="mb-4 font-mono text-sm text-green-300">{msg}</p>}
         {lock > 0 && <p className="mb-4 text-sm text-red-400">Locked out for {lock}s after the last wrong answer.</p>}
         {done && <Victory t={t} />}
-        {!done && t.phase === "photo" && <PhotoStep send={send} over={over} />}
-        {!done && t.phase === "sonar" && (
+        {over && <Victory t={{ ...t, finishedAt: t.endsAt }} timeout />}
+        {!done && !over && t.phase === "photo" && <PhotoStep send={send} over={over} />}
+        {!done && !over && t.phase === "sonar" && (
           <>
             <h2 className={h2}>Step 2: Last known location</h2>
             <p className="mt-2 mb-4 text-sm text-neutral-400">Find the exact spot in the building. The signal grows stronger as you get closer.</p>
             <Sonar onPing={onPing} onKey={() => send("key", {})} />
           </>
         )}
-        {!done && t.phase === "drive" && <DriveStep onSig={(sig) => send("unlock", { sig })} />}
-        {!done && t.phase === "ciphers" && <CipherStep t={t} send={send} over={over} />}
+        {!done && !over && t.phase === "drive" && <DriveStep onSig={(sig) => send("unlock", { sig })} />}
+        {!done && !over && t.phase === "ciphers" && (accusing ? <AccuseStep t={t} send={send} over={over} mood={mood} onBack={() => setAccusing(false)} /> : <CipherStep t={t} send={send} over={over} mood={mood} setMood={setMood} onAccuse={() => setAccusing(true)} />)}
       </section>
       <aside className="order-first lg:order-none">
         <div className="flex items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
@@ -302,10 +412,13 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <Scoreboard me={t.name} />
       </aside>
       {verdict && !arrest && <Gavel text="CASE ADJOURNED." sub="Legal check passed." onDone={() => setVerdict(false)} />}
-      {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => setCele(null)} />}
-      {arrest && <Arrest onDone={() => setArrest(false)} />}
-      {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} onPick={(choice) => send("law", { choice })} />}
-      {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} onSolve={solveHack} />}
+      {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => { setCele(null); if (cele === "photo") setCall(true); }} />}
+      {call && <FoundBuilding onDone={() => setCall(false)} />}
+      {showOver && <GameOver onDone={() => setShowOver(false)} />}
+      {arrest && <Arrest onDone={() => { setArrest(false); setEndCall(true); }} />}
+      {endCall && <EndCall onDone={() => setEndCall(false)} />}
+      {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} mood={mood} onPick={(choice) => send("law", { choice })} />}
+      {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} mood={mood} onSolve={solveHack} />}
     </div>
   );
 }
@@ -314,6 +427,7 @@ export function CasePage() {
   const [code, setCode] = useState(() => { try { return localStorage.getItem(CODE_KEY) ?? ""; } catch { return ""; } });
   const set = (c: string) => { try { localStorage.setItem(CODE_KEY, c); } catch { /* private mode */ } setCode(c); };
   const [snd, setSnd] = useState(soundOn);
+  if (import.meta.env.DEV && location.search.includes("preview")) return <Preview />;
   return (
     <>
     <Rain />

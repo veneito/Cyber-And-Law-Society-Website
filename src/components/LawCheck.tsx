@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Gavel } from "./Gavel";
+import { Portrait } from "./Briefing";
 
 export type LawState = { stage: number; question: string; options: string[] };
 
-export function LawCheck({ law, lock, onPick }: { law: LawState; lock: number; onPick: (choice: number) => void }) {
+export function LawCheck({ law, lock, onPick, mood }: { mood?: "happy" | "angry" | "scared"; law: LawState; lock: number; onPick: (choice: number) => void }) {
   const [opening, setOpening] = useState(true);
   if (opening) return <Gavel text="ORDER IN THE COURT!" sub="Legal check begins." onDone={() => setOpening(false)} />;
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-black/90 p-4">
+      <div className="fixed right-6 top-1/2 hidden -translate-y-1/2 lg:block"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
       <div className="my-auto w-full max-w-lg rounded-xl border border-sky-500/50 bg-neutral-950 p-6">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-sky-400">Legal check</p>
         <p className="mt-1 text-white">The cipher is solved. Now show you understand the law behind it.</p>
