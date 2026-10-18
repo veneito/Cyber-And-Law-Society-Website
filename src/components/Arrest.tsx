@@ -5,10 +5,11 @@ import { sfx } from "./sound";
 // ASCII Animator exports play inside their scenes (the typing loops; the others play once and hold on the last frame): the handcuffs ("Click.") and the jail cell (under the BUSTED stamp).
 const ANIMS: Record<string, { url: string; fps: number; n: number; loop?: boolean }> = {
   hack: { url: "/case/hack-frames.json", fps: 12, n: 5, loop: true }, // Bea typing; loops for the whole scene
+  car: { url: "/case/car-frames.json", fps: 14, n: 28 },
   cuffs: { url: "/case/cuffs-frames.json", fps: 7, n: 9 },
   jail: { url: "/case/jail-frames.json", fps: 8, n: 23 },
 };
-type Anim = "hack" | "cuffs" | "jail";
+type Anim = "hack" | "car" | "cuffs" | "jail";
 const animMs = (a: Anim) => Math.round((ANIMS[a].n / ANIMS[a].fps) * 1000);
 const loaded: Partial<Record<Anim, Promise<string[]>>> = {};
 export const preloadAnim = (a: Anim) => (loaded[a] ??= fetch(ANIMS[a].url).then((r) => r.json() as Promise<string[]>));
@@ -18,48 +19,10 @@ const SCENES: { art: string; caption: string; ms: number; sound?: () => void; an
     ms: 2000, caption: "Bea F. Wellington, mid-hack...", sound: sfx.type, art: "", anim: "hack",
   },
   {
-    ms: 1600, caption: "A siren, somewhere down the street...", sound: sfx.approach,
-    art: String.raw`
-     .  *  .       .   *     .
-   .     ~~ WEE-OOH ~~    .
-         ____
-        / || \     <- headlights
-       |_o__o_|
-      ~~~~~~~~~~~~~~~~~~~~`,
-  },
-  {
-    ms: 2100, caption: "FREEZE! YOU ARE UNDER ARREST!", sound: sfx.siren,
-    art: String.raw`
-   *WEE-OOH*       *WEE-OOH*
-   _____________________________
-  |  [P]  P O L I C E   [P]      |
-  |_____________________________|
-       O/        \O
-      /|          |\      <- badge up
-      / \        / \
-   [ DETECTIVE ]  [ BEA ]`,
-  },
-  {
-    ms: 1700, caption: "Hands up. Slowly.", sound: () => sfx.beep(),
-    art: String.raw`
-          \O/
-           |        <- laptop abandoned
-          / \     ___________
-                 | ERROR 404 |
-                 |__CLEARED?_|`,
+    ms: animMs("car"), caption: "A siren, somewhere down the street...", sound: sfx.approach, art: "", anim: "car",
   },
   {
     ms: 2400, caption: "Click.", sound: sfx.cuff, art: "", anim: "cuffs",
-  },
-  {
-    ms: 1300, caption: "Evidence logged.", sound: sfx.tick,
-    art: String.raw`
-   .-------------------.
-   | EVIDENCE  #0001   |
-   | laptop ........ OK|
-   | logs .......... OK|
-   | alibi ........ N/A|
-   '-------------------'`,
   },
   { ms: animMs("jail"), caption: "", art: "", anim: "jail" },
   {
@@ -68,7 +31,7 @@ const SCENES: { art: string; caption: string; ms: number; sound?: () => void; an
   },
 ];
 
-const ARREST_SCENE = 4; // "Click." (cuffed): Bea says "I want to talk to my lawyer" here; it lasts about as long as the next scenes
+const ARREST_SCENE = 2; // "Click." (cuffed): Bea says "I want to talk to my lawyer" here; it lasts about as long as the next scenes
 
 export function Arrest({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);

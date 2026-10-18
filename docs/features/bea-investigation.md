@@ -127,7 +127,7 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - **Background:** dim matrix rain behind the case page (`Rain`, about 16 fps; skipped under reduced motion). The home page's code rain is a separate one-time intro.
 - **Bea's hack:** the page glitches and shakes with red scanlines and "SYSTEM BREACH" for about 0.9 s, then an ASCII skull pops up with its jaw opening and closing ("HA HA HA") (`Skull.tsx`).
 - **Step completion, one unique animation each (`StepDone.tsx`):** photo = map pin drops with ripples ("LOCATION CONFIRMED"), sonar = golden key spins in ("KEY OBTAINED"), drive = padlock opens ("ACCESS GRANTED"), ciphers = six evidence tiles flip to check marks ("ALL EVIDENCE DECODED", after the last law check). Triggered when the state changes, so a page reload does not replay them.
-- **Win animation (`Arrest.tsx`):** ASCII scene of Bea hacking, police ("FREEZE"), handcuffs, a cell closing, then "BUSTED" stamped; skippable. Every team plays it when it finishes its own accusation, then the victory screen shows.
+- **Win animation (`Arrest.tsx`):** five ASCII Animator scenes (frames in `public/case/*-frames.json`): Bea typing (looped), the police car, handcuffs ("I want to talk to my lawyer" plays here), the jail cell, then "BUSTED" stamped; skippable. Every team plays it when it finishes its own accusation, then the victory screen shows.
 - **Sound (`sound.ts`):** synthesized beeps, glitch, laugh, siren, slam, chimes and jingle. Off by default; "sound: off/on" link at the top right of the case page, remembered in the browser.
 - Timers in the animation components keep the latest callback in a ref; a parent re-render (the clock ticks every second) must not restart them.
 
