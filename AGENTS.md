@@ -1,5 +1,7 @@
 # Cyber and Law Society website: how we work
 
+Full background for a new session (server setup, what runs where, who owns what): `docs/HANDOFF-for-codex.md`.
+
 Two people (Vene and his brother) work on this repo, using Claude Code and ChatGPT/Codex. Read this before changing anything. Claude Code reads it via `CLAUDE.md`.
 
 ## The site

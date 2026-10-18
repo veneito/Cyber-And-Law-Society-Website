@@ -15,5 +15,5 @@ Bug hunt (`src/components/Anomaly.tsx`):
 
 Application form (`src/components/ApplyForm.tsx`, `deploy/apply.mjs`):
 - `POST /api/apply` validates, rate-limits (1/min/IP), appends to `data/applications.jsonl`, posts to Discord, emails via Resend.
-- Secrets in git-ignored `.env` (also on Mint at `~/cls-site/.env`): `DISCORD_WEBHOOK_URL`, `RESEND_API_KEY`, `APPLY_EMAIL_TO`, optional `APPLY_EMAIL_FROM`. Missing ones just skip that channel.
+- Secrets in git-ignored `.env` (also on the live server at `~/cls-site/.env`): `DISCORD_WEBHOOK_URL`, `RESEND_API_KEY`, `APPLY_EMAIL_TO`, optional `APPLY_EMAIL_FROM`. Missing ones just skip that channel.
 - Resend without a verified domain only sends to the account owner's email.

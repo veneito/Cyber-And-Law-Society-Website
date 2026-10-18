@@ -16,7 +16,7 @@ Minesweeper with viruses as the mines; players "quarantine" suspected viruses wi
 - `GET/POST /api/leaderboard`, top 10 per level, stored in `data/leaderboard.json` on the server (gitignored, survives deploys).
 - Used by `deploy/serve.mjs` in production and by a Vite plugin in dev.
 - Checks: name sanitized to 16 chars, minimum plausible times (2s/5s/10s), 1 post per IP per 10s (`cf-connecting-ip`). Times are client-reported, so a determined person could fake one.
-- To wipe scores: delete `~/cls-site/data/leaderboard.json` on the Mint PC and restart `cls-site`.
+- To wipe scores: delete `~/cls-site/data/leaderboard.json` on the live server (the brother's Mint PC) and restart `cls-site`.
 - POST returns `{ board, rank }` (rank -1 if outside top 10). Errors: 429 `cooldown` + `retryIn`, 400 `name`, 400 `time`; the client shows a specific message for each. Names allow Unicode letters/numbers plus ` ._-` (same `cleanName` rule on client and server).
 
 ## End of game

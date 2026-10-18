@@ -44,3 +44,12 @@
 - [ ] Quarantine game: moderation for leaderboard names (currently only character filtering)
 - [x] Allow passwordless `sudo systemctl restart cls-site` on the server so update.sh's restart step runs
 - [x] Verified server dashboard update flow with a throwaway footer change (pushed and reverted, 2026-10-07)
+
+## Server move (2026-10-18)
+- [x] Site moved to the brother's Mint PC, https://cybernlaw.grenudo.dev (Cloudflare tunnel `cls-site`, auto-pull every 5 min over a read-only deploy key)
+- [x] Repo made public, `main` protected (PR + 1 approval), squash merge only; brother added as collaborator
+- [x] Vene's server dashboard controls the site over SSH (state, logs, start/stop/restart, Update, case reset and organizer sheet)
+- [x] Old copy of the site on Vene's server taken down 2026-10-18: `cls-site.service` stopped and disabled, update timer disabled, `cybernlaw.veneito.dev` route removed. Keep `~/cls-site` there, because the Discord bot runs from it
+- [ ] Discord bot stays on Vene's old server for now; move it only after stopping the old copy
+- [ ] Remove Vene's Windows PC key (`claude-desktop-itt842f`) from `~grenudo/.ssh/authorized_keys` when no longer needed
+- [ ] Dashboard: maintenance mode and rollback are unavailable for the remote site
