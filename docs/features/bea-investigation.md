@@ -163,3 +163,9 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 
 ## Time up (built)
 - When a team's 90 minutes run out while playing, a full-screen GAME OVER (`GameOver.tsx`, siren and slam, tap or 4.5 s to continue) shows once, then a results screen (the victory layout headed "Game over", with score, 90:00 time, place, breakdown and live leaderboard). Step screens, popups and the accusation are hidden. A page that loads already out of time goes straight to the results.
+
+## Arrest animation and call polish (built)
+- `Arrest.tsx` is five scenes, each an ASCII Animator export: Bea typing (`hack-frames.json`, loops), police car (`car-frames.json`), handcuffs (`cuffs-frames.json`, "I want to talk to my lawyer" plays here), jail cell (`jail-frames.json`), then BUSTED stamped on the last jail frame. Frames are `fetch`ed as JSON (about 1 to 3 MB each), played once and held, sized to fit the width and height, rendered green-on-black by inverting the dark-ink-on-white export (`filter: invert(1) brightness(2.5)` multiplied onto green). To add or swap one, export from ASCII Animator, convert `frames.js` to a JSON array in `public/case/`, and add it to `ANIMS`.
+- The "FOUND GUILTY." gavel (`Gavel` in `Case.tsx`, triggered when `finishedAt` is set) plays first, and the arrest starts after it closes.
+- Every incoming call (`Codec` in `Briefing.tsx`) rings (`sfx.ring`, a synthesized two-tone ring that ignores the effects mute) until "Answer call" is clicked.
+- The "You" portrait (`rookie.txt`) is a new cat, and Chris's normal portrait (`bacon.txt`) is cropped to its art so both sit centered; the portrait is auto-scaled to the frame, so crop any new art to its bounding box.

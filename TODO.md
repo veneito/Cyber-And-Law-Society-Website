@@ -26,7 +26,9 @@
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
-- [ ] Planning only so far, nothing built. Settle the open decisions in the doc, then prototype the sonar scene
+- [ ] Game is built end to end (see the doc); remaining open decisions are in its "Still open" list
+- [ ] Not yet watched start to finish in a real run: arrest sequence after FOUND GUILTY, the ringing before each call, and the new arrest frames on phones (frame JSON is 1 to 3 MB each)
+- [ ] Record `end-call.mp3` and the other missing call audio if any are still absent
 - [ ] Get Marx Library floor plans (requested) and pick the flash-drive hiding spot
 
 ## Flash drive prep (see docs/features/flash-drive-prep.md)
