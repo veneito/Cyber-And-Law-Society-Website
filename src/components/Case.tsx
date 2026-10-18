@@ -310,7 +310,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     const p = prev.current;
     prev.current = cur;
     if (p) {
-      if (p.law && !cur.law) setVerdict(true);
+      if (!p.done && cur.done) setVerdict(true); // verdict before the arrest
       if (p.phase === "sonar" && cur.phase !== "sonar") new Audio("/case/found-key.mp3").play().catch(() => {}); // voice only, no popup; silent until the file exists
       else if (p.phase !== cur.phase) setCele(p.phase as StepKind);
       else if (!p.all && cur.all) setCele("ciphers");
@@ -411,11 +411,11 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
         <h2 className={`${h2} mt-6`}>Leaderboard</h2>
         <Scoreboard me={t.name} />
       </aside>
-      {verdict && !arrest && <Gavel text="CASE ADJOURNED." sub="Legal check passed." onDone={() => setVerdict(false)} />}
+      {verdict && <Gavel text="FOUND GUILTY." sub="Bea F. Wellington, on all counts." onDone={() => setVerdict(false)} />}
       {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => { setCele(null); if (cele === "photo") setCall(true); }} />}
       {call && <FoundBuilding onDone={() => setCall(false)} />}
       {showOver && <GameOver onDone={() => setShowOver(false)} />}
-      {arrest && <Arrest onDone={() => { setArrest(false); setEndCall(true); }} />}
+      {arrest && !verdict && <Arrest onDone={() => { setArrest(false); setEndCall(true); }} />}
       {endCall && <EndCall onDone={() => setEndCall(false)} />}
       {t.law && !t.hack && !over && !done && <LawCheck law={t.law} lock={lock} mood={mood} onPick={(choice) => send("law", { choice })} />}
       {t.hack && !over && !done && <Hack key={t.hack.issuedAt} hack={t.hack} mood={mood} onSolve={solveHack} />}

@@ -12,7 +12,7 @@ export function Preview() {
   const list: [string, string][] = [
     ["briefing", "Briefing (before 3-2-1)"], ["building", "Found the building"], ["court", "To court (before accusation)"],
     ["arrest", "Arrest, then closing call"], ["endcall", "Closing call only"], ["gameover", "Game over"],
-    ["gavel1", "Gavel: order in the court"], ["gavel2", "Gavel: case adjourned"],
+    ["gavel1", "Gavel: order in the court"], ["gavel2", "Gavel: found guilty"],
     ["photo", "Step done: photo"], ["sonar", "Step done: key"], ["drive", "Step done: drive"], ["ciphers", "Step done: evidence"],
   ];
   return (
@@ -30,7 +30,7 @@ export function Preview() {
       {scene === "endcall" && <EndCall onDone={end} />}
       {scene === "gameover" && <GameOver onDone={end} />}
       {scene === "gavel1" && <Gavel text="ORDER IN THE COURT!" sub="Legal check begins." onDone={end} />}
-      {scene === "gavel2" && <Gavel text="CASE ADJOURNED." sub="Legal check passed." onDone={end} />}
+      {scene === "gavel2" && <Gavel text="FOUND GUILTY." sub="Bea F. Wellington, on all counts." onDone={end} />}
       {(scene === "photo" || scene === "sonar" || scene === "drive" || scene === "ciphers") && <StepDone key={scene} kind={scene} onDone={end} />}
     </main>
   );
