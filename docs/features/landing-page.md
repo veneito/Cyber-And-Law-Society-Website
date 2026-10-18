@@ -1,6 +1,6 @@
 # Landing page + hosting (first build, 2026-10-06)
 
-Live: **https://cybernlaw.grenudo.dev** (moved 2026-10-18 from cybernlaw.veneito.dev). Repo: private `veneito/Cyber-And-Law-Society-Website`.
+Live: **https://cybernlaw.grenudo.dev** (moved 2026-10-18 from cybernlaw.veneito.dev). Repo: public `veneito/Cyber-And-Law-Society-Website` (was private until 2026-10-18).
 
 ## Stack
 Vite + React + TypeScript + Tailwind v4 + lucide-react (lucide has no brand icons, so socials use generic icons + labels).

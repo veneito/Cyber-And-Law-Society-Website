@@ -9,6 +9,7 @@ Two people (Vene and his brother) work on this repo, using Claude Code and ChatG
 - Per-feature notes live in `docs/features/`. Open tasks live in `TODO.md`.
 
 ## Deploying (read this)
+- **`main` is protected on GitHub: changes need a pull request with 1 approval from the other person (Vene can bypass as admin). The repo is public, so never commit secrets or private data.**
 - **Pushing to `main` deploys to the live site.** The server pulls `main` every 5 minutes, runs `npm ci`, builds and restarts. The server only runs `vite build` (no type-check), and a failed build can leave the site half-built, so a bad push can take the live site down.
 - So: work on a branch, open a pull request, and merge to `main` only when `npm run build` and `npm run lint` pass locally. Do not push straight to `main` unless you have told the other person.
 - Check the result at the live URL about 5 minutes after merging. The server's log is `~/cls-site/update.log`.
