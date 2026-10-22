@@ -66,31 +66,74 @@ export function Helix() {
   useEffect(() => {
     const { g, w, h, off } = setup(ref.current!);
     const CH = "ATCG0123456789ABCDEF{}<>/=+*";
-    let raf = 0;
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    let raf = 0, last = -Infinity;
     const frame = (now: number) => {
-      const t = now / 1000, W = w(), R = Math.min(W * 0.34, 120);
+      if (!motion.matches) raf = requestAnimationFrame(frame);
+      if (now - last < 32 && !motion.matches) return;
+      last = now;
+      const t = motion.matches ? 0 : now / 1000, W = w(), R = Math.min(W * 0.30, 112);
       g.clearRect(0, 0, W, h());
       g.textAlign = "center";
-      for (let y = 12, i = 0; y < h(); y += 24, i++) {
-        const a = t * 1.5 + y * 0.034, x1 = W / 2 + Math.cos(a) * R, x2 = W / 2 - Math.cos(a) * R, z = Math.sin(a);
-        if (i % 3 === 0) {
+      g.textBaseline = "middle";
+      // Fine paired rails connect the code glyphs into continuous twisting strands.
+      for (const front of [false, true]) {
+        for (let y = -4; y < h(); y += 4) {
+          for (let strand = 0; strand < 2; strand++) {
+            const a = t * 0.55 + y * 0.023 + strand * Math.PI;
+            const depth = Math.sin(a);
+            if (front !== (depth > 0)) continue;
+            g.strokeStyle = "#4ade80";
+            g.globalAlpha = 0.12 + (depth + 1) * 0.16;
+            g.lineWidth = front ? 1 : 0.65;
+            for (const offset of [-0.045, 0.045]) {
+              g.beginPath();
+              g.moveTo(W / 2 + Math.cos(a + offset) * R, y);
+              g.lineTo(W / 2 + Math.cos(a + offset + 4 * 0.023) * R, y + 4);
+              g.stroke();
+            }
+          }
+        }
+      }
+      for (let y = 12, i = 0; y < h(); y += 16, i++) {
+        const a = t * 0.55 + y * 0.023, x1 = W / 2 + Math.cos(a) * R, x2 = W / 2 - Math.cos(a) * R, z = Math.sin(a);
+        {
+          g.strokeStyle = "#4ade80";
+          g.globalAlpha = 0.18;
+          g.lineWidth = 0.65;
+          for (const dy of [-2, 2]) {
+            g.beginPath(); g.moveTo(x1, y + dy); g.lineTo(x2, y + dy); g.stroke();
+          }
           g.fillStyle = "#4ade80";
-          g.globalAlpha = 0.25;
-          g.font = '18px "JetBrains Mono", monospace';
-          for (let k = 1; k < 7; k++) g.fillText("·", x1 + ((x2 - x1) * k) / 7, y);
+          g.globalAlpha = 0.35;
+          for (let k = 1; k < 8; k++) g.fillRect(x1 + ((x2 - x1) * k) / 8 - 1, y - 1, 2, 2);
         }
         ([[x1, z, 0], [x2, -z, 1]] as const).forEach(([x, d, s]) => {
           g.globalAlpha = 0.3 + 0.7 * ((d + 1) / 2);
           g.fillStyle = d > 0 ? "#86efac" : "#16a34a";
-          g.font = `${17 + d * 5}px "JetBrains Mono", monospace`;
-          g.fillText(CH[(Math.floor(t * 4) + i * 7 + s * 13) % CH.length], x, y);
+          if (i % 2) {
+            g.font = `${14 + d * 4}px "JetBrains Mono", monospace`;
+            g.fillText(CH[(i * 7 + s * 13) % CH.length], x, y);
+          } else {
+            g.shadowColor = "#4ade80";
+            g.shadowBlur = d > 0 ? 7 : 0;
+            g.beginPath(); g.arc(x, y, 1.8 + d * 0.6, 0, Math.PI * 2); g.fill();
+            g.shadowBlur = 0;
+          }
+          if (i % 8 === 1) {
+            g.globalAlpha = 0.3;
+            g.font = '8px "JetBrains Mono", monospace';
+            g.fillText(i.toString(16).toUpperCase().padStart(3, "0"), x + (x < W / 2 ? -27 : 27), y);
+          }
         });
       }
       g.globalAlpha = 1;
-      raf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); off(); };
+    const redraw = () => { cancelAnimationFrame(raf); last = -Infinity; frame(performance.now()); };
+    redraw();
+    motion.addEventListener("change", redraw);
+    addEventListener("resize", redraw);
+    return () => { cancelAnimationFrame(raf); off(); motion.removeEventListener("change", redraw); removeEventListener("resize", redraw); };
   }, []);
   return <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-y-0 right-0 hidden h-full w-96 md:block" />;
 }

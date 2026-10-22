@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DecoderGate } from "./DecoderGate";
 
 const shift = (c: string, n: number) => String.fromCharCode(((c.charCodeAt(0) - 65 + n) % 26 + 26) % 26 + 65);
 const mapLetters = (s: string, f: (c: string, i: number) => string) => {
@@ -7,12 +8,7 @@ const mapLetters = (s: string, f: (c: string, i: number) => string) => {
 };
 
 const input = "w-full rounded border border-neutral-700 bg-black px-2 py-1 font-mono text-sm text-white";
-const Box = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <details className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
-    <summary className="cursor-pointer font-mono text-sm text-white">{title}</summary>
-    <div className="mt-3 space-y-2 text-sm">{children}</div>
-  </details>
-);
+const Box = DecoderGate;
 
 function Caesar() {
   const [t, setT] = useState("");
@@ -84,7 +80,7 @@ export function Decoders() {
   return (
     <aside className="space-y-3">
       <h2 className="font-mono text-sm uppercase tracking-wide text-white">Decoder tools</h2>
-      <p className="text-xs text-neutral-500">Nobody tells you which cipher is which. Try each tool.</p>
+      <p className="text-xs text-neutral-500">Solve each training cipher to unlock its decoder.</p>
       <Caesar />
       <Numbers />
       <Stepping />

@@ -1,4 +1,5 @@
 import { sfx } from "./sound";
+import { CallConsoles } from "./CallConsoles";
 import { useEffect, useRef, useState } from "react";
 import baconArt from "./bacon.txt?raw";
 import rookieArt from "./rookie.txt?raw";
@@ -63,6 +64,17 @@ export const EndCall = ({ onDone }: { onDone: () => void }) => <Codec src="/case
 // Codec-style call from Chris P. Bacon. The button click is what unlocks audio.
 export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDone: () => void }) {
   const audio = useRef<HTMLAudioElement>(null);
+  const envelope = useRef<GainNode | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  const fadeCall = () => {
+    const player = audio.current;
+    const node = envelope.current;
+    const ctx = audioContext.current;
+    if (!player || !node || !ctx) return;
+    const remaining = Number.isFinite(player.duration) ? player.duration - player.currentTime : Infinity;
+    const level = src === "/case/briefing.mp3" ? 1 : Math.max(0.2, Math.min(1, player.currentTime / 0.8, remaining / 0.8));
+    node.gain.setTargetAtTime(level, ctx.currentTime, 0.04);
+  };
   const done = useRef(onDone);
   useEffect(() => { done.current = onDone; });
   const [started, setStarted] = useState(false);
@@ -78,13 +90,29 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
     setStarted(true);
     try { // Chris's portrait pulses with the loudness of his voice
       const ctx = new AudioContext();
+      audioContext.current = ctx;
       const an = ctx.createAnalyser();
       an.fftSize = 512;
-      ctx.createMediaElementSource(audio.current!).connect(an);
+      const gain = ctx.createGain();
+      const fade = ctx.createGain();
+      fade.gain.value = src === "/case/briefing.mp3" ? 1 : 0.2;
+      envelope.current = fade;
+      gain.gain.value = src === "/case/briefing.mp3" ? 1 : 3;
+      const limiter = ctx.createDynamicsCompressor();
+      limiter.threshold.value = -6;
+      limiter.knee.value = 6;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.15;
+      ctx.createMediaElementSource(audio.current!).connect(gain);
+      gain.connect(fade);
+      fade.connect(limiter);
+      limiter.connect(an);
       an.connect(ctx.destination);
       const buf = new Uint8Array(an.fftSize);
       let raf = 0, level = 0;
       const frame = () => {
+        fadeCall();
         an.getByteTimeDomainData(buf);
         let sum = 0;
         for (const v of buf) sum += (v - 128) ** 2;
@@ -96,7 +124,7 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
         raf = requestAnimationFrame(frame);
       };
       frame();
-      stop.current = () => { cancelAnimationFrame(raf); ctx.close(); };
+      stop.current = () => { cancelAnimationFrame(raf); envelope.current = null; audioContext.current = null; void ctx.close(); };
     } catch { /* no Web Audio: the portrait just stays still */ }
     audio.current?.play().catch(() => {}); // blocked or missing audio: onError shows the text instead
   };
@@ -108,6 +136,22 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black px-4">
       <audio ref={audio} src={src} preload="auto" onError={() => setFailed(true)} onTimeUpdate={tick} onEnded={() => done.current()} />
+      {!started && <div className="codec-incoming flex w-full max-w-md flex-col items-center text-center">
+        <p className="font-mono text-[10px] tracking-[0.35em] text-green-600">ENCRYPTED LINE // 140.85</p>
+        <div aria-hidden className="codec-phone my-8 flex h-24 w-24 items-center justify-center rounded-full border border-green-400/60 bg-black text-green-300">
+          <svg viewBox="0 0 48 48" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 8l7 8-4 6c3 6 6 9 12 12l6-4 8 7c-2 6-6 8-11 6C17 38 9 30 5 18 3 13 6 9 12 8Z" /><path d="M29 8c6 1 10 5 11 11M28 15c3 0 5 2 5 5" /></svg>
+        </div>
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">Incoming call</p>
+        <h2 className="mt-4 font-mono text-2xl text-green-300">Chris P. Bacon</h2>
+        <p className="mt-2 font-mono text-xs tracking-widest text-neutral-500">FBI // SECURE CONNECTION</p>
+        <button onClick={answer} className="mt-8 rounded-lg border border-green-400/60 bg-black px-8 py-3 font-mono text-sm text-green-300 transition hover:bg-green-400/10 focus-visible:outline-2 focus-visible:outline-green-300">Answer phone</button>
+      </div>}
+      {started && <div className="codec-conversation flex w-full flex-col items-center">
+      <CallConsoles onPitchChange={value => {
+        if (!audio.current) return;
+        audio.current.preservesPitch = false;
+        audio.current.playbackRate = 2 ** (((value - 50) * 0.04) / 12);
+      }} />
       <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">Codec // 140.85</p>
       <div className="mt-6 flex w-full max-w-2xl items-center justify-between gap-4">
         <Portrait label="Chris P. Bacon" sub="FBI" boxRef={box} />
@@ -123,9 +167,9 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
           ? <p className="font-mono text-lg text-green-300">{failed ? lines.map((l) => l[1]).join(" ") : lines[line]?.[1] ?? ""}</p>
           : <p className="font-mono text-green-300">Incoming call from Chris P. Bacon, FBI.</p>}
       </div>
-      {!started && <button onClick={answer} className="mt-6 rounded-lg bg-green-400 px-6 py-2 font-semibold text-black hover:bg-green-300">Answer call</button>}
       {started && <button onClick={() => { audio.current?.pause(); done.current(); }} className="mt-6 text-xs text-neutral-500 hover:text-white">{failed ? "Continue" : "Skip"}</button>}
       {debug && <p className="fixed bottom-4 right-4 font-mono text-2xl text-yellow-300">{time.toFixed(1)}</p>}
+      </div>}
       <style>{`@keyframes codec-bar{from{transform:scaleY(.1)}to{transform:scaleY(1)}}`}</style>
     </div>
   );
