@@ -1,5 +1,8 @@
 # Bea F. Wellington Investigation: Handoff
 
+## Ambient click ripple (2026-10-21)
+Clicks now produce small damped code wavelets (96px maximum radius, 1.1s lifetime), with subtle glyph displacement and stable characters instead of a large bright sonar ring. Limited to six overlapping primary-pointer ripples; existing reduced-motion behavior is preserved.
+
 ## Evidence and mission panels (2026-10-21)
 Evidence dossier uses numbered exhibit cards, verified/encrypted labels and readable sentence-case decoded quotations. Mission Control separates team, score and clock with six evidence progress segments. Shared leaderboard wraps team names, separates status/progress from score and highlights the current team. Cosmetic only; original solved messages and scoring remain unchanged.
 

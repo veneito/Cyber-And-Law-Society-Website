@@ -27,6 +27,7 @@
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Shrink ambient click effects into soft water-like code ripples
 - [x] Gate all four decoder tools behind related training ciphers, including a Julius Caesar dispatch and shift dial
 - [x] First-person two-floor green/black library blockout with walking, central stair flight and radar; add isolated preview
 - [ ] Walk through the library blockout in-browser, refine doorways and plan proportions, verify live sonar target mapping with owner before merging
