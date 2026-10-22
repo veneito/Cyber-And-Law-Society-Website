@@ -1,5 +1,84 @@
 # Bea F. Wellington Investigation: Handoff
 
+## Evidence and mission panels (2026-10-21)
+Evidence dossier uses numbered exhibit cards, verified/encrypted labels and readable sentence-case decoded quotations. Mission Control separates team, score and clock with six evidence progress segments. Shared leaderboard wraps team names, separates status/progress from score and highlights the current team. Cosmetic only; original solved messages and scoring remain unchanged.
+
+## ASCII accusation courtroom (2026-10-21)
+Judge clarity/reaction pass: regenerated still and clip at 160×49 with stronger contrast/sharpening. Reaction counter replays on crime selection and correct evidence attachment (same crime/evidence index rule as final server validation), then returns to idle. Final scoring remains server-controlled.
+Judge portrait now uses the user-provided minion still and GIF converted to orange 112×34 ASCII: still at idle, 23-frame (~2.25s) reaction played once on selecting a specific crime, then idle again. Judge dialogue and headings use orange. Clip is lazy-fetched and timer cancels when leaving the scene; reduced motion keeps the still.
+Final accusation screen now uses a full-screen courtroom layout. An ASCII judge explicitly requests specific charges, repeats the selected accusation and asks for supporting evidence. A left-hand terminal clipboard lists only the team's actual decoded messages, with exhibit labels and filed status. During evidence attachment the clipboard is clickable; messages already used by other charges remain unavailable. Existing charge options/decoys, matching validation, review and scoring are retained. Mobile stacks the clipboard below the judge/charge controls.
+
+## Courtroom legal review (2026-10-21)
+Legal checks use an amber/green tribunal interface with scales, serif case heading, separate rule/facts exhibits and explicit Submit ruling. The network deception + data theft counting question supports selecting charge cards and submitting their count through the existing server option index. Other questions retain their exact options with select-then-submit behavior. Existing server lockout appears as Objection sustained. No questions, answers or scoring changed. Preview menu has a standalone courtroom example.
+
+## Decoder training gates (2026-10-21)
+Symbol unlock now uses `☿ ♀ ♌ ☽` (OPEN), matching the A–Z glyph mapping in `deploy/make-ciphers.mjs` and the supplied printed key, with text-style glyph rendering.
+Each decoder now starts locked behind a short related training cipher: Julius Caesar/Roman dispatch with interactive alphabet dial; alphabet-number archive; progressively shifted lock word; and symbol-key command. Each has an optional clue and retry feedback. Successful unlocks persist in sessionStorage for the current browser tab; this is an instructional frontend gate and does not modify live game answers, scores or team state.
+
+## First-person library prototype (2026-10-21)
+Hallway photo perspective pass: narrowed vertical camera FOV from 75° to 55°, retained 1.65m eye height, and reduced provisional storey spacing from 4.2m to 3.2m for a more natural corridor ceiling-to-eye ratio. Stairs and double-height balcony walls derive from the same storey constant. This is a visual estimate from the supplied corridor photo, not a measured camera calibration.
+Ceiling/access/balcony pass: added dark storey ceilings (hidden during top-down inspection), with the lower ceiling following the upper slab and leaving the stairwell/balcony cutouts open. Marked west/east balcony recesses have guard-height upper boundaries and double-height lower exterior walls, with roof caps above. Collision excludes inferred gray-hatched office/maintenance/CAE polygons; public rooms are separately traced. Closed staff boundaries no longer generate public door openings. Room 171 and south stair enclosure are notches in the first-floor office polygon. Verify gray extent and door access against the actual PDF before publishing.
+
+Radar display remaps existing server strength to an effective ~10.5m range (previously ~35m), without moving the server target or changing the found radius. Weak/distant signals stay silent. Browser validation of balcony openings/headroom remains outstanding.
+Plan correction pass: `libraryPlan.ts` now records traced floor perimeter polygons and room polygons in reference-image coordinates. Replaced large filled room blocks with thin collision walls and 1.2m doorway openings, bright thresholds and room-name headers. First-floor rooms include 123/171/181, Starbucks, auditorium, maintenance, restrooms, study rooms and office zones; second-floor office/study/CAE blocks are traced separately. Door positions on unclear edges are inferred and need review against the reference.
+
+Central straight ramp replaced by a 40-tread semicircular rising flight around the central elevator, with inner/outer rail posts, annular collision/elevation and a west upper landing. Upper slab has a circular stairwell opening. Ground entry is east, upstairs exit west; direction is an inference from the plan. Original blockout dimensions remain provisional. Browser walk-through of both landings and door alignment remains required before publishing.
+Layout inspection: Inspect top-down layout pauses movement and scanning, releases pointer lock, and shows an orthographic north-up plan with Floor 1/Floor 2 selectors. Only the selected storey's geometry is visible; stairs remain visible for reference. Return to first person restores the player's position and exploration fog.
+Replaced the active Sonar view with lazy-loaded `LibraryExplore.tsx`, using Three.js primitives and green edges on dark surfaces. Two approximate floor plans are saved under `docs/reference/`. Orange human marker interpreted as body plus clearance: provisional 0.05m per image pixel, ~29m wide envelope and 4.2m storeys. This is a coarse blockout, not a surveyed reconstruction; room doors, curved central circulation, peripheral stairwells and furnishings need refinement.
+
+Starts on floor one near the south entrance. WASD/mouse or on-screen controls move the player; arrows turn; Esc releases pointer lock. Central walkable stair flight runs from z=26 to z=15.5, with upper-floor opening and side-exit constraints. Offices, outer walls and simple columns have collision. Radar uses the existing server ping API; floor one sends distant coordinates to prevent finding the upstairs target from below. Floor-two world (14.4,11.7), corresponding to the red X, maps to legacy sonar (312,175). A live server with different config.sonar coordinates must have its target checked before merge; no live configuration was touched. Recover USB uses the existing key route.
+
+Preview menu includes an isolated library walkthrough with a simulated signal; it does not change team progress. WebGL required; capped device pixel ratio, no textures/shadows, explicit renderer/resource cleanup. Gameplay and layout need browser walkthrough before merge.
+
+## Photo recovery mini-game (2026-10-21)
+Photo phase starts with four randomly rotated image quadrants. Rotate each upright, then Open recovered photo reveals the original download and building answer form. This is a frontend activity gate; the original evidence file and its metadata remain untouched. Recovered image is capped at 28rem with a green border. No server state/schema changes.
+
+## Arrest confirmation styling (2026-10-21)
+The final BUSTED caption is now a green terminal case-status panel with subject identification, arrest confirmation and custody status, replacing the red tilted stamp. Existing scene timing and audio remain.
+
+## Call side consoles (2026-10-21)
+Non-briefing calls have an 800ms fade at both ends, with a 20% minimum gain so opening/closing beeps remain audible. The briefing has no fades. The envelope follows media time, including voice-rate adjustments, before peak compression.
+Non-briefing calls receive 3× playback gain (about +9.5 dB) through the Codec Web Audio path, with compression to tame louder peaks. Briefing gain stays at unity. Voice tuning and subtitle timing are unchanged.
+Incoming Codec calls now begin on a separate caller-ID screen with phone icon and Answer phone button. Answer starts the existing audio and softly reveals the conversation/side consoles; ringing stops on answer. Shared across all Chris calls. Reduced motion removes reveal and ring-pulse effects.
+Side consoles match the dialogue box's black fill and thin green border. Secondary labels are gray, internal borders are dim, waveform/slider accents are subdued and selected relays use outlines rather than bright fills to keep attention on the call.
+Left console now tunes actual call audio over ±2 semitones, centered at the original voice, with a Reset voice button. Uses pitch-following playback rate (about 0.89–1.12×), so tempo changes slightly too. Subtitles follow the audio currentTime and remain synchronized. Each call starts at natural pitch.
+ASCII feed clarity pass: 112×100 characters per frame, sharpened luminance, stronger contrast and simpler character ramp. Removed glow/scanline overlays from the feed and increased glyph weight for clearer track and character silhouettes.
+Checking all six right-side relays reveals an optional green ASCII Subway Surfers feed with a soft 0.9-second cyber fade. `public/case/subway-ascii.json` contains 45 converted frames from the user-provided GIF (4.5-second loop). Playback stays local and silent, pauses with a button, and starts paused for reduced motion. Reset relays returns to the scanner. No game state or call audio changes.
+All shared Codec calls include optional desktop side panels at 1280px and wider: a slider-driven carrier waveform/strength tuner and a six-node relay scanner with scan progress and reset. They are silent and independent of call audio, subtitles and game progress. Narrower screens keep the dialogue-focused layout.
+
+## Gavel artwork (2026-10-21)
+Court cutscenes now use drawn terminal-character artwork: banded gavel head, textured handle and separate stepped sounding block in an amber court-record panel. A swing, rebound and impact ring accompany the existing slam cue. Both court scenes share the same component; reduced motion holds a static gavel. The original frame asset remains available but is no longer fetched.
+
+## Shared cyber completion artwork (2026-10-21)
+`CyberArt.tsx` supplies the single ASCII lock animation used by drive verification and every successful hack. Both use the same decryption bar, red-to-green lock frames and unlock sound. The sonar completion now shows a terminal USB drive (USB RECOVERED); photo completion shows a scanned schematic with a targeting reticle. Reduced-motion variants show static completed artwork.
+
+## Randomized previews (2026-10-21)
+Preview launches generate fresh dot positions/counts, memory sequences, wire permutations, solvable firewall boards and ring offsets. Immediate duplicate preview layouts are rerolled; Reset puzzle keeps the current board. Live hacks already randomize these fields. Live shuffle now uses Fisher–Yates, and dot placement uses jittered grid slots so nodes cannot overlap. Goal/rules stay consistent while the required interaction sequence varies.
+
+## Hack outcomes (2026-10-21)
+Puzzle interaction audio: rising circuit blips for dots, consistent distinct notes for memory playback and input, electrical select/connect/reject cues for wires, on/off switch pitches for firewall cells, mechanical ticks plus alignment tones for rings, and check/reset cues. All use the shared sound preference. Memory playback timers cancel when leaving the puzzle.
+Synthesized effects accompany the unlock (latch plus rising chime), denied submission (descending alert), each spreading window (short blip), and dismissal (click). They respect the shared sound preference. The preview menu includes a Sound toggle.
+Validated hack successes show a 1.2-second red-to-green unlocking padlock before returning to play (also in preview). Incorrect Release lock submissions open an in-page Access denied dialog that duplicates every 1.4 seconds, up to four total windows per attempt. Dismissing every window stops the timer and restores focus to Release lock. Puzzle progress stays intact; no extra penalty is applied for error windows. Network failures stay retry messages. Timers clean up on unmount; lock motion respects reduced motion.
+
+## Breach intro (2026-10-21)
+All hacks open with a 2.6-second simulated takeover: cascading fictional error windows, terminal text and Bea's message, then the puzzle. These are in-page graphics, not browser windows. Root shake lasts 220ms; reduced motion disables shake and window animations. Preview Close remains available.
+
+## Interactive hack roster (2026-10-21)
+Firewall grid visuals now use circuit traces, numbered chip nodes, online scan lines and a sector status panel. Hover/focus outlines every affected neighbor and lists its node number. ON/OFF labels remain explicit; reduced motion hides the scans. Puzzle rules are unchanged.
+Memory pads use channel labels, distinct symbols, circuit grids and illuminated playback/press states, with an input progress strip and a red Show pattern button. Pads only accept input during the repeat phase.
+Replaced speed typing, quiz, unscramble, math, number sequence and decode with Crossed wires (match symbol ports), Firewall grid (flip a cell and its orthogonal neighbors to light all nine) and Lock rings (rotate three markers to the top). Dots and memory remain. All five have local preview samples. Server selection and solution checks use the new roster; saved bags filter retired kinds, and retired active hacks are replaced without resetting team progress. Memory submissions now use the same comma-separated format as the client. No configuration/data schema changes. Coordinate this game/server handler change with the other maintainer before merging.
+
+## Hack previews (2026-10-21)
+Connect-the-dots now uses a red circuit grid, pulsing next-node ring, animated signal connections, node-count progress and inline feedback for out-of-order clicks. Completed nodes remain visible for 450ms before the existing solution check; submission is guarded against duplicate final clicks. Keyboard activation and reduced-motion styles are included.
+
+In local development, `/case/wellington/?preview` includes playable samples of all eight hack types, using the real Hack component with local answer checking. Close/reopen to restart; solving returns to the menu. No API requests, team progress or scores are changed. The preview route is gated by `import.meta.env.DEV`.
+
+## Entry flow (2026-10-21)
+The entry screen validates the team code first, then prompts for a required team name (up to 24 characters; blank/whitespace-only names cannot continue). Begin briefing plays the existing intro and countdown; the start request still happens after the countdown. Code lookup failures stay on the code screen with a retry message.
+
+## Team-code helix artwork (2026-10-21)
+`src/components/Ambient.tsx`: added continuous paired backbone rails, denser double-line cross-links, glowing nodes and small hexadecimal markers. Slower rotation preserves the green terminal style; reduced-motion preference renders a static helix. This is decorative only.
+
 Planning notes from the first chat. Nothing has been built yet. Start the next chat by reading this file.
 
 ## Concept

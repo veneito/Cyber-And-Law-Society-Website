@@ -71,7 +71,15 @@ export function Arrest({ onDone }: { onDone: () => void }) {
         // The art is dark ink on white: invert it, then multiply onto green so it reads green-on-black.
         ? <div className="isolate overflow-hidden rounded-lg border-2 border-green-400 bg-green-400"><pre aria-hidden className="m-0 bg-white font-mono text-black" style={{ fontSize: fs, lineHeight: 0.6, filter: "invert(1) brightness(2.5)", mixBlendMode: "multiply" }}>{frame}</pre></div>
         : <pre key={i} className="q-fade min-h-[11rem] font-mono text-xs leading-tight text-green-400 sm:text-base">{s.art}</pre>}
-      <p key={`c${i}`} className={`q-rise mt-6 font-mono tracking-widest ${last ? "stamp-slam text-3xl font-extrabold text-red-500" : "text-sm text-neutral-300"}`}>{s.caption}</p>
+      {last ? <div className="arrest-verdict mt-5 w-full max-w-xl border border-green-400/60 bg-black p-4 font-mono sm:p-5">
+        <div className="flex justify-between border-b border-green-900 pb-2 text-[9px] tracking-[0.2em] text-green-600"><span>FBI // CASE WELLINGTON</span><span>STATUS UPDATED</span></div>
+        <div className="mt-4 flex items-center gap-4">
+          <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center border border-green-500/50 text-2xl text-green-300">✓</span>
+          <div><p className="text-[10px] tracking-[0.2em] text-neutral-500">SUBJECT IDENTIFIED</p><p className="mt-1 text-sm tracking-wider text-green-200 sm:text-lg">BEA F. WELLINGTON</p></div>
+        </div>
+        <div className="mt-4 flex items-center justify-between border-y border-green-900 py-3"><span className="text-[10px] tracking-widest text-green-600">[ ARREST CONFIRMED ]</span><span className="text-xl font-bold tracking-[0.2em] text-green-300 sm:text-2xl">BUSTED</span></div>
+        <p className="mt-3 text-[9px] tracking-[0.15em] text-neutral-500">IN CUSTODY // THREAT CONTAINED // CASE CLOSED</p>
+      </div> : <p key={`c${i}`} className="q-rise mt-6 font-mono text-sm tracking-widest text-neutral-300">{s.caption}</p>}
       <button onClick={onDone} className="absolute bottom-6 right-6 font-mono text-xs text-neutral-600 hover:text-white">skip</button>
     </div>
   );

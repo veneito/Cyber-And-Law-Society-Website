@@ -27,14 +27,12 @@ const status = (r: Row) => (r.finished ? "finished" : r.active ? "playing" : "ti
 
 export function Leaderboard({ board, me }: { board: Board; me?: string }) {
   return (
-    <ol className="mt-3 divide-y divide-neutral-800 rounded-xl border border-neutral-800 text-sm">
+    <ol className="mt-3 divide-y divide-green-950 overflow-hidden rounded border border-green-900/60 bg-[#030805] text-sm">
       {board.rows.length === 0 && <li className="p-3 text-neutral-500">No teams yet.</li>}
       {board.rows.map((r, i) => (
-        <li key={r.name} className={`flex items-center justify-between gap-2 p-3 ${r.name === me ? "bg-green-500/5" : ""}`}>
-          <span className="min-w-0 truncate text-neutral-300">{i + 1}. {r.name}{r.finished && " ✓"}</span>
-          <span className="shrink-0 font-mono text-green-400">
-            {r.score} <span className="text-neutral-600">{status(r)}</span>
-          </span>
+        <li key={r.name} className={`p-3 ${r.name === me ? "border-l-2 border-green-400 bg-green-950/20" : ""}`}>
+          <div className="flex items-start gap-2"><span className="font-mono text-[10px] text-green-600">{String(i + 1).padStart(2, "0")}</span><span className="min-w-0 flex-1 break-words text-xs leading-relaxed text-green-100">{r.name}{r.name === me && <span className="ml-2 text-[9px] text-green-500">YOU</span>}</span><span className="shrink-0 font-mono text-sm tabular-nums text-green-400">{r.score.toLocaleString()}</span></div>
+          <div className="ml-6 mt-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-neutral-500"><span>{r.solved}/6 decoded</span><span className={r.active ? "text-green-600" : ""}>{status(r)}</span></div>
         </li>
       ))}
     </ol>

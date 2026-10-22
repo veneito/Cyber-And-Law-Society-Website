@@ -423,6 +423,15 @@ export default function App() {
                     <p className="flex items-center gap-2"><CalendarDays className="h-4 w-4" aria-hidden /> {e.date}</p>
                     <p className="flex items-center gap-2"><MapPin className="h-4 w-4" aria-hidden /> {e.location}</p>
                   </div>
+                  {e.promoVideo !== undefined && (
+                    hasLink(e.promoVideo) ? (
+                      <a href={e.promoVideo} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">
+                        Watch the promo video <ArrowRight className="h-3 w-3" aria-hidden />
+                      </a>
+                    ) : (
+                      <p className="mt-4 text-sm text-neutral-400">Promo video coming soon</p>
+                    )
+                  )}
                   {hasLink(e.link) && (
                     <a href={e.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">
                       Details <ArrowRight className="h-3 w-3" aria-hidden />

@@ -3,7 +3,8 @@
 ## Waiting on the club
 - [x] Officers added (see docs/features/officers.md). Still need: Professor Wang photo → `image` in site.ts
 - [ ] Real bios from Alfred and Andrew (current ones are invented placeholders in `officers`)
-- [ ] Oct 22 Metadata Scavenger Hunt: add location/time
+- [x] Oct 29, 2026 Metadata Scavenger Hunt: location set to Marx Library Meeting Room 181
+- [ ] Oct 29 Metadata Scavenger Hunt: confirm time and add promotional video URL (`upcomingEvents[0].promoVideo`)
 - [ ] Phage chase: user reported the last catch not clickable (not reproduced); view the carousel, hero, glow and win screen in a browser (never visually checked this chat)
 - [ ] Event dates/locations → `upcomingEvents`
 - [ ] Sign-up form link (Google Form?) → `links.joinForm`
@@ -26,6 +27,17 @@
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Gate all four decoder tools behind related training ciphers, including a Julius Caesar dispatch and shift dial
+- [x] First-person two-floor green/black library blockout with walking, central stair flight and radar; add isolated preview
+- [ ] Walk through the library blockout in-browser, refine doorways and plan proportions, verify live sonar target mapping with owner before merging
+- [x] Add a quick photo tile restoration game before the original evidence download; shrink photo and add green border
+- [x] Add unlocking success animation and capped spreading error windows for failed Release lock attempts
+- [x] Replace six text/quiz hacks with crossed wires, firewall grid and lock rings; keep dots and memory
+- [ ] Review the revised hack roster and server selection with the other maintainer before merging
+- [x] Restyle connect-the-dots as a red breach circuit with target, progress and connection feedback
+- [x] Add playable local previews of all eight hack types at `/case/wellington/?preview`
+- [x] Validate team code first, then require a team name before playing the intro
+- [x] Add finer strand rails, cross-links and glowing nodes to the decorative team-code helix
 - [ ] Game is built end to end (see the doc); remaining open decisions are in its "Still open" list
 - [ ] Not yet watched start to finish in a real run: arrest sequence after FOUND GUILTY, the ringing before each call, and the new arrest frames on phones (frame JSON is 1 to 3 MB each)
 - [ ] Record `end-call.mp3` and the other missing call audio if any are still absent

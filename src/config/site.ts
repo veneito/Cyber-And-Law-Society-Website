@@ -34,6 +34,7 @@ export interface ClubEvent {
   tag: string;
   description?: string;
   link?: string;
+  promoVideo?: string;
 }
 
 export interface Officer {
@@ -125,9 +126,10 @@ export const siteConfig = {
   upcomingEvents: [
     {
       title: "Metadata Scavenger Hunt: Revamped",
-      date: "October 22, 2026",
-      location: "Location TBA",
+      date: "October 29, 2026",
+      location: "Marx Library Meeting Room 181",
       tag: "Upcoming",
+      promoVideo: "", // Add the promotional video URL when ready.
     },
   ] satisfies ClubEvent[] as ClubEvent[],
 

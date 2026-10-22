@@ -13,6 +13,8 @@ Vite + React + TypeScript + Tailwind v4 + lucide-react (lucide has no brand icon
 - Sections: hero (on phones, under `md`, the banner is a 20rem-tall centre crop (sides cut off) with the buttons below it; from `md` up the whole banner shows at its natural height (capped to one screen, so the section is exactly as tall as the image, no empty band) with only the Join / Explore buttons over its bottom edge; the pill, `>` headline with blinking cursor and subheadline sit in an intro block right below it. Without a banner, the hero falls back to text + buttons on the green grid), Three disciplines (Cybersecurity/Law/Philosophy), What We Do (5 activities), Events, Officers, FAQ, Ready to join.
 
 ## Look
+
+- Metadata Scavenger Hunt: Revamped is scheduled for October 29, 2026 at Marx Library Meeting Room 181. Its `promoVideo` field is an empty placeholder: the card shows "Promo video coming soon" until a URL is added, then displays a "Watch the promo video" link.
 Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text so it looks the same on every device; JetBrains Mono for the headline and labels. Club name is "Cyber & Law Society" everywhere (site.ts `name`, tab titles). The cursor blinks even with reduced motion (user's choice; ~1/sec, safe).
 
 ## Navigation

@@ -76,34 +76,17 @@ const team = (code) => {
 };
 
 // ---- Bea's hack puzzles. Generated fresh each time; kinds rotate so none repeats until all have appeared. ----
-const QUIZ = [
-  ["What does the S in HTTPS stand for?", ["secure"]],
-  ["Which attack tricks someone into giving up a password by pretending to be a trusted sender? (one word)", ["phishing"]],
-  ["What does the A in 2FA stand for?", ["authentication"]],
-  ["Trying every possible password is a ___ force attack.", ["brute"]],
-  ["How many letters are in the English alphabet?", ["26"]],
-  ["What is binary 101 in decimal?", ["5"]],
-  ["What is binary 1000 in decimal?", ["8"]],
-  ["Software that locks your files until you pay is called what? (one word)", ["ransomware"]],
-  ["What does VPN stand for? (first word)", ["virtual"]],
-  ["A fake website made to steal logins is a ___ site. (one word)", ["phishing", "fake"]],
-  ["What does the P in IP address stand for?", ["protocol"]],
-  ["What do you call a program that secretly records your keystrokes? (one word)", ["keylogger"]],
-  ["Which cipher shifts every letter the same number of places? (first word)", ["caesar"]],
-  ["What is the opposite of encrypt? (one word)", ["decrypt"]],
-  ["A network of infected computers controlled by an attacker is a ___net.", ["bot"]],
-  ["What does the W in WPA2 Wi-Fi security stand for? (one word)", ["wi-fi", "wifi"]],
-  ["What kind of attack floods a site with traffic to knock it offline? (3 letters)", ["dos"]],
-  ["Which letter does the alphabet end with?", ["z"]],
-];
-const WORDS = ["firewall", "phishing", "malware", "ransom", "password", "encryption", "network", "backdoor", "payload", "cipher", "hacker", "evidence", "keylogger", "trojan", "spyware", "botnet", "router", "token", "breach", "exploit", "forensics", "signature"];
-const KEYS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-const KINDS = ["dots", "qte", "quiz", "memory", "unscramble", "math", "sequence", "decode"];
-const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
+const KINDS = ["dots", "memory", "wires", "firewall", "rings"];
+const shuffle = (a) => {
+  const out = [...a];
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  return out;
+};
 const int = (a, b) => Math.floor(rand(a, b + 1));
 
 function makeHack(t, now) {
-  if (!t.kindBag?.length) { // refill; never start a new round with the kind that just ran
+  t.kindBag = (t.kindBag ?? []).filter((kind) => KINDS.includes(kind));
+  if (!t.kindBag.length) { // refill; never start a new round with the kind that just ran
     t.kindBag = shuffle(KINDS);
     if (t.kindBag[0] === t.lastKind) t.kindBag.push(t.kindBag.shift());
   }
@@ -112,47 +95,37 @@ function makeHack(t, now) {
   const h = { kind, issuedAt: now };
   if (kind === "dots") {
     const n = int(5, 8);
-    h.data = { points: shuffle([...Array(n).keys()].map((i) => i + 1)).map((id) => ({ id, x: int(8, 92), y: int(8, 92) })) };
+    const slots = shuffle([...Array(9).keys()]).slice(0, n);
+    h.data = { points: slots.map((slot, i) => ({ id: i + 1, x: 15 + slot % 3 * 34 + int(-4, 4), y: 15 + Math.floor(slot / 3) * 34 + int(-4, 4) })) };
     h.solution = [...Array(n).keys()].map((i) => i + 1).join(","); // click the dots in number order
-  } else if (kind === "qte") {
-    const keys = Array.from({ length: int(6, 8) }, () => pick([...KEYS])).join("");
-    h.data = { keys };
-    h.solution = keys;
   } else if (kind === "memory") {
     const sequence = Array.from({ length: int(5, 6) }, () => int(0, 3));
     h.data = { sequence };
-    h.solution = sequence.join("");
+    h.solution = sequence.join(",");
+  } else if (kind === "wires") {
+    const ports = shuffle([0, 1, 2, 3]);
+    h.data = { sequence: ports };
+    h.solution = [0, 1, 2, 3].map((id) => ports.indexOf(id)).join(",");
+  } else if (kind === "rings") {
+    h.data = { sequence: Array.from({ length: 3 }, () => int(1, 7)) };
+    h.solution = "0,0,0";
   } else {
-    let q, sol;
-    if (kind === "quiz") [q, sol] = pick(QUIZ);
-    else if (kind === "unscramble") {
-      const w = pick(WORDS);
-      let sc = w;
-      while (sc === w) sc = shuffle([...w]).join("");
-      [q, sol] = [`Unscramble this cyber word: ${sc.toUpperCase()}`, [w]];
-    } else if (kind === "math") {
-      const [a, b, c] = [int(2, 9), int(2, 9), int(2, 6)];
-      [q, sol] = pick([[`What is ${a} + ${b} x ${c}?`, [String(a + b * c)]], [`What is (${a} + ${b}) x ${c}?`, [String((a + b) * c)]], [`What is ${a * c} - ${b} x ${c}?`, [String(a * c - b * c)]]]);
-    } else if (kind === "sequence") {
-      const [start, step] = [int(1, 9), int(2, 7)];
-      const arith = Array.from({ length: 5 }, (_, i) => start + i * step);
-      const geo = Array.from({ length: 5 }, (_, i) => start * 2 ** i);
-      const sq = Array.from({ length: 5 }, (_, i) => (start + i) ** 2);
-      const s = pick([arith, geo, sq]);
-      [q, sol] = [`What comes next? ${s.slice(0, 4).join(", ")}, ?`, [String(s[4])]];
-    } else {
-      const w = pick(WORDS), n = int(1, 6);
-      const enc = [...w].map((c) => String.fromCharCode(((c.charCodeAt(0) - 97 + n) % 26) + 97)).join("").toUpperCase();
-      [q, sol] = [`Each letter below was moved forward ${n} place${n > 1 ? "s" : ""} in the alphabet. What is the word? ${enc}`, [w]];
+    const cells = Array(9).fill(1);
+    for (let i = 0; i < 7; i++) {
+      const pos = int(0, 8);
+      for (const n of [pos, pos - 3, pos + 3, ...(pos % 3 > 0 ? [pos - 1] : []), ...(pos % 3 < 2 ? [pos + 1] : [])])
+        if (n >= 0 && n < 9) cells[n] ^= 1;
     }
-    h.data = { question: q };
-    h.solution = sol;
+    if (cells.every((v) => v === 1)) cells[0] = cells[1] = cells[3] = 0;
+    h.data = { sequence: cells };
+    h.solution = Array(9).fill(1).join(",");
   }
   return h;
 }
 
 // Called after every state read or write; starts a hack on the random timer or after a wrong answer.
 function maybeHack(t, now, afterWrong) {
+  if (t.hack && !KINDS.includes(t.hack.kind)) t.hack = makeHack(t, now);
   if (t.hack || t.finishedAt || !t.startedAt || now > t.startedAt + EVENT_MS) return;
   const timed = t.phase === "ciphers"; // the random timer starts once the flash-drive key is entered
   if (timed && !t.nextHackAt) t.nextHackAt = now + rand(...HACK_GAP_MS);
