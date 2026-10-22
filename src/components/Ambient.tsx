@@ -26,7 +26,11 @@ export function Rain() {
     const drops = Array.from({ length: Math.ceil(w() / size) }, () => Math.random() * -40);
     let raf = 0, last = 0;
     const ripples: { x: number; y: number; t: number }[] = [];
-    const click = (e: PointerEvent) => { ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() }); };
+    const click = (e: PointerEvent) => {
+      if (!e.isPrimary || e.button !== 0) return;
+      ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+      if (ripples.length > 6) ripples.shift();
+    };
     addEventListener("pointerdown", click);
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -42,16 +46,23 @@ export function Rain() {
         g.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], i * size, y * size);
         drops[i] = y * size > h() && Math.random() > 0.975 ? 0 : y + 1;
       });
-      // a click sends a ring of bright glyphs outward from the cursor
-      g.globalAlpha = 0.5;
+      // Small damped wavelets lift the code like a disturbed water surface.
       g.fillStyle = "#86efac";
+      g.font = '11px "JetBrains Mono", monospace';
       for (let n = ripples.length - 1; n >= 0; n--) {
-        const { x, y, t } = ripples[n], r = (now - t) * 0.5;
-        if (r > 600) { ripples.splice(n, 1); continue; }
-        for (let cx = Math.floor((x - r - size * 2) / size); cx * size < x + r + size * 2; cx++)
-          for (let cy = Math.floor((y - r - size * 2) / size); cy * size < y + r + size * 2; cy++)
-            if (Math.abs(Math.hypot(cx * size - x, cy * size - y) - r) < size * 1.5)
-              g.fillText(GLYPHS[Math.floor(Math.random() * GLYPHS.length)], cx * size, cy * size);
+        const { x, y, t } = ripples[n], age = (now - t) / 1100;
+        if (age >= 1) { ripples.splice(n, 1); continue; }
+        const radius = 96 * (1 - (1 - age) ** 2);
+        for (let cx = -96; cx <= 96; cx += 12)
+          for (let cy = -96; cy <= 96; cy += 12) {
+            const distance = Math.hypot(cx, cy), behind = radius - distance;
+            if (behind < 0 || behind > 42 || distance > 96) continue;
+            const wave = Math.sin(behind / 4.5);
+            const fade = (1 - age) ** 2 * (1 - distance / 110) * Math.exp(-behind / 28);
+            g.globalAlpha = Math.abs(wave) * fade * 0.5;
+            const glyph = Math.abs(cx * 7 + cy * 13) % GLYPHS.length;
+            g.fillText(GLYPHS[glyph], x + cx, y + cy + wave * 3 * (1 - age));
+          }
       }
     };
     raf = requestAnimationFrame(frame);
