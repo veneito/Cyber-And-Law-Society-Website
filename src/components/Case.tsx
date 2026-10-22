@@ -1,3 +1,5 @@
+import { t as tr } from "../i18n/language";
+import { language } from "../i18n/language";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Arrest } from "./Arrest";
 import { Countdown, Helix, Rain } from "./Ambient";
@@ -18,15 +20,16 @@ import { Leaderboard, Victory, mmss, useScoreboard } from "./Victory";
 
 // What Bea did, in cipher order. Players attach the decoded message that proves each one.
 const CRIMES = [
-  "Set up a fake Wi-Fi network to steal logins",
-  "Sold the stolen logins to a buyer",
-  "Locked the university servers for ransom",
-  "Threatened an IT employee into silence",
-  "Hid the ransom money trail",
-  "Framed a student and wiped the logs",
+  tr("Set up a fake Wi-Fi network to steal logins"),
+  tr("Sold the stolen logins to a buyer"),
+  tr("Locked the university servers for ransom"),
+  tr("Threatened an IT employee into silence"),
+  tr("Hid the ransom money trail"),
+  tr("Framed a student and wiped the logs"),
 ];
 
 type TeamState = {
+  surveySubmitted?: boolean;
   name: string; startedAt: number | null; endsAt: number | null; score: number;
   phase: "photo" | "sonar" | "drive" | "ciphers"; found: boolean;
   solved: Record<string, string>; lockedFor: number; accused: boolean;
@@ -43,7 +46,7 @@ const clock = (ms: number) => {
 };
 
 async function api(path: string, body?: unknown) {
-  const r = await fetch(`/api/case/${path}`, body ? { method: "POST", body: JSON.stringify(body) } : undefined);
+  const r = await fetch(`/api/case/${path}${path.includes("?") ? "&" : "?"}lang=${language}`, body ? { method: "POST", body: JSON.stringify(body) } : undefined);
   return { status: r.status, data: await r.json() };
 }
 
@@ -72,9 +75,9 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
     try {
       const { status } = await api("state?code=" + encodeURIComponent(v.trim()));
       if (status === 200) setNaming(true);
-      else setErr(status === 503 ? "Case not open yet." : "Unknown team code.");
+      else setErr(status === 503 ? tr("Case not open yet.") : tr("Unknown team code."));
     } catch {
-      setErr("Could not check your team code. Please try again.");
+      setErr(tr("Could not check your team code. Please try again."));
     } finally {
       setChecking(false);
     }
@@ -90,17 +93,17 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
             setName(name.trim());
             setBriefing(true);
           }}>
-            <label htmlFor="case-team-name" className="text-neutral-400">Choose your team name to begin the briefing.</label>
-            <input id="case-team-name" autoFocus required value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder="Team name" className={field} disabled={briefing} />
-            <button type="submit" disabled={!name.trim() || briefing} className={`${btn} justify-self-start`}>Begin briefing</button>
-            <p className="text-sm text-neutral-500">Your 90 minutes begin after the intro.</p>
+            <label htmlFor="case-team-name" className="text-neutral-400">{tr("Choose your team name to begin the briefing.")}</label>
+            <input id="case-team-name" autoFocus required value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder={tr("Team name")} className={field} disabled={briefing} />
+            <button type="submit" disabled={!name.trim() || briefing} className={`${btn} justify-self-start`}>{tr("Begin briefing")}</button>
+            <p className="text-sm text-neutral-500">{tr("Your 90 minutes begin after the intro.")}</p>
           </form>
         ) : (
           <form onSubmit={(e) => { e.preventDefault(); void go(); }}>
-            <p className="text-neutral-400">Enter your team code to continue. Your 90 minutes begin after the intro.</p>
+            <p className="text-neutral-400">{tr("Enter your team code to continue. Your 90 minutes begin after the intro.")}</p>
             <div className="mt-3 flex max-w-md gap-2">
-              <input aria-label="Team code" required value={v} onChange={(e) => setV(e.target.value)} placeholder="TEAM CODE" className={`${field} font-mono`} disabled={checking} />
-              <button type="submit" disabled={checking || !v.trim()} className={btn}>{checking ? "Checking…" : "Continue"}</button>
+              <input aria-label={tr("Team code")} required value={v} onChange={(e) => setV(e.target.value)} placeholder={tr("TEAM CODE")} className={`${field} font-mono`} disabled={checking} />
+              <button type="submit" disabled={checking || !v.trim()} className={btn}>{checking ? tr("Checking…") : tr("Continue")}</button>
             </div>
           </form>
         )}
@@ -117,19 +120,17 @@ function PhotoStep({ send, over }: { send: (route: string, body: object) => Prom
   const [restored, setRestored] = useState(false);
   return (
     <>
-      <h2 className={h2}>Step 1: Last photo of Bea</h2>
+      <h2 className={h2}>{tr("Step 1: Last photo of Bea")}</h2>
       {!restored ? <PhotoRestore disabled={over} onRestore={() => setRestored(true)} /> : <>
-      <p className="mt-2 text-sm text-neutral-400">
-        Where was this taken? Download the <strong className="text-white">original file</strong>; screenshots and
-        photos sent through chat apps lose the hidden data. Then upload it to{" "}
+      <p className="mt-2 text-sm text-neutral-400">{tr("Where was this taken? Download the")}<strong className="text-white">{tr("original file")}</strong>{tr("; screenshots and photos sent through chat apps lose the hidden data. Then upload it to")}{" "}
         <a href="https://www.pic2map.com" target="_blank" rel="noreferrer" className="text-green-300 hover:underline">pic2map.com</a>.
       </p>
       <img src="/case/evidence-01.jpg" alt="Last known photo of Bea F. Wellington" className="mt-4 w-full max-w-md rounded-xl border border-green-400/70" />
-      <a href="/case/evidence-01.jpg" download className={`${ghost} mt-3 inline-block`}>Download original</a>
-      <p className="mt-8 text-white">What is the name of the building where this photo was taken?</p>
+      <a href="/case/evidence-01.jpg" download className={`${ghost} mt-3 inline-block`}>{tr("Download original")}</a>
+      <p className="mt-8 text-white">{tr("What is the name of the building where this photo was taken?")}</p>
       <div className="mt-3 flex max-w-md gap-2">
-        <input value={v} disabled={over} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send("building", { answer: v })} placeholder="Building name" className={field} />
-        <button onClick={() => send("building", { answer: v })} disabled={over} className={btn}>Submit</button>
+        <input value={v} disabled={over} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send("building", { answer: v })} placeholder={tr("Building name")} className={field} />
+        <button onClick={() => send("building", { answer: v })} disabled={over} className={btn}>{tr("Submit")}</button>
       </div>
       </>}
     </>
@@ -151,13 +152,13 @@ function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
   const canFolder = "showDirectoryPicker" in window;
   return (
     <>
-      <h2 className={h2}>Step 3: The drive</h2>
+      <h2 className={h2}>{tr("Step 3: The drive")}</h2>
       <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
-        <p className="font-mono text-xs text-neutral-500">LOCKED</p>
-        <p className="mt-1 text-white">Requires Bea F. Wellington&apos;s digital signature.</p>
-        <p className="mt-1 text-sm text-neutral-400">Plug in the flash drive you found, then insert it here.</p>
+        <p className="font-mono text-xs text-neutral-500">{tr("LOCKED")}</p>
+        <p className="mt-1 text-white">{tr("Requires Bea F. Wellington&apos;s digital signature.")}</p>
+        <p className="mt-1 text-sm text-neutral-400">{tr("Plug in the flash drive you found, then insert it here.")}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          {canFolder && <button onClick={pickFolder} className={btn}>Insert drive</button>}
+          {canFolder && <button onClick={pickFolder} className={btn}>{tr("Insert drive")}</button>}
           <label className={`${ghost} cursor-pointer`}>
             {canFolder ? "or choose the signature file" : `Choose ${SIG_FILE} from the drive`}
             <input type="file" className="hidden" onChange={(e) => pickFile(e.target.files?.[0])} />
@@ -166,7 +167,7 @@ function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
         <div className="mt-4 flex gap-2">
           <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSig(text)}
             placeholder="No laptop? Type the signature code" className={field} />
-          <button onClick={() => onSig(text)} className={ghost}>Submit</button>
+          <button onClick={() => onSig(text)} className={ghost}>{tr("Submit")}</button>
         </div>
       </div>
     </>
@@ -193,13 +194,13 @@ function CipherStep({ t, send, over, onAccuse, mood, setMood }: { t: TeamState; 
     <>
       <div className="flex flex-col-reverse gap-6 md:flex-row md:items-start">
       <div className="min-w-0 flex-1">
-      <div className="border-b border-green-900 pb-3"><p className="font-mono text-[9px] tracking-[0.25em] text-green-600">FORENSICS // RECOVERED TRANSMISSIONS</p><div className="mt-2 flex justify-between"><h2 className="font-serif text-xl text-green-100">Evidence dossier</h2><span className="font-mono text-xs text-green-400">{Object.keys(t.solved).length}/6 DECODED</span></div></div>
+      <div className="border-b border-green-900 pb-3"><p className="font-mono text-[9px] tracking-[0.25em] text-green-600">{tr("FORENSICS // RECOVERED TRANSMISSIONS")}</p><div className="mt-2 flex justify-between"><h2 className="font-serif text-xl text-green-100">{tr("Evidence dossier")}</h2><span className="font-mono text-xs text-green-400">{Object.keys(t.solved).length}{tr("/6 DECODED")}</span></div></div>
       <ol className="mt-4 space-y-3">
         {CRIMES.map((c, i) => (
           <li key={c} className="rounded border border-green-900/60 bg-[#030805] p-4">
             <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[10px] tracking-widest text-green-600">EXHIBIT // 0{i + 1}</span>
-              <span className={`font-mono text-[9px] tracking-widest ${t.solved[i] ? "text-green-400" : "text-amber-500"}`}>{t.solved[i] ? "✓ VERIFIED" : "ENCRYPTED"}</span>
+              <span className="font-mono text-[10px] tracking-widest text-green-600">{tr("EXHIBIT // 0")}{i + 1}</span>
+              <span className={`font-mono text-[9px] tracking-widest ${t.solved[i] ? "text-green-400" : "text-amber-500"}`}>{t.solved[i] ? tr("✓ VERIFIED") : tr("ENCRYPTED")}</span>
             </div>
             {t.solved[i] ? (
               <blockquote className="mt-4 border-l-2 border-green-700 pl-3 text-sm leading-7 text-green-100/80">“{t.solved[i].toLowerCase().replace(/^./, c => c.toUpperCase())}”</blockquote>
@@ -211,14 +212,14 @@ function CipherStep({ t, send, over, onAccuse, mood, setMood }: { t: TeamState; 
                     onChange={(e) => setAnswers(answers.map((a, j) => (j === i ? e.target.value : a)))}
                     onKeyDown={(e) => e.key === "Enter" && submit(i)}
                     placeholder="Decoded message" className={field} />
-                  <button onClick={() => submit(i)} disabled={over} className={ghost}>Submit</button>
+                  <button onClick={() => submit(i)} disabled={over} className={ghost}>{tr("Submit")}</button>
                 </div>
               </>
             )}
           </li>
         ))}
       </ol>
-      {ready && <button onClick={() => setCalling(true)} className={`${btn} mt-8`}>Make your accusation</button>}
+      {ready && <button onClick={() => setCalling(true)} className={`${btn} mt-8`}>{tr("Make your accusation")}</button>}
       </div>
       {calling && <ToCourt onDone={() => { setCalling(false); onAccuse(); }} />}
       <div className="mx-auto md:sticky md:top-6"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
@@ -229,9 +230,9 @@ function CipherStep({ t, send, over, onAccuse, mood, setMood }: { t: TeamState; 
 
 // Crimes Bea did not commit, mixed into the list as wrong answers (ids 100+; the server counts them as wrong pairings).
 const DECOYS = [
-  "Defaced the university website",
-  "Planted a keylogger on the library computers",
-  "Sent phishing emails posing as the bursar's office",
+  tr("Defaced the university website"),
+  tr("Planted a keylogger on the library computers"),
+  tr("Sent phishing emails posing as the bursar's office"),
 ];
 const crimeText = (id: number) => (id >= 100 ? DECOYS[id - 100] : CRIMES[id]);
 
@@ -254,12 +255,12 @@ function AccuseStep({ t, send, over, onBack }: { t: TeamState; send: Send; over:
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[19rem_minmax(0,1fr)]">
       <aside className="order-2 self-start rounded border border-green-700/50 bg-black p-4 lg:sticky lg:top-4 lg:order-1">
         <pre aria-hidden className="text-center font-mono text-xs text-green-500">{"       ╭─── CASE FILE ───╮\n╔══════╧════════════════╧══════╗"}</pre>
-        <h2 className="mt-3 text-center font-mono text-xs tracking-widest text-green-300">DECODED EVIDENCE</h2>
-        <p className="mt-2 text-center text-[10px] text-neutral-500">{typeof view === "number" ? "Select a message to attach to this charge." : "Your recovered messages. Use these to support each charge."}</p>
+        <h2 className="mt-3 text-center font-mono text-xs tracking-widest text-green-300">{tr("DECODED EVIDENCE")}</h2>
+        <p className="mt-2 text-center text-[10px] text-neutral-500">{typeof view === "number" ? tr("Select a message to attach to this charge.") : tr("Your recovered messages. Use these to support each charge.")}</p>
         <div className="mt-4 space-y-3">{t.evOrder.filter(k => k in t.solved).map(k => {
           const owner = usedBy(k); const taken = owner !== undefined && owner !== view;
           return <button key={k} disabled={typeof view !== "number" || over || taken} onClick={() => { if(typeof view === "number") attach(view,k); }} className="w-full border-l-2 border-green-800 bg-green-950/10 p-3 text-left enabled:hover:border-green-300 disabled:cursor-default">
-            <span className="font-mono text-[9px] tracking-widest text-green-600">EXHIBIT {String(k+1).padStart(2,"0")} {owner !== undefined ? "// FILED" : ""}</span>
+            <span className="font-mono text-[9px] tracking-widest text-green-600">{tr("EXHIBIT")}{String(k+1).padStart(2,"0")} {owner !== undefined ? tr("// FILED") : ""}</span>
             <span className="mt-2 block font-mono text-xs leading-relaxed text-green-200/80">{t.solved[k]}</span>
           </button>;
         })}</div>
@@ -267,15 +268,15 @@ function AccuseStep({ t, send, over, onBack }: { t: TeamState; send: Send; over:
       </aside>
       <div className="order-1 min-w-0 lg:order-2">
         <button onClick={view === "list" ? onBack : () => setView("list")} className="font-mono text-xs text-neutral-500 hover:text-white">
-          &larr; {view === "list" ? "Back to evidence" : "Back to the crimes"}
+          &larr; {view === "list" ? tr("Back to evidence") : tr("Back to the crimes")}
         </button>
-        <h2 className={`${h2} my-3`}>Accusation hearing</h2>
-        <CourtJudge reaction={judgeReaction || null} smacks={judgeSmacks}>{view === "list" ? "Counsel, what offenses do you accuse the defendant of committing? Select a charge, then attach the decoded message that supports it." : view === "review" ? "Present your final charges to the court. Is every accusation supported by the evidence?" : `You accuse Bea F. Wellington of the following: “${crimeText(view)}.” Which decoded message proves this charge, counsel?`}</CourtJudge>
+        <h2 className={`${h2} my-3`}>{tr("Accusation hearing")}</h2>
+        <CourtJudge reaction={judgeReaction || null} smacks={judgeSmacks}>{view === "list" ? tr("Counsel, what offenses do you accuse the defendant of committing? Select a charge, then attach the decoded message that supports it.") : view === "review" ? tr("Present your final charges to the court. Is every accusation supported by the evidence?") : `${tr("You accuse Bea F. Wellington of:")} “${crimeText(view)}.” ${tr("Which decoded message proves this charge, counsel?")}`}</CourtJudge>
         {t.accused ? (
-          <p className="mt-3 text-green-300">Bea F. Wellington is accused of all crimes.</p>
+          <p className="mt-3 text-green-300">{tr("Bea F. Wellington is accused of all crimes.")}</p>
         ) : view === "list" ? (
           <>
-            <p className="mt-2 text-sm text-neutral-400">Choose the specific crime you wish to accuse Bea of. The court requires a decoded message for every charge; unsupported allegations must not be filed.</p>
+            <p className="mt-2 text-sm text-neutral-400">{tr("Choose the specific crime you wish to accuse Bea of. The court requires a decoded message for every charge; unsupported allegations must not be filed.")}</p>
             <ul className="mt-4 space-y-2">
               {list.map((c) => (
                 <li key={c}>
@@ -286,18 +287,18 @@ function AccuseStep({ t, send, over, onBack }: { t: TeamState; send: Send; over:
                 </li>
               ))}
             </ul>
-            <p className="mt-4 font-mono text-xs text-neutral-500">{filed} charge{filed === 1 ? "" : "s"} filed</p>
-            <button onClick={() => setView("review")} disabled={filed === 0} className={`${btn} mt-2`}>Present charges to the judge</button>
+            <p className="mt-4 font-mono text-xs text-neutral-500">{filed}{tr("charge")}{filed === 1 ? "" : "s"}{tr("filed")}</p>
+            <button onClick={() => setView("review")} disabled={filed === 0} className={`${btn} mt-2`}>{tr("Present charges to the judge")}</button>
           </>
         ) : view === "review" ? (
           <>
-            <p className="mt-2 text-sm text-neutral-400">Your case. Check each charge, then accuse. A wrong pairing, or a crime she did not commit, costs 10 points.</p>
+            <p className="mt-2 text-sm text-neutral-400">{tr("Your case. Check each charge, then accuse. A wrong pairing, or a crime she did not commit, costs 10 points.")}</p>
             <ul className="mt-4 space-y-2">
               {Object.keys(picks).map(Number).map((c) => (
                 <li key={c} className={card}>
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-sm text-white">{crimeText(c)}</span>
-                    <button onClick={() => { setView(c); setJudgeSmacks(false); setJudgeReaction(n => n + 1); }} className="shrink-0 font-mono text-xs text-neutral-500 hover:text-white">change</button>
+                    <button onClick={() => { setView(c); setJudgeSmacks(false); setJudgeReaction(n => n + 1); }} className="shrink-0 font-mono text-xs text-neutral-500 hover:text-white">{"change"}</button>
                   </div>
                   <p className="mt-1 text-sm text-green-300">{t.solved[picks[c]]}</p>
                 </li>
@@ -306,17 +307,17 @@ function AccuseStep({ t, send, over, onBack }: { t: TeamState; send: Send; over:
             <button onClick={() => send("accuse", { picks })} disabled={over || filed === 0}
               className="group relative mt-6 mb-8 flex w-full items-center gap-4 overflow-hidden rounded-lg border border-orange-500/70 bg-gradient-to-r from-orange-950/60 to-black px-5 py-5 text-left transition hover:border-orange-300 hover:shadow-[0_0_24px_#f9731622] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-300 active:translate-y-px disabled:opacity-40">
               <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded border border-orange-500/40 bg-black/50 text-orange-300"><svg viewBox="0 0 32 32" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m8 7 5-5 9 9-5 5-9-9Zm7 7-9 9m-2 3h16m-18 3h20M22 4l4 4M7 6l-3 3" /></svg></span>
-              <span className="min-w-0 flex-1"><span className="block font-mono text-[9px] tracking-[0.2em] text-orange-600">COURT RECORD // FINAL SUBMISSION</span><span className="mt-1 block font-mono text-lg font-semibold tracking-wider text-orange-100 sm:text-xl">File accusation</span><span className="mt-1 block text-xs text-orange-200/50">Present {filed} supported charge{filed === 1 ? "" : "s"} to the judge</span></span>
+              <span className="min-w-0 flex-1"><span className="block font-mono text-[9px] tracking-[0.2em] text-orange-600">{tr("COURT RECORD // FINAL SUBMISSION")}</span><span className="mt-1 block font-mono text-lg font-semibold tracking-wider text-orange-100 sm:text-xl">{tr("File accusation")}</span><span className="mt-1 block text-xs text-orange-200/50">{tr("Present")}{filed}{tr("supported charge")}{filed === 1 ? "" : "s"}{tr("to the judge")}</span></span>
               <span aria-hidden className="font-mono text-2xl text-orange-400 transition-transform group-enabled:group-hover:translate-x-1">↗</span>
               <span aria-hidden className="absolute bottom-0 left-0 h-px w-1/3 bg-orange-300/70" />
             </button>
           </>
         ) : (
           <>
-            <p className="mt-4 font-mono text-xs text-neutral-500">CHARGE</p>
+            <p className="mt-4 font-mono text-xs text-neutral-500">{tr("CHARGE")}</p>
             <div className={`${card} mt-2 border-amber-300/50`}>
               <p className="text-lg text-white">{crimeText(view)}</p>
-              <p className="mt-1 text-sm text-neutral-400">Which decoded message proves it?</p>
+              <p className="mt-1 text-sm text-neutral-400">{tr("Which decoded message proves it?")}</p>
             </div>
             <div className="mt-4 grid gap-2">
               {t.evOrder.filter((k) => k in t.solved).map((k) => {
@@ -326,12 +327,12 @@ function AccuseStep({ t, send, over, onBack }: { t: TeamState; send: Send; over:
                   <button key={k} onClick={() => attach(view, k)} disabled={over || taken}
                     className={`${card} text-left text-sm text-neutral-200 hover:border-green-400 disabled:opacity-40 ${picks[view] === k ? "border-green-400" : ""}`}>
                     {t.solved[k]}
-                    {taken && <span className="ml-2 font-mono text-xs text-neutral-500">(used for another charge)</span>}
+                    {taken && <span className="ml-2 font-mono text-xs text-neutral-500">{tr("(used for another charge)")}</span>}
                   </button>
                 );
               })}
             </div>
-            {view in picks && <button onClick={() => detach(view)} className="mt-4 text-sm text-neutral-500 hover:text-white">Remove this charge</button>}
+            {view in picks && <button onClick={() => detach(view)} className="mt-4 text-sm text-neutral-500 hover:text-white">{tr("Remove this charge")}</button>}
           </>
         )}
       </div>
@@ -363,9 +364,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     prev.current = cur;
     if (p) {
       if (!p.done && cur.done) setVerdict(true); // verdict before the arrest
-      if (p.phase === "sonar" && cur.phase !== "sonar") new Audio("/case/found-key.mp3").play().catch(() => {}); // voice only, no popup; silent until the file exists
-      else if (p.phase !== cur.phase) setCele(p.phase as StepKind);
-      else if (!p.all && cur.all) setCele("ciphers");
+      if (!p.all && cur.all) setCele("ciphers");
       if (!p.done && cur.done) setArrest(true);
     }
     setT(d);
@@ -411,15 +410,18 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     const { status, data } = await api(route, { code, ...body });
     if (data.name) apply(data);
     const ok = data.ok !== false && status === 200;
+    if (ok && route === "building") setCele("photo");
+    if (ok && route === "key") setCele("sonar");
+    if (ok && route === "unlock") setCele("drive");
     const text: Record<string, [string, string]> = {
-      building: ["Correct. Moving on.", "Wrong building. Locked out for a moment."],
-      unlock: ["Signature accepted.", "Signature rejected. Locked out for a moment."],
-      answer: [`Decoded.${data.points ? ` +${data.points} points` : ""}`, "Wrong. Locked out for a moment."],
-      accuse: ["Accusation correct. +300 points", `Not quite: ${data.wrong ?? 0} wrong pairing(s), -10 each.`],
-      key: ["Key obtained.", "No key yet."],
-      law: ["Correct.", "Wrong. Locked out for a moment."],
+      building: [tr("Correct. Moving on."), tr("Wrong building. Locked out for a moment.")],
+      unlock: [tr("Signature accepted."), tr("Signature rejected. Locked out for a moment.")],
+      answer: [`Decoded.${data.points ? ` +${data.points} points` : ""}`, tr("Wrong. Locked out for a moment.")],
+      accuse: [tr("Accusation correct. +300 points"), `Not quite: ${data.wrong ?? 0} wrong pairing(s), -10 each.`],
+      key: [tr("Key obtained."), tr("No key yet.")],
+      law: [tr("Correct."), tr("Wrong. Locked out for a moment.")],
     };
-    setMsg(status === 410 ? "Time is up." : status === 423 ? "" : status === 429 ? "Locked out. Wait." : (text[route]?.[ok ? 0 : 1] ?? ""));
+    setMsg(status === 410 ? tr("Time is up.") : status === 423 ? "" : status === 429 ? tr("Locked out. Wait.") : (text[route]?.[ok ? 0 : 1] ?? ""));
     if (!ok && status === 200 && route !== "key") wrongSound(); // a wrong answer anywhere, not only on the evidence list
     return ok;
   };
@@ -429,7 +431,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     if (data.ok) await playUnlock();
     if (data.name) apply(data);
     if (data.ok) { setMood("happy"); new Audio("/case/solveHack.mp3").play().catch(() => {}); }
-    if (data.ok) setMsg(data.delta ? `Back in. ${data.delta > 0 ? "+" : ""}${data.delta} points` : "Back in.");
+    if (data.ok) setMsg(data.delta ? `Back in. ${data.delta > 0 ? "+" : ""}${data.delta} points` : tr("Back in."));
     if (!data.ok) wrongSound();
     return !!data.ok;
   };
@@ -438,15 +440,15 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
     <div className={`mt-8 grid gap-8 ${!done && !over && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
       {!done && !over && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
       <section className="order-1 min-w-0 lg:order-none">
-        {msg && <p className="mb-4 font-mono text-sm text-green-300">{msg}</p>}
-        {lock > 0 && <p className="mb-4 text-sm text-red-400">Locked out for {lock}s after the last wrong answer.</p>}
-        {done && <Victory t={t} />}
-        {over && <Victory t={{ ...t, finishedAt: t.endsAt }} timeout />}
+        {msg && <p className="mb-4 font-mono text-sm text-green-300">{tr(msg)}</p>}
+        {lock > 0 && <p className="mb-4 text-sm text-red-400">{tr("Locked out for")}{lock}{tr("s after the last wrong answer.")}</p>}
+        {done && <Victory t={t} code={code} />}
+        {over && <Victory t={{ ...t, finishedAt: t.endsAt }} code={code} timeout />}
         {!done && !over && t.phase === "photo" && <PhotoStep send={send} over={over} />}
         {!done && !over && t.phase === "sonar" && (
           <>
-            <h2 className={h2}>Step 2: Last known location</h2>
-            <p className="mt-2 mb-4 text-sm text-neutral-400">Find the exact spot in the building. The signal grows stronger as you get closer.</p>
+            <h2 className={h2}>{tr("Step 2: Last known location")}</h2>
+            <p className="mt-2 mb-4 text-sm text-neutral-400">{tr("Find the exact spot in the building. The signal grows stronger as you get closer.")}</p>
             <Sonar onPing={onPing} onKey={() => send("key", {})} />
           </>
         )}
@@ -455,19 +457,19 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
       </section>
       <aside className="order-first lg:order-none">
         <div className="rounded border border-green-800/60 bg-[#030805] p-4">
-          <div className="flex justify-between border-b border-green-950 pb-2 font-mono text-[9px] tracking-widest text-green-600"><span>MISSION CONTROL</span><span>{done ? "COMPLETE" : over ? "CLOSED" : "LIVE"}</span></div>
+          <div className="flex justify-between border-b border-green-950 pb-2 font-mono text-[9px] tracking-widest text-green-600"><span>{tr("MISSION CONTROL")}</span><span>{done ? tr("COMPLETE") : over ? tr("CLOSED") : tr("LIVE")}</span></div>
           <p className="mt-3 break-words text-sm font-medium text-green-100">{t.name}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div><p className="font-mono text-[9px] tracking-widest text-neutral-500">SCORE</p><p className="mt-1 font-mono text-2xl tabular-nums text-green-400">{t.score.toLocaleString()}</p></div>
-            <div className="border-l border-green-950 pl-3"><p className="font-mono text-[9px] tracking-widest text-neutral-500">{done ? "ELAPSED" : "TIME LEFT"}</p><p className={`mt-1 font-mono text-2xl tabular-nums ${over ? "text-red-400" : "text-green-100"}`}>{done ? mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0)) : over ? "TIME UP" : clock(left)}</p></div>
+            <div><p className="font-mono text-[9px] tracking-widest text-neutral-500">{tr("SCORE")}</p><p className="mt-1 font-mono text-2xl tabular-nums text-green-400">{t.score.toLocaleString()}</p></div>
+            <div className="border-l border-green-950 pl-3"><p className="font-mono text-[9px] tracking-widest text-neutral-500">{done ? tr("ELAPSED") : tr("TIME LEFT")}</p><p className={`mt-1 font-mono text-2xl tabular-nums ${over ? "text-red-400" : "text-green-100"}`}>{done ? mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0)) : over ? tr("TIME UP") : clock(left)}</p></div>
           </div>
           <div className="mt-4 flex gap-1" aria-label={`${Object.keys(t.solved).length} of 6 messages decoded`}>{CRIMES.map((_, i) => <span key={i} className={`h-1 flex-1 ${t.solved[i] ? "bg-green-500" : "bg-green-950"}`} />)}</div>
-          <button onClick={onLeave} className="mt-4 font-mono text-[9px] text-neutral-600 hover:text-green-300">Switch team ↗</button>
+          <button onClick={onLeave} className="mt-4 font-mono text-[9px] text-neutral-600 hover:text-green-300">{tr("Switch team ↗")}</button>
         </div>
-        <h2 className={`${h2} mt-6`}>Leaderboard</h2>
+        <h2 className={`${h2} mt-6`}>{tr("Leaderboard")}</h2>
         <Scoreboard me={t.name} />
       </aside>
-      {verdict && <Gavel text="FOUND GUILTY." sub="Bea F. Wellington, on all counts." onDone={() => setVerdict(false)} />}
+      {verdict && <Gavel text={tr("FOUND GUILTY.")} sub={tr("Bea F. Wellington, on all counts.")} onDone={() => setVerdict(false)} />}
       {cele && !arrest && !verdict && <StepDone key={cele} kind={cele} onDone={() => { setCele(null); if (cele === "photo") setCall(true); }} />}
       {call && <FoundBuilding onDone={() => setCall(false)} />}
       {showOver && <GameOver onDone={() => setShowOver(false)} />}
@@ -489,10 +491,10 @@ export function CasePage() {
     <Rain />
     <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <div className="flex items-center justify-between">
-        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">&larr; Activities</a>
-        <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500 hover:text-white">sound: {snd ? "on" : "off"}</button>
+        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">{tr("&larr; Activities")}</a>
+        <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500 hover:text-white">{tr("sound:")}{snd ? tr("on") : tr("off")}</button>
       </div>
-      <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">Case file</p>
+      <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Case file")}</p>
       <h1 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington</h1>
       {code ? <Game code={code} onLeave={() => set("")} /> : <Gate onCode={set} />}
     </main>

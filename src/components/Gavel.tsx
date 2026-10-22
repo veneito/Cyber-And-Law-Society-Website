@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
 
@@ -36,7 +37,7 @@ export function Gavel({ text, sub, onDone }: { text: string; sub: string; onDone
   return <div className="q-fade pointer-events-none fixed inset-0 z-[70] flex items-center justify-center bg-black/95 p-4">
     <div className="w-full max-w-xl text-center">
       <div className="overflow-hidden rounded-lg border border-amber-700/60 bg-[#100b04] px-3 pb-5 pt-4">
-        <div className="flex justify-between border-b border-amber-900/60 pb-3 font-mono text-[9px] tracking-[0.2em] text-amber-600"><span>COURT RECORD // ACTIVE</span><span>{hit ? "RULING ENTERED" : "AWAITING ORDER"}</span></div>
+        <div className="flex justify-between border-b border-amber-900/60 pb-3 font-mono text-[9px] tracking-[0.2em] text-amber-600"><span>{tr("COURT RECORD // ACTIVE")}</span><span>{hit ? "RULING ENTERED" : "AWAITING ORDER"}</span></div>
         <div className={`gavel-stage relative mx-auto mt-3 h-72 sm:h-80 ${hit ? "gavel-impact" : ""}`} aria-hidden>
           <pre className="gavel-tool absolute left-1/2 m-0 text-left font-mono text-amber-300">{GAVEL}</pre>
           <pre className="gavel-block absolute bottom-0 left-1/2 m-0 text-left font-mono text-amber-600">{BLOCK}</pre>

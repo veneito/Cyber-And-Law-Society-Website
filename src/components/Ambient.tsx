@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useRef } from "react";
 import { sfx } from "./sound";
 
@@ -174,7 +175,7 @@ export function Countdown({ onDone }: { onDone: () => void }) {
   }, []);
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
-      <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">Opening case file</p>
+      <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">{tr("Opening case file")}</p>
       <div ref={ref} className="cd-pop mt-10 font-mono text-[10rem] font-extrabold leading-none text-green-400" style={{ textShadow: "0 0 30px #4ade80" }} />
     </div>
   );

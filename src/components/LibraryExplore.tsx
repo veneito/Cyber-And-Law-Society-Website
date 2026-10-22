@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { sfx } from "./sound";
@@ -28,7 +29,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     const el = mount.current!;
     let renderer: THREE.WebGLRenderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: false }); }
-    catch { setError("This exploration needs WebGL. Try a browser with hardware acceleration enabled."); return; }
+    catch { setError(tr("This exploration needs WebGL. Try a browser with hardware acceleration enabled.")); return; }
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement);
     renderer.domElement.tabIndex = 0;
@@ -51,7 +52,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     }
     function label(text: string, x: number, y: number, z: number) {
       const canvas = document.createElement("canvas"); canvas.width = 512; canvas.height = 64;
-      const ctx = canvas.getContext("2d")!; ctx.fillStyle = "#69d995"; ctx.font = "26px monospace"; ctx.textAlign = "center"; ctx.fillText(text, 256, 42);
+      const ctx = canvas.getContext("2d")!; ctx.fillStyle = "#69d995"; ctx.font = "26px monospace"; ctx.textAlign = "center"; ctx.fillText(tr(text), 256, 42);
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true })); sprite.position.set(x, y, z); sprite.scale.set(3.5, 0.45, 1); sprite.userData.floor = buildingFloor; sprite.userData.label = true; scene.add(sprite);
     }
     const balconyVoids = [{x:1.7,z:16.1,w:8.65,d:3.8},{x:23.3,z:16.35,w:7.4,d:3.5}];
@@ -89,9 +90,9 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
         const cx=room.points.reduce((n,p)=>n+p[0],0)/room.points.length*0.05,cz=room.points.reduce((n,p)=>n+p[1],0)/room.points.length*0.05;label(room.name,cx,f*HEIGHT+0.3,cz);
       }
       for(const [x,z] of (f===0?[[176,99],[477,97],[141,242],[282,250],[366,245],[322,389]]:[[230,85],[458,82],[429,250],[163,523],[405,529],[154,705],[589,701]])){box(x*0.05,f*HEIGHT,z*0.05,0.6,3.2,0.6);colliders.push({x:x*0.05,z:z*0.05,w:0.6,d:0.6,floor:f});}
-      box(14.6,f*HEIGHT,13.8,3.4,2.6,1.5);colliders.push({x:14.6,z:13.8,w:3.4,d:1.5,floor:f});label("CENTRAL ELEVATOR",16.3,f*HEIGHT+2.8,14.5);
-      label(f===0?"LEARNING COMMONS":"REFERENCE STACKS",16,f*HEIGHT+1,7);
-      label(f===0?"CIRCULATION":"CAE / STUDY AREA",16,f*HEIGHT+1,20);
+      box(14.6,f*HEIGHT,13.8,3.4,2.6,1.5);colliders.push({x:14.6,z:13.8,w:3.4,d:1.5,floor:f});label(tr("CENTRAL ELEVATOR"),16.3,f*HEIGHT+2.8,14.5);
+      label(f===0?tr("LEARNING COMMONS"):tr("REFERENCE STACKS"),16,f*HEIGHT+1,7);
+      label(f===0?tr("CIRCULATION"):tr("CAE / STUDY AREA"),16,f*HEIGHT+1,20);
     }
     for(const b of balconyVoids){buildingFloor=1;box(b.x,HEIGHT*2-0.12,b.z,b.w,0.12,b.d);const cap=scene.children[scene.children.length-1];cap.userData.ceiling=true;}
     buildingFloor=1; box(12.5,HEIGHT-0.12,12.7,1.8,0.12,1.3);
@@ -104,7 +105,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       const geo=new THREE.ExtrudeGeometry(shape,{depth:0.11,bevelEnabled:false});geo.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(geo,wallMat);mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo),lineMat));mesh.position.y=n/40*HEIGHT;scene.add(mesh);
       for(const r of [INNER,OUTER])box(16.3+Math.cos(a)*r,n/40*HEIGHT,13.85+Math.sin(a)*r,0.04,0.95,0.04);
     }
-    label("CURVED STAIRS ↑",19.2,2.5,13.2);label("CURVED STAIRS ↓",13.3,HEIGHT+2.5,13.2);
+    label(tr("CURVED STAIRS ↑"),19.2,2.5,13.2);label(tr("CURVED STAIRS ↓"),13.3,HEIGHT+2.5,13.2);
     function stairAt(x:number,z:number){const dx=x-16.3,dz=z-13.85,r=Math.hypot(dx,dz),angle=Math.atan2(dz,dx);return r>INNER+0.18&&r<OUTER-0.18&&angle>=STAIR_START&&angle<=STAIR_END?angle/Math.PI:null;}
     let yaw=0,pitch=0,raf=0,last=0,lastPing=0,currentFloor=0,dead=false,pinging=false;
     const keys = new Set<string>();
@@ -158,18 +159,18 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const hold=(key:keyof typeof controls.current)=>(e:React.PointerEvent<HTMLButtonElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);controls.current[key]=true;};
   return <div className="max-w-5xl">
     <div className="mb-3 flex flex-wrap gap-2">
-      <button aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300">{overview ? "Return to first person" : "Inspect top-down layout"}</button>
-      {overview && [0,1].map(f => <button key={f} aria-pressed={inspectFloor === f} onClick={() => setInspectFloor(f)} className={`rounded border px-4 py-2 text-sm ${inspectFloor === f ? "border-green-300 text-green-200" : "border-neutral-700 text-neutral-400"}`}>Floor {f+1}</button>)}
+      <button aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300">{overview ? tr("Return to first person") : tr("Inspect top-down layout")}</button>
+      {overview && [0,1].map(f => <button key={f} aria-pressed={inspectFloor === f} onClick={() => setInspectFloor(f)} className={`rounded border px-4 py-2 text-sm ${inspectFloor === f ? "border-green-300 text-green-200" : "border-neutral-700 text-neutral-400"}`}>{tr("Floor")}{f+1}</button>)}
     </div>
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-green-300"><span>MARX LIBRARY // FLOOR {(overview ? inspectFloor : floor)+1}</span><span>{found?"SIGNAL LOCATED":`SIGNAL ${Math.round(heat*100)}%`}</span></div>
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-green-300"><span>{tr("MARX LIBRARY // FLOOR")}{(overview ? inspectFloor : floor)+1}</span><span>{found?tr("SIGNAL LOCATED"):`SIGNAL ${Math.round(heat*100)}%`}</span></div>
     <div className="relative overflow-hidden rounded-xl border border-green-500/60 bg-black">
       <div ref={mount} className="h-[min(65vh,38rem)] min-h-80 w-full" />
-      {!started&&!error&&!overview&&<button onClick={()=>setStarted(true)} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">Begin exploration</button>}
-      {error&&<p role="alert" className="absolute inset-4 bg-black p-4 text-red-300">{error}</p>}
-      {started&&!found&&!overview&&<><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><div className="pointer-events-none absolute bottom-4 right-4 rounded border border-green-700 bg-black/85 p-3 font-mono text-green-400"><div className="relative mx-auto h-20 w-20 rounded-full border border-green-800"><div className="absolute inset-3 rounded-full border border-green-900"/><div className="absolute inset-7 rounded-full bg-green-400" style={{opacity:0.2+heat*0.8}}/><div className="absolute inset-x-0 top-1/2 border-t border-green-900"/></div><p className="mt-2 text-center text-[10px]">{Math.round(heat*100)}% // SCANNING</p></div></>}
+      {!started&&!error&&!overview&&<button onClick={()=>setStarted(true)} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">{tr("Begin exploration")}</button>}
+      {error&&<p role="alert" className="absolute inset-4 bg-black p-4 text-red-300">{tr(error)}</p>}
+      {started&&!found&&!overview&&<><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><div className="pointer-events-none absolute bottom-4 right-4 rounded border border-green-700 bg-black/85 p-3 font-mono text-green-400"><div className="relative mx-auto h-20 w-20 rounded-full border border-green-800"><div className="absolute inset-3 rounded-full border border-green-900"/><div className="absolute inset-7 rounded-full bg-green-400" style={{opacity:0.2+heat*0.8}}/><div className="absolute inset-x-0 top-1/2 border-t border-green-900"/></div><p className="mt-2 text-center text-[10px]">{Math.round(heat*100)}{tr("% // SCANNING")}</p></div></>}
     </div>
-    <p className="mt-3 text-sm text-neutral-400">{overview ? "TOP-DOWN INSPECTION · North is up · Green blocks are walls/closed rooms · Curved curved central stairs wrap around the elevator. Exploration is paused." : found?"USB signal located. Recover the device below.":locked?"WASD to walk · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.":"Click the scene for mouse look. WASD to walk, arrow keys to turn. Follow the curved central stairs to floor two."}</p>
-    {started&&!found&&<div className="mt-3 flex flex-wrap gap-2">{([['forward','Forward'],['back','Back'],['left','Strafe left'],['right','Strafe right'],['turnLeft','Turn left'],['turnRight','Turn right']] as const).map(([key,label])=><button key={key} className="touch-none rounded border border-green-900 px-3 py-2 text-xs text-green-300" onPointerDown={hold(key)} onPointerUp={()=>controls.current[key]=false} onPointerCancel={()=>controls.current[key]=false}>{label}</button>)}</div>}
-    {found&&<button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black">Recover USB</button>}
+    <p className="mt-3 text-sm text-neutral-400">{overview ? tr("TOP-DOWN INSPECTION · North is up · Green blocks are walls/closed rooms · Curved curved central stairs wrap around the elevator. Exploration is paused.") : found?tr("USB signal located. Recover the device below."):locked?tr("WASD to walk · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two."):tr("Click the scene for mouse look. WASD to walk, arrow keys to turn. Follow the curved central stairs to floor two.")}</p>
+    {started&&!found&&<div className="mt-3 flex flex-wrap gap-2">{([['forward',tr("Forward")],["back",tr("Back")],['left',tr("Strafe left")],['right',tr("Strafe right")],['turnLeft',tr("Turn left")],['turnRight',tr("Turn right")]] as const).map(([key,label])=><button key={key} className="touch-none rounded border border-green-900 px-3 py-2 text-xs text-green-300" onPointerDown={hold(key)} onPointerUp={()=>controls.current[key]=false} onPointerCancel={()=>controls.current[key]=false}>{label}</button>)}</div>}
+    {found&&<button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black">{tr("Recover USB")}</button>}
   </div>;
 }

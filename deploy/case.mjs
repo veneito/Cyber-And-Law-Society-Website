@@ -16,6 +16,8 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LAW } from "./law.mjs";
+import { EVIDENCE_ES, spanishEvidence, normalized } from "../shared/evidence.mjs";
+import { notifySurvey } from "./survey-discord.mjs";
 
 const CONFIG_FILE = process.env.CASE_CONFIG || fileURLToPath(new URL("../data/case-config.json", import.meta.url));
 const STATE_FILE = process.env.CASE_STATE || fileURLToPath(new URL("../data/case-state.json", import.meta.url));
@@ -27,7 +29,7 @@ const HACK_FAST_MS = 20_000, HACK_SLOW_MS = 60_000, HACK_POINTS = 20;
 const SONAR_W = 820, SONAR_H = 820, FOUND_RADIUS = 22, SONAR_RANGE = 700; // plan units, see src/components/floorplan.ts
 
 let config, state;
-const norm = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const norm = normalized;
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
@@ -143,22 +145,23 @@ function wrong(t, now) {
 
 const label = (t) => (t.custom ? `${t.custom} (${t.name})` : t.name); // "Pandas (Team 1)"
 
-const view = (t, now = Date.now()) => ({
+const view = (t, now = Date.now(), locale = "en") => ({
   name: label(t),
   startedAt: t.startedAt,
   endsAt: t.startedAt && t.startedAt + EVENT_MS,
   score: t.score,
   phase: t.phase,
   found: t.found,
-  solved: t.solved, // stage -> evidence text
+  solved: locale === "es" && spanishEvidence(loadConfig()) ? Object.fromEntries(Object.entries(t.solved).map(([stage]) => [stage, EVIDENCE_ES[Number(stage)]])) : t.solved, // stage -> evidence text
   lockedFor: Math.max(0, Math.ceil((t.lockedUntil - now) / 1000)),
   accused: t.accused,
   finishedAt: t.finishedAt,
+  surveySubmitted: !!t.survey,
   pts: t.pts,
   crimeOrder: t.crimeOrder,
   evOrder: t.evOrder,
   // ciphertext only in the cipher phase, and never which cipher it is
-  ciphers: t.phase === "ciphers" ? (loadConfig().ciphers ?? []).map((c) => ({ text: c.text })) : [],
+  ciphers: t.phase === "ciphers" ? (loadConfig().ciphers ?? []).map((c, i) => ({ text: locale === "es" ? (spanishEvidence(loadConfig())?.[i] ?? c.text) : c.text })) : [],
   hack: t.hack && { kind: t.hack.kind, data: t.hack.data, issuedAt: t.hack.issuedAt },
   law: t.law && { stage: t.law.stage, question: t.law.q, options: t.law.options }, // never the answer
 });
@@ -178,12 +181,14 @@ function readBody(req, cb, fail) {
   });
 }
 
-const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset"];
+const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset", "survey"];
 
 // Returns true if the request was handled.
 export function handleCase(req, res) {
   const url = new URL(req.url, "http://x");
   if (!url.pathname.startsWith("/api/case/")) return false;
+  const locale = url.searchParams.get("lang") === "es" ? "es" : "en";
+  const render = (t, now) => view(t, now, locale);
   const route = url.pathname.slice("/api/case/".length);
   if (!loadConfig()) return send(res, 503, { error: "not configured" }), true;
 
@@ -205,7 +210,7 @@ export function handleCase(req, res) {
     if (!t) return send(res, 403, { error: "unknown team" }), true;
     maybeHack(t, Date.now(), false);
     save();
-    return send(res, 200, view(t)), true;
+    return send(res, 200, render(t)), true;
   }
   if (!ROUTES.includes(route) || req.method !== "POST") return send(res, 404, { error: "not found" }), true;
 
@@ -226,18 +231,28 @@ export function handleCase(req, res) {
       const custom = String(body.name ?? "").replace(/[^\w .'!&-]/g, "").trim().slice(0, 24);
       if (custom) t.custom = custom;
       save();
-      return send(res, 200, view(t, now));
+      return send(res, 200, render(t, now));
+    }
+    if (route === "survey") {
+      if (!t.startedAt || (!t.finishedAt && now <= t.startedAt + EVENT_MS)) return send(res, 409, { error: "case not finished" });
+      if (t.survey) return send(res, 200, { ok: true, repeat: true });
+      if (![body.enjoyment, body.difficulty, body.learning].every(n => Number.isInteger(n) && n >= 1 && n <= 5) || (body.feedback !== undefined && (typeof body.feedback !== "string" || body.feedback.length > 500))) return send(res, 400, { error: "invalid survey" });
+      t.survey = { enjoyment: body.enjoyment, difficulty: body.difficulty, learning: body.learning, feedback: (body.feedback ?? "").trim(), submittedAt: now };
+      try { save(); }
+      catch { delete t.survey; return send(res, 500, { error: "survey not saved" }); }
+      void notifySurvey(label(t), t.survey).then(delivery => { t.survey.discordDelivery = delivery; try { save(); } catch { console.error("Could not save survey delivery status"); } });
+      return send(res, 200, { ok: true });
     }
     if (!t.startedAt) return send(res, 409, { error: "not started" });
-    if (t.finishedAt) return send(res, 409, { error: "finished", ...view(t, now) });
-    if (now > t.startedAt + EVENT_MS) return send(res, 410, { error: "time is up", ...view(t, now) });
+    if (t.finishedAt) return send(res, 409, { error: "finished", ...render(t, now) });
+    if (now > t.startedAt + EVENT_MS) return send(res, 410, { error: "time is up", ...render(t, now) });
 
     if (route === "hack") {
-      if (!t.hack) return send(res, 200, { ok: true, ...view(t, now) });
+      if (!t.hack) return send(res, 200, { ok: true, ...render(t, now) });
       const sol = t.hack.solution;
       const given = Array.isArray(body.solution) ? body.solution.join(",") : String(body.solution ?? "");
       const good = Array.isArray(sol) ? sol.includes(given.trim().toLowerCase()) : norm(given) === norm(sol);
-      if (!good) return send(res, 200, { ok: false, ...view(t, now) }); // retry freely, the clock keeps running
+      if (!good) return send(res, 200, { ok: false, ...render(t, now) }); // retry freely, the clock keeps running
       const took = now - t.hack.issuedAt;
       const delta = took < HACK_FAST_MS ? HACK_POINTS : took > HACK_SLOW_MS ? -HACK_POINTS : 0;
       const applied = Math.max(delta, -t.score); // score floors at 0
@@ -245,21 +260,21 @@ export function handleCase(req, res) {
       t.pts.hack += applied;
       t.hack = null;
       save();
-      return send(res, 200, { ok: true, delta, ...view(t, now) });
+      return send(res, 200, { ok: true, delta, ...render(t, now) });
     }
-    if (t.hack) return send(res, 423, { error: "hacked", ...view(t, now) });
-    if (t.law && route !== "law") return send(res, 423, { error: "law check", ...view(t, now) });
-    if (t.lockedUntil > now && route !== "ping") return send(res, 429, { error: "locked", ...view(t, now) });
+    if (t.hack) return send(res, 423, { error: "hacked", ...render(t, now) });
+    if (t.law && route !== "law") return send(res, 423, { error: "law check", ...render(t, now) });
+    if (t.lockedUntil > now && route !== "ping") return send(res, 429, { error: "locked", ...render(t, now) });
 
     const need = { building: "photo", ping: "sonar", key: "sonar", unlock: "drive", answer: "ciphers", law: "ciphers", accuse: "ciphers" }[route];
-    if (t.phase !== need) return send(res, 403, { error: "wrong step", ...view(t, now) });
+    if (t.phase !== need) return send(res, 403, { error: "wrong step", ...render(t, now) });
 
     if (route === "building") {
       const ok = (config.building ?? []).map(norm).includes(norm(body.answer));
       if (ok) t.phase = "sonar";
       else wrong(t, now);
       save();
-      return send(res, 200, { ok, ...view(t, now) });
+      return send(res, 200, { ok, ...render(t, now) });
     }
     if (route === "ping") {
       const { x, y } = body;
@@ -274,43 +289,43 @@ export function handleCase(req, res) {
       if (!t.found) return send(res, 403, { error: "not found yet" });
       t.phase = config.sigs ? "drive" : "ciphers";
       save();
-      return send(res, 200, view(t, now));
+      return send(res, 200, render(t, now));
     }
     if (route === "unlock") {
       const want = norm(config.sigs?.[body.code]);
       if (!want || norm(body.sig) !== want) {
         wrong(t, now); // shares the answer lockout so signatures cannot be brute-forced
         save();
-        return send(res, 200, { ok: false, ...view(t, now) });
+        return send(res, 200, { ok: false, ...render(t, now) });
       }
       t.misses = 0;
       t.phase = "ciphers";
       save();
-      return send(res, 200, { ok: true, ...view(t, now) });
+      return send(res, 200, { ok: true, ...render(t, now) });
     }
 
     if (route === "law") {
-      if (!t.law) return send(res, 200, { ok: true, ...view(t, now) });
+      if (!t.law) return send(res, 200, { ok: true, ...render(t, now) });
       if (Number(body.choice) !== t.law.answer) {
         wrong(t, now);
         save();
-        return send(res, 200, { ok: false, ...view(t, now) });
+        return send(res, 200, { ok: false, ...render(t, now) });
       }
       t.misses = 0;
       t.law = null;
       save();
-      return send(res, 200, { ok: true, ...view(t, now) });
+      return send(res, 200, { ok: true, ...render(t, now) });
     }
 
     if (route === "answer") {
       const stage = Number(body.stage);
       const { answers, evidence } = config;
       if (!Number.isInteger(stage) || stage < 0 || stage >= answers.length) return send(res, 400, { error: "stage" });
-      if (t.solved[stage] !== undefined) return send(res, 200, { ok: true, repeat: true, ...view(t, now) });
-      if (norm(body.answer) !== answers[stage]) {
+      if (t.solved[stage] !== undefined) return send(res, 200, { ok: true, repeat: true, ...render(t, now) });
+      if (norm(body.answer) !== answers[stage] && !(spanishEvidence(config) && norm(body.answer) === norm(EVIDENCE_ES[stage]))) {
         wrong(t, now);
         save();
-        return send(res, 200, { ok: false, ...view(t, now) });
+        return send(res, 200, { ok: false, ...render(t, now) });
       }
       const bonus = Math.round(MAX_TIME_BONUS * Math.max(0, 1 - (now - t.startedAt) / EVENT_MS));
       t.misses = 0;
@@ -320,11 +335,11 @@ export function handleCase(req, res) {
       t.solved[stage] = evidence[stage];
       t.law = { stage, ...pick(LAW[stage] ?? LAW[0]) }; // a law check must be answered before anything else
       save();
-      return send(res, 200, { ok: true, points: STAGE_POINTS + bonus, ...view(t, now) });
+      return send(res, 200, { ok: true, points: STAGE_POINTS + bonus, ...render(t, now) });
     }
 
     // accuse: picks maps each ticked crime to the evidence entry attached to it.
-    if (t.accused) return send(res, 200, { ok: true, repeat: true, ...view(t, now) });
+    if (t.accused) return send(res, 200, { ok: true, repeat: true, ...render(t, now) });
     const picks = body.picks && typeof body.picks === "object" ? body.picks : {};
     const n = config.answers.length;
     let bad = 0;
@@ -343,7 +358,7 @@ export function handleCase(req, res) {
       t.hack = null;
     } else if (bad) maybeHack(t, now, true);
     save();
-    send(res, 200, { ok: complete, wrong: bad, ...view(t, now) });
+    send(res, 200, { ok: complete, wrong: bad, ...render(t, now) });
   }, () => send(res, 400, { error: "bad json" }));
   return true;
 }
