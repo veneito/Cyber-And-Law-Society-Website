@@ -44,6 +44,7 @@ export interface Officer {
   major: string;
   email?: string;
   bio?: string; // shown in the officer pop-up; falls back to sample text, "" shows nothing
+  intro?: "venezuela-scales" | "philippines-computer" | "fishing-fingerprint" | "venezuela-brain";
   image: string | null; // e.g. "/assets/officers/jane.jpg"
 }
 
@@ -71,9 +72,18 @@ export const siteConfig = {
 
   branding: {
     logoPath: "/assets/logo.webp" as string | null, // files live in /public/assets
-    bannerPath: "/assets/banner-cls-hologram.webp" as string | null,
+    bannerPath: "/assets/banner-cls-binary-v3.svg" as string | null,
     flyerPath: "/assets/flyer.webp" as string | null,
     faviconPath: "/assets/logo.webp" as string | null,
+  },
+
+  hologram: {
+    path: "/assets/lady-justice-network-v1.json",
+    preview: "/assets/lady-justice-network-v1.webp",
+    label: tr("Lady Justice holding a cybersecurity shield and a bacteriophage on her scales"),
+    author: "Kenny Maguire Studio",
+    source: "https://sketchfab.com/3d-models/lady-justice-67b91f4d07ee423b9c5c53a08d8aa454",
+    license: "https://creativecommons.org/licenses/by/4.0/",
   },
 
   hero: {
@@ -153,21 +163,25 @@ export const siteConfig = {
   officers: [
     {
       name: "Jon", role: tr("President"), major: tr("Criminal Justice"), image: "/assets/officers/jon.jpg",
+      intro: "venezuela-scales",
       email: "jdr2421@jagmail.southalabama.edu",
       bio: tr("Growing up of Venezuelan descent, I witnessed the limited access to cybersecurity education and resources within underserved communities. This experience opened my eyes to the growing disconnect between law, technology, and society, particularly for individuals without a background in either field. I founded this club to bridge that gap and make these complex subjects more accessible to everyone."),
     },
     {
       name: "Alfred", role: tr("Vice President"), major: tr("Information Technology"), image: "/assets/officers/alfred.jpg",
+      intro: "philippines-computer",
       email: "all2322@jagmail.southalabama.edu",
       bio: tr("Growing up in the Philippines, I watched technology reshape everyday life faster than the rules around it could keep up. That curiosity led me to IT, and to helping found a club where students can explore how cyber and law shape each other."),
     },
     {
       name: "Andrew", role: tr("Co-President"), major: tr("Digital Forensics"), image: "/assets/officers/andrew.jpg",
+      intro: "fishing-fingerprint",
       email: "aop2322@jagmail.southalabama.edu",
       bio: tr("Digital forensics taught me that every click leaves a trail, and that those trails matter in court. I help lead the society to give students hands-on experience tracing evidence and understanding the law behind it."),
     },
     {
       name: "Michelle", role: tr("Social Media Manager"), major: tr("Biology"), image: "/assets/officers/michelle.webp",
+      intro: "venezuela-brain",
       bio: tr("Originally from Venezuela, I am bilingual in Spanish and English, creative and passionate about painting, learning, and art."),
     },
     { name: "Professor Wang", role: tr("Advisor"), major: tr("Criminal Justice Professor"), image: "/assets/officers/wang.webp", email: "wang@southalabama.edu", bio: "" },

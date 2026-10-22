@@ -39,4 +39,14 @@ Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text s
 - Hero `#top` sections have `scroll-mt-16` so anchor jumps land below the sticky nav.
 
 ## Hero network
+
+2026-10-22: Hero banner now uses `banner-cls-binary-v3.svg`: the existing crest composition with cleaned binary panels, plus real monospace SVG text containing only valid 8-bit binary strings. Larger glyphs and panel-specific row widths fill each box with consistent insets; subdued green keeps the digits behind the crest. The cleaned raster artwork is embedded as WebP so the asset remains self-contained when used as an image. New filename avoids the immutable asset cache. Original `banner-cls-hologram.webp` is retained.
 `src/components/Network.tsx`: canvas of drifting green nodes joined by lines over the hero banner; nodes near the cursor/touch link to it and are pushed away. Pointer-events none, pauses off-screen, static with reduced motion. Only used when a banner is set.
+
+## Contact hologram (2026-10-22)
+- Replaces the flyer beside “Ready to join?” with the approved Lady Justice network, holding a custom shield and bacteriophage on her scales. No crest/title decorations.
+- `JusticeHologram.tsx` loads the existing Three.js dependency and `lady-justice-network-v1.json` only on entering the viewport. The 101,672-byte data file contains 1,765 segments and 646 junctions, rendered in two draw calls. No original high-resolution sculpt or Blender file ships to visitors.
+- Capped at 30 fps and 1.5 device pixel ratio; pauses off-screen/in background tabs, respects reduced motion, disposes GPU resources on unmount. Slow 32-second full turn with subtle float/pointer parallax; static WebP fallback for unavailable WebGL. Enlarged framing and raised desktop position align the figure alongside the contact copy.
+- Model path, accessible description and source/license links live in `siteConfig.hologram`. Credit beneath the figure names Kenny Maguire Studio, links the original Lady Justice and CC BY 4.0, and identifies our changes. New copy includes Spanish translations.
+- Blender working files remain local under `artifacts/`; only the exported network and fallback image belong in `public/assets/`.
+- Local production-browser sample: JavaScript heap was 9.1 MiB before visiting contact and 10.4 MiB with the hologram loaded (garbage collection makes individual readings fluctuate). These exclude browser process/GPU/image memory. Model buffers contain about 49 KiB of float data. Three.js is a separate deferred chunk, about 187 kB gzipped; the static WebP fallback is 39.9 kB and only loads if WebGL fails.
