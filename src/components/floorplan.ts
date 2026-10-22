@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 // Marx Library, 2nd floor, traced from a hand sketch (north is up). One unit = one sketch pixel,
 // shifted so the plan starts at 0,0. The sonar target lives on the server (config.sonar).
 // shortcut: rough trace from a sketch, not a survey; redo against a real plan if one turns up.
@@ -21,11 +22,11 @@ export const WING = [p(440, 400), p(440, 270), p(470, 195), p(525, 168), p(865, 
 // Places you cannot walk: stairwell and open void, rooms, elevators.
 export const BLOCKED: Rect[] = [
   r(545, 400, 1030, 665, "Staircase", 0),
-  r(640, 400, 740, 445, "Elevator", 40), // at the top of the staircase, opens into the north wing
+  r(640, 400, 740, 445, tr("Elevator"), 40), // at the top of the staircase, opens into the north wing
   r(320, 500, 440, 655, "Open to 1st floor", 0),
   r(320, 395, 440, 500, "Office", 40),
   r(855, 165, 950, 400, "Study rooms", 40),
-  r(320, 690, 440, 740, "Elevator", 40), // west end of the south hall
+  r(320, 690, 440, 740, tr("Elevator"), 40), // west end of the south hall
 ];
 // Furniture (visual only).
 export const SHELVES: Rect[] = [

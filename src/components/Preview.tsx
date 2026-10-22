@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useRef, useState } from "react";
 import { Arrest } from "./Arrest";
 import { Briefing, EndCall, FoundBuilding, ToCourt } from "./Briefing";
@@ -9,11 +10,12 @@ import { playUnlock } from "./unlock";
 import { setSound, soundOn, sfx } from "./sound";
 import { Sonar } from "./Sonar";
 import { LawCheck } from "./LawCheck";
+import { CaseSurvey } from "./CaseSurvey";
 
 type Sample = { label: string; kind: HackState["kind"]; data: HackState["data"]; solution: string };
 const HACKS: { label: string; kind: HackState["kind"] }[] = [
-  { label: "Connect the dots", kind: "dots" }, { label: "Memory pattern", kind: "memory" },
-  { label: "Crossed wires", kind: "wires" }, { label: "Firewall grid", kind: "firewall" }, { label: "Lock rings", kind: "rings" },
+  { label: tr("Connect the dots"), kind: "dots" }, { label: tr("Memory pattern"), kind: "memory" },
+  { label: tr("Crossed wires"), kind: "wires" }, { label: tr("Firewall grid"), kind: "firewall" }, { label: tr("Lock rings"), kind: "rings" },
 ];
 const int = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
 function shuffled<T>(items: T[]): T[] {
@@ -59,25 +61,27 @@ export function Preview() {
   };
   const end = () => setScene(null);
   const list: [string, string][] = [
-    ["briefing", "Briefing (before 3-2-1)"], ["building", "Found the building"], ["court", "To court (before accusation)"],
-    ["arrest", "Arrest, then closing call"], ["endcall", "Closing call only"], ["gameover", "Game over"],
-    ["gavel1", "Gavel: order in the court"], ["gavel2", "Gavel: found guilty"],
-    ["photo", "Step done: photo"], ["sonar", "Step done: USB recovered"], ["drive", "Step done: drive"], ["ciphers", "Step done: evidence"],
+    ["briefing", tr("Briefing (before 3-2-1)")], ["building", tr("Found the building")], ["court", tr("To court (before accusation)")],
+    ["arrest", tr("Arrest, then closing call")], ["endcall", tr("Closing call only")], ["gameover", tr("Game over")],
+    ["gavel1", tr("Gavel: order in the court")], ["gavel2", tr("Gavel: found guilty")],
+    ["photo", tr("Step done: photo")], ["sonar", tr("Step done: USB recovered")], ["drive", tr("Step done: drive")], ["ciphers", tr("Step done: evidence")],
   ];
   return (
     <main className="mx-auto max-w-md px-4 py-12">
-      <h1 className="font-mono text-sm uppercase tracking-wide text-green-400">Case preview (dev only)</h1>
-      <button onClick={() => setScene("legal")} className="mt-3 block rounded border border-amber-700 px-4 py-2 text-amber-200">Try courtroom legal check</button>
-      {scene === "legal" && <><LawCheck law={{ stage: 0, question: "Rule: Pretending to be a trusted network is the offense of deception. Stealing data is a separate offense. Each is counted once per incident.\nFacts: Eve set up a fake network named like the university’s and copied the passwords of 40 students in one incident.\nHow many offenses under the rule?", options: ["1", "2", "3", "40"] }} lock={0} onPick={async choice => { if (choice === 1) setScene("legal-success"); }} /><button onClick={end} className="fixed right-4 top-4 z-[80] rounded border border-neutral-700 bg-black px-3 py-2 text-sm text-white">Close preview</button></>}
-      {scene === "legal-success" && <Gavel text="RULING UPHELD" sub="Two distinct offenses supported by the evidence." onDone={end} />}
-      {scene === "library" && <div className="fixed inset-0 z-40 overflow-y-auto bg-black p-5"><div className="mx-auto max-w-5xl"><button onClick={end} className="mb-4 rounded border border-neutral-700 px-4 py-2 text-white">Close library preview</button><Sonar onKey={end} onPing={async (x, y) => { const distance = Math.hypot(x - 312, y - 175); return { strength: Math.max(0, 1 - distance / 700), found: distance < 22 }; }} /></div></div>}
-      <button onClick={() => setScene("library")} className="mt-4 block rounded-lg border border-green-700 px-4 py-3 text-green-300">Explore Marx Library (first-person prototype)</button>
-      <button aria-pressed={sound} onClick={() => { setSound(!sound); updateSound(!sound); if (!sound) sfx.beep(true); }} className="mt-3 rounded-lg border border-neutral-700 px-3 py-2 text-sm text-white hover:border-red-400">Sound: {sound ? "on" : "off"}</button>
-      <h2 className="mt-6 text-white">Bea’s hacks</h2>
-      <p className="mt-2 text-sm text-neutral-400">Randomized puzzles. No team progress or score is changed. Close and reopen for a fresh challenge.</p>
-      {solved && <p role="status" className="mt-3 text-sm text-green-300">{solved} solved. Pick another hack or replay it.</p>}
+      <h1 className="font-mono text-sm uppercase tracking-wide text-green-400">{tr("Case preview (dev only)")}</h1>
+      <button onClick={() => setScene("survey")} className="mt-3 block rounded border border-green-700 px-4 py-2 text-green-200">{tr("Try end-of-game survey")}</button>
+      {scene === "survey" && <div className="fixed inset-0 z-[80] overflow-y-auto bg-black p-5"><div className="mx-auto max-w-xl"><button onClick={end} className="rounded border border-neutral-700 px-4 py-2 text-sm text-white">{tr("Close survey preview")}</button><p className="mt-4 font-mono text-xs text-neutral-500">{tr("Preview only · submissions aren’t saved. Close and reopen to restart.")}</p><CaseSurvey code="" preview /></div></div>}
+      <button onClick={() => setScene("legal")} className="mt-3 block rounded border border-amber-700 px-4 py-2 text-amber-200">{tr("Try courtroom legal check")}</button>
+      {scene === "legal" && <><LawCheck law={{ stage: 0, question: "Rule: Pretending to be a trusted network is the offense of deception. Stealing data is a separate offense. Each is counted once per incident.\nFacts: Eve set up a fake network named like the university’s and copied the passwords of 40 students in one incident.\nHow many offenses under the rule?", options: ["1", "2", "3", "40"] }} lock={0} onPick={async choice => { if (choice === 1) setScene("legal-success"); }} /><button onClick={end} className="fixed right-4 top-4 z-[80] rounded border border-neutral-700 bg-black px-3 py-2 text-sm text-white">{tr("Close preview")}</button></>}
+      {scene === "legal-success" && <Gavel text={tr("RULING UPHELD")} sub="Two distinct offenses supported by the evidence." onDone={end} />}
+      {scene === "library" && <div className="fixed inset-0 z-40 overflow-y-auto bg-black p-5"><div className="mx-auto max-w-5xl"><button onClick={end} className="mb-4 rounded border border-neutral-700 px-4 py-2 text-white">{tr("Close library preview")}</button><Sonar onKey={end} onPing={async (x, y) => { const distance = Math.hypot(x - 312, y - 175); return { strength: Math.max(0, 1 - distance / 700), found: distance < 22 }; }} /></div></div>}
+      <button onClick={() => setScene("library")} className="mt-4 block rounded-lg border border-green-700 px-4 py-3 text-green-300">{tr("Explore Marx Library (first-person prototype)")}</button>
+      <button aria-pressed={sound} onClick={() => { setSound(!sound); updateSound(!sound); if (!sound) sfx.beep(true); }} className="mt-3 rounded-lg border border-neutral-700 px-3 py-2 text-sm text-white hover:border-red-400">{tr("Sound:")}{sound ? tr("on") : tr("off")}</button>
+      <h2 className="mt-6 text-white">{tr("Bea’s hacks")}</h2>
+      <p className="mt-2 text-sm text-neutral-400">{tr("Randomized puzzles. No team progress or score is changed. Close and reopen for a fresh challenge.")}</p>
+      {solved && <p role="status" className="mt-3 text-sm text-green-300">{solved}{tr("solved. Pick another hack or replay it.")}</p>}
       <div className="mt-4 grid gap-2">
-        {HACKS.map((sample) => <button key={sample.kind} onClick={() => handleLaunch(sample)} className="rounded-lg border border-neutral-700 px-4 py-2 text-left text-sm text-white hover:border-green-400">{sample.label}</button>)}
+        {HACKS.map((sample) => <button key={sample.kind} onClick={() => handleLaunch(sample)} className="rounded-lg border border-neutral-700 px-4 py-2 text-left text-sm text-white hover:border-green-400">{tr(sample.label)}</button>)}
       </div>
       {hack && <>
         <Hack key={issuedAt} hack={{ kind: hack.kind, data: hack.data, issuedAt }} onSolve={async (answer) => {
@@ -86,9 +90,9 @@ export function Preview() {
           if (ok) { await playUnlock(); setSolved(hack.label); setHack(null); }
           return ok;
         }} />
-        <button onClick={() => setHack(null)} className="fixed right-4 top-4 z-[60] rounded-lg border border-neutral-600 bg-black px-4 py-2 text-sm text-white">Close preview</button>
+        <button onClick={() => setHack(null)} className="fixed right-4 top-4 z-[60] rounded-lg border border-neutral-600 bg-black px-4 py-2 text-sm text-white">{tr("Close preview")}</button>
       </>}
-      <h2 className="mt-8 text-white">Cutscenes</h2>
+      <h2 className="mt-8 text-white">{tr("Cutscenes")}</h2>
       <div className="mt-4 grid gap-2">
         {list.map(([id, label]) => (
           <button key={id} onClick={() => setScene(id)} className="rounded-lg border border-neutral-700 px-4 py-2 text-left text-sm text-white hover:border-green-400">{label}</button>
@@ -100,8 +104,8 @@ export function Preview() {
       {scene === "arrest" && <Arrest onDone={() => setScene("endcall")} />}
       {scene === "endcall" && <EndCall onDone={end} />}
       {scene === "gameover" && <GameOver onDone={end} />}
-      {scene === "gavel1" && <Gavel text="ORDER IN THE COURT!" sub="Legal check begins." onDone={end} />}
-      {scene === "gavel2" && <Gavel text="FOUND GUILTY." sub="Bea F. Wellington, on all counts." onDone={end} />}
+      {scene === "gavel1" && <Gavel text={tr("ORDER IN THE COURT!")} sub="Legal check begins." onDone={end} />}
+      {scene === "gavel2" && <Gavel text={tr("FOUND GUILTY.")} sub={tr("Bea F. Wellington, on all counts.")} onDone={end} />}
       {(scene === "photo" || scene === "sonar" || scene === "drive" || scene === "ciphers") && <StepDone key={scene} kind={scene} onDone={end} />}
     </main>
   );

@@ -23,10 +23,15 @@
 - [ ] Add .impeccable/ and .claude/ to .gitignore
 
 ## Discord bot (see docs/features/discord-bot.md)
+- [x] Prepare Lady Justice survey notifications for #ticket-bot using server-only credentials
+- [ ] Server owner: configure CASE_SURVEY_CHANNEL_ID for #ticket-bot, grant Lady Justice channel permissions, restart site and verify delivery
 - [ ] Upload `lady-justice-avatar.png` as the bot avatar (Developer Portal → Bot tab)
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Restore location/USB step animations and wait for arrest artwork before scene timers start
+- [x] Add optional end-of-game survey with validated private persistence and duplicate protection
+- [ ] Verify arrest and step transitions end to end; coordinate survey state/API addition and response retrieval with server owner before merging
 - [x] Shrink ambient click effects into soft water-like code ripples
 - [x] Gate all four decoder tools behind related training ciphers, including a Julius Caesar dispatch and shift dial
 - [x] First-person two-floor green/black library blockout with walking, central stair flight and radar; add isolated preview
@@ -66,3 +71,6 @@
 - [ ] Discord bot stays on Vene's old server for now; move it only after stopping the old copy
 - [ ] Remove Vene's Windows PC key (`claude-desktop-itt842f`) from `~grenudo/.ssh/authorized_keys` when no longer needed
 - [ ] Dashboard: maintenance mode and rollback are unavailable for the remote site
+
+- [x] Add English/Español interface, Spanish standard evidence and decoder training, translated Chris subtitles with original audio, and centered El Chigüire survey overlay (2026-10-21).
+- [ ] Review bilingual case/API changes with the other maintainer before merge; configure survey Discord delivery on the server (see docs/features/discord-bot.md).

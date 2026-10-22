@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { sfx } from "./sound";
 import { CallConsoles } from "./CallConsoles";
 import { useEffect, useRef, useState } from "react";
@@ -12,52 +13,52 @@ import scaredArt from "./bacon-scared.txt?raw";
 const LEAD = 0.4; // show each line this many seconds before its time, so text never trails the voice
 export type Line = [number, string];
 const LINES: Line[] = [
-  [0.7, "Rookie. Can you hear me? Good. Keep your eyes on the screen."],
-  [6.9, "I'll make this quick. We don't have much time."],
-  [11.1, "Her name is Bea F. Wellington."],
-  [14.0, "Hacker. Dangerous."],
-  [18.1, "She set up a fake open Wi-Fi network. Made it look like the University of South Alabama."],
-  [24.1, "Students and staff connected. Every login they typed, she stole."],
-  [30.95, "Then she used those logins to plant ransomware on the university's computers."],
-  [37.4, "And now she's gone."],
-  [40.2, "Your mission: track Bea F. Wellington down."],
-  [43.65, "Follow her trail. Find the evidence."],
-  [45.0, "Prove what she did."],
-  [48.0, "And finally, bring her to justice."],
-  [53.25, "But listen carefully. She knows you're coming. She'll fight back. Expect her to counterhack you."],
-  [59.1, "When she does, stay calm. Think fast. Don't let her win."],
-  [63.5, "This is your moment, rookie. The whole team is counting on you."],
-  [68.0, "Good luck, soldier."],
+  [0.7, tr("Rookie. Can you hear me? Good. Keep your eyes on the screen.")],
+  [6.9, tr("I'll make this quick. We don't have much time.")],
+  [11.1, tr("Her name is Bea F. Wellington.")],
+  [14.0, tr("Hacker. Dangerous.")],
+  [18.1, tr("She set up a fake open Wi-Fi network. Made it look like the University of South Alabama.")],
+  [24.1, tr("Students and staff connected. Every login they typed, she stole.")],
+  [30.95, tr("Then she used those logins to plant ransomware on the university's computers.")],
+  [37.4, tr("And now she's gone.")],
+  [40.2, tr("Your mission: track Bea F. Wellington down.")],
+  [43.65, tr("Follow her trail. Find the evidence.")],
+  [45.0, tr("Prove what she did.")],
+  [48.0, tr("And finally, bring her to justice.")],
+  [53.25, tr("But listen carefully. She knows you're coming. She'll fight back. Expect her to counterhack you.")],
+  [59.1, tr("When she does, stay calm. Think fast. Don't let her win.")],
+  [63.5, tr("This is your moment, rookie. The whole team is counting on you.")],
+  [68.0, tr("Good luck, soldier.")],
 ];
 
 export const Briefing = ({ onDone }: { onDone: () => void }) => <Codec src="/case/briefing.mp3" lines={LINES} onDone={onDone} />;
 
 // Found the building: Chris congratulates the team. Timed to /case/found-building.mp3 from its pauses.
 export const BUILDING_LINES: Line[] = [
-  [0.0, "Well done, rookie."],
-  [1.6, "You found the building."],
-  [3.4, "The Marx Library."],
-  [4.9, "Bea was there."],
-  [6.35, "But the building is only the start."],
-  [9.0, "Now it's time to find the precise location."],
-  [12.2, "Something is hidden inside."],
-  [14.15, "Search every corner."],
-  [15.55, "Good luck."],
+  [0.0, tr("Well done, rookie.")],
+  [1.6, tr("You found the building.")],
+  [3.4, tr("The Marx Library.")],
+  [4.9, tr("Bea was there.")],
+  [6.35, tr("But the building is only the start.")],
+  [9.0, tr("Now it's time to find the precise location.")],
+  [12.2, tr("Something is hidden inside.")],
+  [14.15, tr("Search every corner.")],
+  [15.55, tr("Good luck.")],
 ];
 export const FoundBuilding = ({ onDone }: { onDone: () => void }) => <Codec src="/case/found-building.mp3" lines={BUILDING_LINES} onDone={onDone} />;
 
 // All six messages decoded: Chris sends the team to court. Timed to /case/to-court.mp3 from its pause.
 export const COURT_LINES: Line[] = [
-  [0.0, "You got all the evidence."],
-  [1.75, "Now let's take this porker to court."],
+  [0.0, tr("You got all the evidence.")],
+  [1.75, tr("Now let's take this porker to court.")],
 ];
 export const ToCourt = ({ onDone }: { onDone: () => void }) => <Codec src="/case/to-court.mp3" lines={COURT_LINES} onDone={onDone} />;
 
 // After the arrest: Chris wraps up the case. Timed to /case/end-call.mp3 from its pauses.
 export const END_LINES: Line[] = [
-  [0.35, "Great work, detectives."],
-  [2.25, "Bea F. Wellington is behind bars. The university is safe."],
-  [6.05, "Case closed."],
+  [0.35, tr("Great work, detectives.")],
+  [2.25, tr("Bea F. Wellington is behind bars. The university is safe.")],
+  [6.05, tr("Case closed.")],
 ];
 export const EndCall = ({ onDone }: { onDone: () => void }) => <Codec src="/case/end-call.mp3" lines={END_LINES} onDone={onDone} />;
 
@@ -137,14 +138,14 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black px-4">
       <audio ref={audio} src={src} preload="auto" onError={() => setFailed(true)} onTimeUpdate={tick} onEnded={() => done.current()} />
       {!started && <div className="codec-incoming flex w-full max-w-md flex-col items-center text-center">
-        <p className="font-mono text-[10px] tracking-[0.35em] text-green-600">ENCRYPTED LINE // 140.85</p>
+        <p className="font-mono text-[10px] tracking-[0.35em] text-green-600">{tr("ENCRYPTED LINE // 140.85")}</p>
         <div aria-hidden className="codec-phone my-8 flex h-24 w-24 items-center justify-center rounded-full border border-green-400/60 bg-black text-green-300">
-          <svg viewBox="0 0 48 48" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 8l7 8-4 6c3 6 6 9 12 12l6-4 8 7c-2 6-6 8-11 6C17 38 9 30 5 18 3 13 6 9 12 8Z" /><path d="M29 8c6 1 10 5 11 11M28 15c3 0 5 2 5 5" /></svg>
+          <svg viewBox="0 0 48 48" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth={"2"}><path d="M12 8l7 8-4 6c3 6 6 9 12 12l6-4 8 7c-2 6-6 8-11 6C17 38 9 30 5 18 3 13 6 9 12 8Z" /><path d="M29 8c6 1 10 5 11 11M28 15c3 0 5 2 5 5" /></svg>
         </div>
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">Incoming call</p>
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-green-400">{tr("Incoming call")}</p>
         <h2 className="mt-4 font-mono text-2xl text-green-300">Chris P. Bacon</h2>
-        <p className="mt-2 font-mono text-xs tracking-widest text-neutral-500">FBI // SECURE CONNECTION</p>
-        <button onClick={answer} className="mt-8 rounded-lg border border-green-400/60 bg-black px-8 py-3 font-mono text-sm text-green-300 transition hover:bg-green-400/10 focus-visible:outline-2 focus-visible:outline-green-300">Answer phone</button>
+        <p className="mt-2 font-mono text-xs tracking-widest text-neutral-500">{tr("FBI // SECURE CONNECTION")}</p>
+        <button onClick={answer} className="mt-8 rounded-lg border border-green-400/60 bg-black px-8 py-3 font-mono text-sm text-green-300 transition hover:bg-green-400/10 focus-visible:outline-2 focus-visible:outline-green-300">{tr("Answer phone")}</button>
       </div>}
       {started && <div className="codec-conversation flex w-full flex-col items-center">
       <CallConsoles onPitchChange={value => {
@@ -160,14 +161,14 @@ export function Codec({ src, lines, onDone }: { src: string; lines: Line[]; onDo
             <span key={i} className="h-14 w-1.5 rounded bg-green-400 will-change-transform" style={{ transform: "scaleY(0.1)", animation: started ? `codec-bar ${0.5 + (i % 5) * 0.13}s ease-in-out ${i * 0.04}s infinite alternate` : undefined }} />
           ))}
         </div>
-        <Portrait label="You" sub="Rookie" />
+        <Portrait label="You" sub={tr("Rookie")} />
       </div>
       <div className="mt-8 min-h-[7rem] w-full max-w-2xl rounded-lg border border-green-400/60 bg-black p-5 text-center">
         {started
-          ? <p className="font-mono text-lg text-green-300">{failed ? lines.map((l) => l[1]).join(" ") : lines[line]?.[1] ?? ""}</p>
-          : <p className="font-mono text-green-300">Incoming call from Chris P. Bacon, FBI.</p>}
+          ? <p className="font-mono text-lg text-green-300">{failed ? lines.map((l) => tr(l[1])).join(" ") : tr(lines[line]?.[1] ?? "")}</p>
+          : <p className="font-mono text-green-300">{tr("Incoming call from Chris P. Bacon, FBI.")}</p>}
       </div>
-      {started && <button onClick={() => { audio.current?.pause(); done.current(); }} className="mt-6 text-xs text-neutral-500 hover:text-white">{failed ? "Continue" : "Skip"}</button>}
+      {started && <button onClick={() => { audio.current?.pause(); done.current(); }} className="mt-6 text-xs text-neutral-500 hover:text-white">{failed ? tr("Continue") : tr("Skip")}</button>}
       {debug && <p className="fixed bottom-4 right-4 font-mono text-2xl text-yellow-300">{time.toFixed(1)}</p>}
       </div>}
       <style>{`@keyframes codec-bar{from{transform:scaleY(.1)}to{transform:scaleY(1)}}`}</style>
@@ -190,7 +191,7 @@ export function Portrait({ label, sub, boxRef, mood }: { label: string; sub: str
       <div ref={boxRef} className={`h-40 w-40 bg-black relative flex items-center justify-center overflow-hidden rounded-lg border-2 border-green-400 font-mono text-4xl text-green-400`}>
         <pre aria-hidden className="absolute left-1/2 top-1/2 text-[8px] leading-[8px]" style={{ transform: `translate(-50%,-50%) scale(${fit(pic)})` }}>{pic}</pre>
       </div>
-      <p className="mt-2 font-mono text-xs text-white">{label}</p>
+      <p className="mt-2 font-mono text-xs text-white">{tr(label)}</p>
       <p className="font-mono text-[10px] uppercase text-neutral-500">{sub}</p>
     </div>
   );

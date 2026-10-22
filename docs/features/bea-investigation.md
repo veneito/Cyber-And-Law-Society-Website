@@ -1,5 +1,11 @@
 # Bea F. Wellington Investigation: Handoff
 
+## Scene reliability and debrief survey (2026-10-21)
+Preview menu includes a complete survey demo with browser validation and a simulated confirmation; it sends no API request or saved response. Close and reopen resets the demo.
+Location, USB recovery and drive verification animations trigger explicitly from successful building/key/unlock actions; removed the old sonar branch that suppressed USB artwork. The opening arrest asset is reduced from 1.25MB to ~140KB under a new filename. Arrest timers wait for the current artwork, show a real loading/failure placeholder, clamp frame indexes, and prefetch the next clip.
+
+Victory/timeout now includes an optional one-response-per-team survey: enjoyment, difficulty and learning ratings (1–5), plus up to 500 characters of feedback. POST /api/case/survey requires a known finished/timed-out team, validates input, persists only the first response as an optional `survey` field in the private team state, and exposes only `surveySubmitted` to clients. Scores/leaderboards do not expose responses. Coordinate this additive private-state/API change with the server owner before merging. No email/export integration is configured. Run `node tests/case-survey.test.mjs` for isolated validation/persistence checks.
+
 ## Ambient click ripple (2026-10-21)
 Clicks now produce small damped code wavelets (96px maximum radius, 1.1s lifetime), with subtle glyph displacement and stable characters instead of a large bright sonar ring. Limited to six overlapping primary-pointer ripples; existing reduced-motion behavior is preserved.
 
@@ -251,3 +257,9 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - The "FOUND GUILTY." gavel (`Gavel` in `Case.tsx`, triggered when `finishedAt` is set) plays first, and the arrest starts after it closes.
 - Every incoming call (`Codec` in `Briefing.tsx`) rings (`sfx.ring`, a synthesized two-tone ring that ignores the effects mute) until "Answer call" is clicked.
 - The "You" portrait (`rookie.txt`) is a new cat, and Chris's normal portrait (`bacon.txt`) is cropped to its art so both sit centered; the portrait is auto-scaled to the frame, so crop any new art to its bounding box.
+
+## Bilingual interface and El Chigüire debrief (2026-10-21)
+- English/Español switch applies to site content, case controls, puzzles, legal checks and subtitles. Language is kept in the URL and browser storage; changing language reloads the page. Chris's recordings remain unchanged.
+- Standard evidence has six Spanish cipher messages and Spanish answer validation. Saved evidence remains canonical English for compatibility; custom event configurations retain their own evidence.
+- Optional completion survey appears as a one-question-at-a-time overlay with a centered green ASCII capybara portrait. Preview submissions are simulated. Discord delivery setup remains an owner task in the bot notes.
+- Coordinate the case API changes with the other maintainer before merging; no live server configuration was changed.

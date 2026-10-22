@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Phage } from "./Phage";
@@ -8,11 +9,11 @@ export const isFixed = () => {
 };
 
 const QUESTIONS = [
-  { q: "What is phishing?", a: ["A fake message that tricks you into giving up info", "A way to speed up Wi-Fi", "A type of firewall"], ok: 0 },
-  { q: "In a criminal case, who has the burden of proof?", a: ["The defendant", "The prosecution", "The jury"], ok: 1 },
-  { q: "What does two-factor authentication add?", a: ["A faster login", "A second proof it's really you", "A longer password"], ok: 1 },
-  { q: "What does a subpoena do?", a: ["Orders someone to testify or hand over evidence", "Declares a verdict", "Sets bail"], ok: 0 },
-  { q: "Which password is the strongest?", a: ["password123", "Jonclub2024", "t9!Rv#4pLq2$"], ok: 2 },
+  { q: tr("What is phishing?"), a: [tr("A fake message that tricks you into giving up info"), tr("A way to speed up Wi-Fi"), tr("A type of firewall")], ok: 0 },
+  { q: tr("In a criminal case, who has the burden of proof?"), a: [tr("The defendant"), tr("The prosecution"), tr("The jury")], ok: 1 },
+  { q: tr("What does two-factor authentication add?"), a: [tr("A faster login"), tr("A second proof it's really you"), tr("A longer password")], ok: 1 },
+  { q: tr("What does a subpoena do?"), a: [tr("Orders someone to testify or hand over evidence"), tr("Declares a verdict"), tr("Sets bail")], ok: 0 },
+  { q: tr("Which password is the strongest?"), a: ["password123", "Jonclub2024", "t9!Rv#4pLq2$"], ok: 2 },
 ];
 
 // Quiet rising chime made with the browser's audio; skipped with reduced motion or if audio is unavailable.
@@ -41,7 +42,7 @@ function WinScreen({ secs, onRestart, onClose, onHide }: { secs: number | null; 
   const lines = ["> Anomaly isolated", `> Patches applied: ${QUESTIONS.length}/${QUESTIONS.length}`, ...(secs != null ? [`> Time to patch: ${secs}s`] : [])];
   const last = 0.5 + lines.length * 0.45;
   return (
-    <div role="dialog" aria-modal="true" aria-label="Bug fixed" className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div role="dialog" aria-modal="true" aria-label={tr("Bug fixed")} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="win-box relative w-full max-w-lg rounded-xl border border-green-400/70 bg-neutral-950 p-6">
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl" aria-hidden><div className="win-scan" /></div>
         <div className="pointer-events-none absolute left-1/2 top-1/2" aria-hidden>
@@ -51,14 +52,14 @@ function WinScreen({ secs, onRestart, onClose, onHide }: { secs: number | null; 
         </div>
         <div className="relative font-mono text-sm text-green-400">
           {lines.map((l, i) => <p key={l} className="win-line" style={{ animationDelay: `${0.5 + i * 0.45}s` }}>{l}</p>)}
-          <p className="win-line mt-3 text-2xl font-bold text-green-300 [text-shadow:0_0_14px_#4ade80]" style={{ animationDelay: `${last}s` }}>&gt; Bug fixed. Nice work.</p>
+          <p className="win-line mt-3 text-2xl font-bold text-green-300 [text-shadow:0_0_14px_#4ade80]" style={{ animationDelay: `${last}s` }}>{tr("&gt; Bug fixed. Nice work.")}</p>
         </div>
-        <p className="win-line relative mt-3 text-neutral-400" style={{ animationDelay: `${last + 0.3}s` }}>Head back to the officer page to fill out the application.</p>
+        <p className="win-line relative mt-3 text-neutral-400" style={{ animationDelay: `${last + 0.3}s` }}>{tr("Head back to the officer page to fill out the application.")}</p>
         <div className="win-line relative mt-5 flex gap-3" style={{ animationDelay: `${last + 0.5}s` }}>
-          <a href="/become-an-officer?from=win" onClick={onHide} className="rounded-lg bg-green-400 px-4 py-2 font-semibold text-black hover:bg-green-300">Apply</a>
-          <button onClick={onRestart} className="rounded-lg border border-neutral-700 px-4 py-2 text-white hover:border-green-400">Restart the bug</button>
-          <button onClick={onClose} className="px-2 text-sm text-neutral-500 hover:text-white">Close</button>
-          <button onClick={onHide} className="px-2 text-sm text-neutral-500 hover:text-white">Hide bug</button>
+          <a href="/become-an-officer?from=win" onClick={onHide} className="rounded-lg bg-green-400 px-4 py-2 font-semibold text-black hover:bg-green-300">{tr("Apply")}</a>
+          <button onClick={onRestart} className="rounded-lg border border-neutral-700 px-4 py-2 text-white hover:border-green-400">{tr("Restart the bug")}</button>
+          <button onClick={onClose} className="px-2 text-sm text-neutral-500 hover:text-white">{tr("Close")}</button>
+          <button onClick={onHide} className="px-2 text-sm text-neutral-500 hover:text-white">{tr("Hide bug")}</button>
         </div>
       </div>
     </div>
@@ -154,13 +155,13 @@ function Chase({ onCaught, onClose, onHide }: { onCaught: () => void; onClose: (
     <>
       {/* Fixed banner: the phage itself sits in the page, so the visitor scrolls to hunt it down. */}
       <div role="region" aria-label="Catch the phage" className="fixed left-1/2 top-20 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-xl border border-green-400/40 bg-black/85 px-4 py-3 text-center backdrop-blur">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Final patch {caught}/{CATCHES}</p>
-        <h3 className="mt-1 text-lg font-semibold text-white">Catch the bacteriophage!</h3>
-        <p className="text-sm text-neutral-400">It runs from section to section. Scroll to find it and click it {CATCHES} times.</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Final patch")}{caught}/{CATCHES}</p>
+        <h3 className="mt-1 text-lg font-semibold text-white">{tr("Catch the bacteriophage!")}</h3>
+        <p className="text-sm text-neutral-400">{tr("It runs from section to section. Scroll to find it and click it")}{CATCHES}{tr("times.")}</p>
         <div className="mt-2 flex justify-center gap-4 text-sm text-neutral-500">
-          <button onClick={onClose} className="hover:text-white">Close</button>
-          <button onClick={onHide} className="hover:text-white">Hide bug</button>
-          <button onClick={() => setMuted(!muted)} className="hover:text-white">{muted ? "Music off" : "Music on"}</button>
+          <button onClick={onClose} className="hover:text-white">{tr("Close")}</button>
+          <button onClick={onHide} className="hover:text-white">{tr("Hide bug")}</button>
+          <button onClick={() => setMuted(!muted)} className="hover:text-white">{muted ? tr("Music off") : tr("Music on")}</button>
         </div>
       </div>
       {/* Health bar rides above the phage (separate from it so it does not rotate) */}
@@ -169,7 +170,7 @@ function Chase({ onCaught, onClose, onHide }: { onCaught: () => void; onClose: (
         className="pointer-events-none absolute z-40 transition-all duration-[1500ms] ease-in-out"
         style={{ left: `${p.x}%`, top: p.y, transform: "translate(-50%, -4.75rem)" }}
       >
-        <p className="text-center font-mono text-[10px] uppercase tracking-widest text-red-400">T4 Phage</p>
+        <p className="text-center font-mono text-[10px] uppercase tracking-widest text-red-400">{tr("T4 Phage")}</p>
         <div className="mt-0.5 flex w-20 gap-0.5">
           {Array.from({ length: CATCHES }, (_, n) => (
             <span key={n} className={`h-2 flex-1 rounded-sm border border-red-500/70 transition-colors ${n < CATCHES - caught ? "bg-red-500 shadow-[0_0_6px_#ef4444]" : "bg-transparent"}`} />
@@ -205,17 +206,17 @@ function Quiz({ onDone, onClose, onHide, onChase }: { onDone: (secs: number) => 
   return (
     <div role="dialog" aria-modal="true" aria-label="Fix the bug" className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="w-full max-w-lg rounded-xl border border-green-400/40 bg-neutral-950 p-6">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Patch {i + 1}/{QUESTIONS.length}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Patch")}{i + 1}/{QUESTIONS.length}</p>
         <h3 className="mt-2 text-xl font-semibold text-white">{q.q}</h3>
         <div className="mt-5 flex flex-col gap-3">
           {q.a.map((t, n) => (
             <button key={t} onClick={() => pick(n)} className="rounded-lg border border-neutral-700 px-4 py-3 text-left text-neutral-200 hover:border-green-400">{t}</button>
           ))}
         </div>
-        <p className="mt-4 h-5 text-sm text-red-400" role="status">{wrong ? "Patch failed. Try again." : ""}</p>
+        <p className="mt-4 h-5 text-sm text-red-400" role="status">{wrong ? tr("Patch failed. Try again.") : ""}</p>
         <div className="mt-2 flex gap-4 text-sm text-neutral-500">
-          <button onClick={onClose} className="hover:text-white">Close</button>
-          <button onClick={onHide} className="hover:text-white">Hide bug</button>
+          <button onClick={onClose} className="hover:text-white">{tr("Close")}</button>
+          <button onClick={onHide} className="hover:text-white">{tr("Hide bug")}</button>
         </div>
       </div>
     </div>
@@ -302,7 +303,7 @@ export function Anomaly({ spot }: { spot: (typeof SPOTS)[number] }) {
     <div className="relative h-0">
       <button
         onClick={() => { setChasing(false); setOpen(true); }}
-        aria-label={fixed ? "Bug fixed" : "Anomaly detected: click to fix the bug"}
+        aria-label={fixed ? tr("Bug fixed") : tr("Anomaly detected: click to fix the bug")}
         className={`${chasing && open ? "hidden " : ""}absolute z-10 h-28 w-28 overflow-hidden rounded-lg border sm:h-36 sm:w-36 ${fixed ? "border-green-400/50" : "border-red-500/40"}`}
         style={{ left: `${2 + ((seed >> 8) % 60)}%`, top: `-${40 + ((seed >> 16) % 80)}px` }}
       >
