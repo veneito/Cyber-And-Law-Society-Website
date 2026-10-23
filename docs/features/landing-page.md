@@ -44,6 +44,7 @@ Black, terminal green (`green-400`), white. Inter (Google Fonts) for body text s
 `src/components/Network.tsx`: canvas of drifting green nodes joined by lines over the hero banner; nodes near the cursor/touch link to it and are pushed away. Pointer-events none, pauses off-screen, static with reduced motion. Only used when a banner is set.
 
 ## Contact hologram (2026-10-22)
+- The section reveal starts with a fully closed clip mask; its previous negative top inset exposed the raised model's head before the section became visible. The completed reveal still leaves room for glows.
 - Replaces the flyer beside “Ready to join?” with the approved Lady Justice network, holding a custom shield and bacteriophage on her scales. No crest/title decorations.
 - `JusticeHologram.tsx` loads the existing Three.js dependency and `lady-justice-network-v1.json` only on entering the viewport. The 101,672-byte data file contains 1,765 segments and 646 junctions, rendered in two draw calls. No original high-resolution sculpt or Blender file ships to visitors.
 - Capped at 30 fps and 1.5 device pixel ratio; pauses off-screen/in background tabs, respects reduced motion, disposes GPU resources on unmount. Slow 32-second full turn with subtle float/pointer parallax; static WebP fallback for unavailable WebGL. Enlarged framing and raised desktop position align the figure alongside the contact copy.

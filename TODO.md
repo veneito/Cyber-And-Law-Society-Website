@@ -54,6 +54,8 @@
 - [x] Prep all 9 team drives (done)
 
 ## Ideas
+- [x] Close the initial section reveal mask so the hologram head cannot peek through before the contact content appears (2026-10-22).
+- [x] Fix the case Activities back-link displaying the HTML arrow code in English (2026-10-22).
 - [x] Add short personalized officer bio intros for Jon, Alfred, Andrew, and Michelle; Professor Wang opens directly (2026-10-22).
 - [x] Clean malformed binary digits in the hero artwork and replace them with crisp monospace vector text (2026-10-22).
 - [x] Replace the contact poster with the Lady Justice 3D network and custom scale symbols; include model attribution and lazy, paused rendering (2026-10-22).

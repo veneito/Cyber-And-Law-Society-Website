@@ -1,5 +1,7 @@
 # Bea F. Wellington Investigation: Handoff
 
+2026-10-22: Fixed the Activities back-link showing literal `&larr;` in English; use a Unicode arrow in the translated label. Presentation only; no game/API/state changes.
+
 ## Scene reliability and debrief survey (2026-10-21)
 Preview menu includes a complete survey demo with browser validation and a simulated confirmation; it sends no API request or saved response. Close and reopen resets the demo.
 Location, USB recovery and drive verification animations trigger explicitly from successful building/key/unlock actions; removed the old sonar branch that suppressed USB artwork. The opening arrest asset is reduced from 1.25MB to ~140KB under a new filename. Arrest timers wait for the current artwork, show a real loading/failure placeholder, clamp frame indexes, and prefetch the next clip.

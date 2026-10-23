@@ -24,7 +24,7 @@ body {
 /* Experimental: sections "generate" on scroll (see components/Materialize.tsx) */
 .materialize .materialize-body {
   position: relative;
-  clip-path: inset(-4rem -4rem 100% -4rem); /* negative margins keep glows near the edges from being clipped */
+  clip-path: inset(0 -4rem 100% -4rem); /* fully closed until reveal; the final frame opens room for glows */
 }
 .materialize.is-in .materialize-body {
   animation: materialize-draw 1.1s 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
