@@ -544,7 +544,7 @@
   "Locked out for": "Acceso bloqueado durante",
   "s after the last wrong answer.": "s tras la última respuesta incorrecta.",
   "Find the exact spot in the building. The signal grows stronger as you get closer.": "Encuentra el lugar exacto dentro del edificio. La señal aumenta cuando te acercas.",
-  "&larr; Activities": "← Actividades",
+  "← Activities": "← Actividades",
   "sound:": "sonido:",
   "GEO // TRACE": "GEO // RASTREO",
   "FIX ACQUIRED": "POSICIÓN LOCALIZADA",
@@ -762,5 +762,8 @@
   "Case File · Cyber & Law Society": "Expediente · Cyber & Law Society",
   "finished": "finalizado",
   "playing": "jugando",
-  "time up": "tiempo agotado"
+  "time up": "tiempo agotado",
+  "Lady Justice holding a cybersecurity shield and a bacteriophage on her scales": "La Dama de la Justicia con un escudo de ciberseguridad y un bacteriófago en su balanza",
+  "Lady Justice adapted from": "Dama de la Justicia adaptada de",
+  "Simplified geometry and hologram styling; custom shield, bacteriophage, and scales.": "Geometría simplificada y estilo holográfico; escudo, bacteriófago y balanza personalizados."
 }

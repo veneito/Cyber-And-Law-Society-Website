@@ -13,6 +13,9 @@
 - Not checked in the browser: the pane was blocked by a popup during this work, so spacing/phone layout were only type-checked.
 
 ## Officer pop-up
+
+- Personalized intros (2026-10-22): optional `intro` presets in `site.ts` play once whenever the bio opens. Jon: Venezuelan flag → scales; Alfred: Philippine flag → computer; Andrew: fishing rod → digital fingerprint; Michelle: Venezuelan flag → brain. Professor Wang has no intro. Additional themes can be assigned through config.
+- `OfficerIntro.tsx` draws smooth vector flags/source artwork on Canvas 2D, with no new dependencies/media downloads. A rippling melt edge releases flowing binary glyphs, which fill the destination from the bottom up before the glowing outline resolves; then the bio appears after 2 seconds. Jon's scales have an ornamental beam, diamond finial, suspended bowls and stepped pedestal. There is no Skip button; close, Escape, and the native focus trap remain available, and reduced motion goes straight to the bio. RAF stops on unmount; reopening replays the intro.
 - Each card (`OfficerCard` in `src/App.tsx`) is a button that opens a native `<dialog>` via `showModal()`: focus trap, Escape and focus restore come free; a click on the dialog element itself counts as a backdrop click.
 - Fade in/out is CSS transitions (`@starting-style` + `allow-discrete`) in `src/index.css`; older browsers close instantly. Reduced motion disables it.
 - Name and "role · major" use `DecodeText` (same scramble as section headings), replayed on each open.

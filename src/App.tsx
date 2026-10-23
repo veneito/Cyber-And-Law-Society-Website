@@ -7,6 +7,8 @@ import { Icon } from "./components/Icon";
 import { CasePage } from "./components/Case";
 import { Logo } from "./components/Logo";
 import { Network } from "./components/Network";
+import { JusticeHologram } from "./components/JusticeHologram";
+import { OfficerIntro } from "./components/OfficerIntro";
 import { Phage } from "./components/Phage";
 import { DecodeText } from "./components/Materialize";
 import { Quarantine } from "./components/Quarantine";
@@ -139,6 +141,7 @@ const SAMPLE_BIO = "Sample bio: this is placeholder text about the officer. Add 
 function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: () => void }) {
   const dlg = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false); // replays the decode effect on each open
+  const [intro, setIntro] = useState(false);
   const avatar = (size: string) =>
     o.image ? (
       <img src={o.image} alt={o.name} className={`mx-auto ${size} rounded-full object-cover`} />
@@ -151,7 +154,12 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
     <>
       {/* Centre card opens the pop-up; side cards slide to the centre. Cards beyond two steps fade out. */}
       <button
-        onClick={() => (pos === 0 ? (dlg.current?.showModal(), setOpen(true)) : onSelect())}
+        onClick={() => {
+          if (pos !== 0) { onSelect(); return; }
+          setIntro(Boolean(o.intro) && !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+          dlg.current?.showModal();
+          setOpen(true);
+        }}
         aria-label={pos === 0 ? `${o.name}, open bio` : `Show ${o.name}`}
         tabIndex={Math.abs(pos) > 2 ? -1 : 0}
         className={`group absolute left-1/2 top-6 ${pos === 0 ? "" : "max-sm:hidden"} aspect-square w-56 overflow-hidden rounded-2xl border bg-neutral-900 text-left transition-all duration-500 ease-out sm:w-72${
@@ -178,9 +186,10 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         </div>
       </button>
       {/* showModal() traps focus, handles Escape and restores focus; a click on the dialog itself is a backdrop click */}
-      <dialog ref={dlg} aria-label={o.name} onClose={() => setOpen(false)} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
+      <dialog ref={dlg} aria-label={o.name} onClose={() => { setOpen(false); setIntro(false); }} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
         <div className="relative rounded-xl border border-neutral-700 bg-neutral-950 p-8 text-center">
           <button onClick={() => dlg.current?.close()} aria-label={tr("Close")} className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
+          {open && intro && o.intro ? <OfficerIntro kind={o.intro} name={o.name} onComplete={() => setIntro(false)} /> : <>
           {avatar("h-32 w-32")}
           <h3 className="mt-4 text-xl font-semibold text-white"><DecodeText text={o.name} active={open} /></h3>
           <p className="text-sm text-green-300"><DecodeText text={`${o.role} · ${o.major}`} active={open} /></p>
@@ -192,6 +201,7 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
             </p>
           )}
           {o.email && <a href={`mailto:${o.email}`} className="mt-5 inline-flex max-w-full items-center justify-center gap-2 break-all rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black"><Mail className="h-4 w-4 shrink-0" aria-hidden />{o.email}</a>}
+          </>}
         </div>
       </dialog>
     </>
@@ -483,7 +493,7 @@ export default function App() {
         <Anomaly spot={"faq"} />
 
         <Section id={"contact"} eyebrow={tr("Get Involved")} title={tr("Ready to join?")}>
-          <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
+          <div className="grid items-start gap-10 lg:grid-cols-[1fr_440px]">
             <div>
               <p className="font-mono text-lg text-white">{siteConfig.slogan}</p>
               <div className="mt-6 max-w-xl rounded-xl border border-green-400/30 bg-green-400/5 p-5">
@@ -495,11 +505,7 @@ export default function App() {
                 <Socials />
               </div>
             </div>
-            {siteConfig.branding.flyerPath && (
-              <a href={siteConfig.branding.flyerPath} target="_blank" rel="noreferrer" className="block">
-                <img src={siteConfig.branding.flyerPath} alt={`${siteConfig.name} flyer`} loading="lazy" className="w-full rounded-xl border border-neutral-800 transition hover:border-green-400/50" />
-              </a>
-            )}
+            <JusticeHologram />
           </div>
         </Section>
         <Anomaly spot={"contact"} />

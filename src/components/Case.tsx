@@ -491,7 +491,7 @@ export function CasePage() {
     <Rain />
     <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <div className="flex items-center justify-between">
-        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">{tr("&larr; Activities")}</a>
+        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">{tr("← Activities")}</a>
         <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500 hover:text-white">{tr("sound:")}{snd ? tr("on") : tr("off")}</button>
       </div>
       <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Case file")}</p>
