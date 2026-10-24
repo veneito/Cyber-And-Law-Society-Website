@@ -29,6 +29,8 @@
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Import the exported Roblox OBJ into sonar with original geometry, room 181 spawn, and tested stairs/collision (2026-10-24; see docs/features/library-obj-import.md)
+- [ ] Other maintainer: review the OBJ sonar frontend and verify the live target before merging
 - [x] Restore location/USB step animations and wait for arrest artwork before scene timers start
 - [x] Add optional end-of-game survey with validated private persistence and duplicate protection
 - [ ] Verify arrest and step transitions end to end; coordinate survey state/API addition and response retrieval with server owner before merging

@@ -1,3 +1,7 @@
+# OBJ library import (2026-10-24)
+
+The active sonar scene now uses the exported Roblox library, with room 181 spawn, triangle-based walking/collision, and the existing sonar API callbacks. This supersedes the approximate blockout described below. Conversion steps, asset details, and validation: [library-obj-import.md](library-obj-import.md). No server configuration was changed; the live target still requires owner verification before merging.
+
 # Bea F. Wellington Investigation: Handoff
 
 2026-10-22: Fixed the Activities back-link showing literal `&larr;` in English; use a Unicode arrow in the translated label. Presentation only; no game/API/state changes.

@@ -765,5 +765,9 @@
   "time up": "tiempo agotado",
   "Lady Justice holding a cybersecurity shield and a bacteriophage on her scales": "La Dama de la Justicia con un escudo de ciberseguridad y un bacteriófago en su balanza",
   "Lady Justice adapted from": "Dama de la Justicia adaptada de",
-  "Simplified geometry and hologram styling; custom shield, bacteriophage, and scales.": "Geometría simplificada y estilo holográfico; escudo, bacteriófago y balanza personalizados."
+  "Simplified geometry and hologram styling; custom shield, bacteriophage, and scales.": "Geometría simplificada y estilo holográfico; escudo, bacteriófago y balanza personalizados.",
+  "Marx Library first-person exploration": "Exploración en primera persona de la Biblioteca Marx",
+  "The library map could not be loaded. Please retry.": "No se pudo cargar el mapa de la biblioteca. Inténtalo de nuevo.",
+  "TOP-DOWN INSPECTION · North is up · Exploration is paused.": "VISTA SUPERIOR · Norte arriba · Exploración pausada.",
+  "Start in room 181. Click the scene for mouse look. WASD to walk, arrow keys to turn.": "Comienzas en el salón 181. Haz clic en la escena para mirar con el ratón. WASD para caminar y flechas para girar."
 }
