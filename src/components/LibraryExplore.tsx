@@ -74,6 +74,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement); renderer.domElement.tabIndex = 0;
     renderer.domElement.setAttribute('aria-label', tr('Marx Library first-person exploration'));
+    const laserLayer = new THREE.Group();
+    const laserMaterials: THREE.Material[] = [];
     const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000201);
     const fog = new THREE.Fog(0x000201, 16, 65); scene.fog = fog;
     const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 100); camera.rotation.order = 'YXZ';
@@ -142,15 +144,22 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       const { manifest, model, lineGeometry } = loaded;
       const opaqueHologram = libraryHologramMaterial();
       const glassHologram = libraryHologramMaterial(true);
+      const opaqueLasers = libraryHologramMaterial(false, true);
+      const glassLasers = libraryHologramMaterial(true, true);
+      laserMaterials.push(opaqueLasers, glassLasers);
       model.traverse(o => {
         if (o instanceof THREE.Mesh) {
           const old = Array.isArray(o.material) ? o.material : [o.material];
           const materials = old.map(m => m.transparent ? glassHologram : opaqueHologram);
+          const beams = old.map(m => m.transparent ? glassLasers : opaqueLasers);
+          const raised = new THREE.Mesh(o.geometry, Array.isArray(o.material) ? beams : beams[0]);
+          o.updateWorldMatrix(true, false); raised.matrixAutoUpdate = false; raised.matrix.copy(o.matrixWorld);
+          laserLayer.add(raised);
           o.material = Array.isArray(o.material) ? materials : materials[0];
           old.forEach(m => m.dispose());
         }
       });
-      scene.add(model);
+      scene.add(model, laserLayer);
       // Rest above the exported bird book without changing the imported geometry.
       usb.position.set(manifest.sonarAnchor[0] + 0.22, manifest.floors[1] + 1.18, manifest.sonarAnchor[1]);
       model.updateMatrixWorld(true);
@@ -262,6 +271,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       collect.current = () => {}; soundscape.dispose(); if (audio.current === soundscape) audio.current = null;
       usb.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
       dog?.dispose();
+      laserLayer.clear(); laserMaterials.forEach(material => material.dispose());
       if (asset) release(asset);
       scene.children.forEach(o => { if (o instanceof THREE.LineSegments) (o.material as THREE.Material).dispose(); });
       renderer.dispose(); renderer.domElement.remove();
