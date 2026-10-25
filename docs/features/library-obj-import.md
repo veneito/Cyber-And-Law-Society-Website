@@ -32,3 +32,9 @@ Preview: `/case/wellington/?preview&lang=en`, then **Explore Marx Library (first
 Validation: `node --test tests/library-import.test.mjs` covers GLB integrity, bounded geometry, room 181 spawn/exit, wall/floor blocking, and an actual movement path from room 181 up the curved stairs to within recovery range of the lectern. Browser checks covered successful loading, visible movement, both top-down floors, mobile layout, failed-download retry, and clean browser errors. Screenshots remain local in `artifacts/library/`.
 
 This change needs the other maintainer's review before merging because it replaces the case game's sonar frontend. No server/deploy/data files are part of this change.
+
+## Polygon hologram appearance (2026-10-24)
+
+`libraryHologram.ts` supplies two shared materials (opaque geometry and glass). A fragment shader projects an antialiased triangular grid directly onto the existing surfaces; brighter architectural edges retain occlusion so walls do not become an unreadable X-ray. Nearly black faces, muted floor polygons, surface-angle rim accents, and distance fog create the green polygon hologram style. Floor inspection clipping is supported. No additional textures, mesh copies, render passes, bloom framebuffers, or asset downloads are introduced. Shared materials are disposed once on unmount.
+
+A headless Edge/SwiftShader before/after sample, after garbage collection, measured 40.6 MiB and 40.3 MiB of JavaScript heap respectively. These are single samples, exclude GPU/process memory, and are not a claim of reduced memory usage. Browser checks cover both first-person and clipped plan shader variants without console errors; walking and imported geometry are unchanged.

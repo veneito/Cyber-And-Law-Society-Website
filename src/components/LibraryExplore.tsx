@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { sfx } from './sound';
 import { EYE_HEIGHT, loadLibrary } from './libraryAsset';
+import { libraryHologramMaterial } from './libraryHologram';
 
 type Props = { onPing: (x: number, y: number) => Promise<{ strength: number; found: boolean } | null>; onKey: () => void };
 
@@ -41,8 +42,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement); renderer.domElement.tabIndex = 0;
     renderer.domElement.setAttribute('aria-label', tr('Marx Library first-person exploration'));
-    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x010503);
-    const fog = new THREE.Fog(0x010503, 16, 65); scene.fog = fog;
+    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000201);
+    const fog = new THREE.Fog(0x000201, 16, 65); scene.fog = fog;
     const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 100); camera.rotation.order = 'YXZ';
     const planCamera = new THREE.OrthographicCamera(-35, 35, 35, -35, 0.1, 100);
     planCamera.up.set(0, 0, -1);
@@ -74,25 +75,29 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     addEventListener('keydown', down); addEventListener('keyup', up); addEventListener('mousemove', look); addEventListener('blur', clear);
     document.addEventListener('pointerlockchange', lock); renderer.domElement.addEventListener('click', click);
     const release = (loaded: Awaited<ReturnType<typeof loadLibrary>>) => {
+      const materials = new Set<THREE.Material>();
       loaded.model.traverse(o => {
-        if (o instanceof THREE.Mesh) { o.geometry.dispose(); for (const mat of Array.isArray(o.material) ? o.material : [o.material]) mat.dispose(); }
+        if (o instanceof THREE.Mesh) { o.geometry.dispose(); for (const mat of Array.isArray(o.material) ? o.material : [o.material]) materials.add(mat); }
       });
+      materials.forEach(material => material.dispose());
       loaded.lineGeometry.dispose(); loaded.walking.dispose();
     };
     void loadLibrary(abort.signal).then(loaded => {
       if (dead) { release(loaded); return; }
       asset = loaded;
       const { manifest, model, lineGeometry } = loaded;
+      const opaqueHologram = libraryHologramMaterial();
+      const glassHologram = libraryHologramMaterial(true);
       model.traverse(o => {
         if (o instanceof THREE.Mesh) {
           const old = Array.isArray(o.material) ? o.material : [o.material];
-          const materials = old.map(m => new THREE.MeshBasicMaterial({ color: 0x04170c, side: THREE.DoubleSide, transparent: m.transparent, opacity: m.transparent ? 0.17 : 1, depthWrite: !m.transparent }));
+          const materials = old.map(m => m.transparent ? glassHologram : opaqueHologram);
           o.material = Array.isArray(o.material) ? materials : materials[0];
           old.forEach(m => m.dispose());
         }
       });
       scene.add(model);
-      scene.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0x239757, transparent: true, opacity: 0.48 })));
+      scene.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0x39db7b, transparent: true, opacity: 0.78 })));
       feet.fromArray(manifest.spawn.position); yaw = manifest.spawn.yaw;
       const ground = loaded.walking.floorAt(feet.x, feet.z, feet.y);
       if (ground === null || !loaded.walking.canStand(feet.x, ground, feet.z)) throw new Error('Room 181 starting point is obstructed');

@@ -30,6 +30,7 @@
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
 - [x] Import the exported Roblox OBJ into sonar with original geometry, room 181 spawn, and tested stairs/collision (2026-10-24; see docs/features/library-obj-import.md)
+- [x] Give the sonar environment a green polygon hologram finish without new geometry or texture buffers (2026-10-24)
 - [ ] Other maintainer: review the OBJ sonar frontend and verify the live target before merging
 - [x] Restore location/USB step animations and wait for arrest artwork before scene timers start
 - [x] Add optional end-of-game survey with validated private persistence and duplicate protection
