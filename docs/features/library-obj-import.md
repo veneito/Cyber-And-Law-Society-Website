@@ -64,3 +64,9 @@ The catch clip is layered into five quieter, staggered, pitch-shifted stereo voi
 Footstep mix lowered by about 60% for both player and hunter after listening feedback (2026-10-24); ambience and catch levels are unchanged.
 
 Further listening adjustment: step intervals are about 45% longer (roughly 30% fewer footfalls), clips play more slowly, and footstep gains are halved again. Nearby hunter steps remain slightly louder than player steps, with existing distance attenuation (2026-10-24).
+
+## Simulation introduction and real-world handoff (2026-10-24)
+
+Begin investigation now shows a 3.8-second terminal boot sequence: loading a simulation of Marx Library, then finding the item and leaving before Bea finds the player. The hunt, grace countdown and movement do not start until boot finishes; reduced-motion users see the complete text. The USB model is 55% of its former size and stays aligned with the bird-book surface. Successful collection plays the existing short three-note chime, respecting mute.
+
+Collection focuses a completion panel explaining that this was a virtual location clue and directing players to the real Marx Library, second floor, bird-book lectern. Continue explicitly starts the real-world search. The sonar celebration says LOCATION FOUND instead of USB RECOVERED, and the drive-signature step retains the physical destination/instructions so they are not lost after leaving the simulation. API routes, phase validation and saved state formats are unchanged. Browser checks verified intro/grace timing, smaller USB, collection chime, destination panel, original pickup/reset flow and mobile layout.

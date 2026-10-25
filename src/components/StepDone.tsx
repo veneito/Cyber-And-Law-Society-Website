@@ -7,7 +7,7 @@ export type StepKind = "photo" | "sonar" | "drive" | "ciphers";
 
 const TITLE: Record<StepKind, [string, string]> = {
   photo: [tr("LOCATION CONFIRMED"), tr("The photo was taken at the Marx Library.")],
-  sonar: [tr("USB RECOVERED"), tr("Bea’s digital signature is on the drive.")],
+  sonar: [tr("LOCATION FOUND"), tr("Now visit the real Marx Library: second floor, bird-book lectern.")],
   drive: [tr("ACCESS GRANTED"), tr("Bea's digital signature verified.")],
   ciphers: [tr("ALL EVIDENCE DECODED"), tr("Six messages. Six crimes. Time to accuse.")],
 };
