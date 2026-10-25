@@ -76,3 +76,11 @@ Collection focuses a completion panel explaining that this was a virtual locatio
 The old skull is replaced by a 48-column, 32-line ASCII portrait traced from the supplied monster screenshot. Only pixels inside the facial silhouette are represented; the screenshot background and raster image are not shipped. A small CSS laughing bounce runs on each laugh and respects reduced-motion settings.
 
 The supplied 16 KB laugh MP3 plays once every three seconds, with a brief laughing bounce on each play. A single audio element prevents stacked playback, at 24% volume, following the case-wide sound preference. Audio pauses on mute/hidden tabs; all playback and timers stop when the hack closes. Browser checks cover portrait replacement, desktop/mobile sizing, laugh cadence, reduced motion and cleanup.
+
+## Raised laser grid (2026-10-24)
+
+Each original 1.33 m grid tile is subdivided into 3×3 squares. Faces are nearly pure black. A separate procedural laser pass renders the grid six millimetres above each surface along its normal, giving physical separation rather than a painted bevel. Major lines remain brighter than the subdivisions, with a narrow antialiased halo and distance fading. The laser meshes share the original geometry and vertex/index buffers; four shared materials replace the former two. This adds draw calls and vertex processing, but no textures, duplicated vertex data, bloom targets or downloads. Collision and pickup raycasts still use the original model. Laser materials are disposed separately, and geometry is released once.
+
+Browser checks passed for first-person movement, both clipped inspection floors, mobile, retry and shader compilation. One headless Edge sample measured 42.4 MiB of JS heap after garbage collection, excluding GPU/process memory; this is not a performance guarantee or a direct comparison with earlier feature sets. Build and lint checks completed with existing warnings.
+
+Sonar feedback now reaches roughly 24.5 m instead of 10.5 m using the existing API signal scale. Distant pings are quiet; at 72% local signal (about 7 m) they switch to the close pitch and ramp toward a slightly reduced maximum volume (0.105 instead of 0.12). Recovery range, floor validation and server settings are unchanged (2026-10-24).

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {radarContact, withinUsbReach} from '../src/components/libraryObjective.ts';
+import {radarContact, withinUsbReach, sonarFeedback} from '../src/components/libraryObjective.ts';
 import {CATCH_DURATION} from '../src/components/libraryPursuit.ts';
 test('radar rotates targets with the player and clamps remote contacts to the rim',()=>{
  assert.equal(radarContact(0,0,0,0,-10).x,50);
@@ -14,4 +14,12 @@ test('USB reach requires the lectern floor and actual proximity; respawn lasts t
  assert(!withinUsbReach(5,0,-2,5.345,4.5,-1.5));
  assert(!withinUsbReach(5,4.5,-5,5.345,4.5,-1.5));
  assert.equal(CATCH_DURATION,3);
+});
+
+test('sonar detects farther away, stays quiet until close, and caps below the previous volume',()=>{
+ const distant=sonarFeedback(.5),near=sonarFeedback(.95),exact=sonarFeedback(1);
+ assert(distant.strength>.02);assert(!distant.close);assert(distant.volume<.045);
+ assert(near.close);assert(near.volume>distant.volume);assert(exact.volume<.12);
+ assert.equal(sonarFeedback(0).strength,0);
+ assert(Math.abs(sonarFeedback(.3+.7*.72).volume-.045)<1e-8);
 });
