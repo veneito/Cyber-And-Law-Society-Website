@@ -63,14 +63,15 @@ export class LibraryWalking {
     return highest;
   }
   canStand(x: number, y: number, z: number) {
-    // Ignore only the bottom step-height band; the full torso still collides with walls and furniture.
-    this.body.start.set(x, y + 0.24 + this.body.radius, z);
+    // Toe clearance avoids snagging on the next two lips of the narrow switchback treads.
+    // floorAt still limits the actual step up to 0.24 m.
+    this.body.start.set(x, y + 0.38 + this.body.radius, z);
     this.body.end.set(x, y + EYE_HEIGHT - this.body.radius, z);
     const seen = new Set<THREE.Triangle>();
     for (let cx = Math.floor((x - this.body.radius) / 2); cx <= Math.floor((x + this.body.radius) / 2); cx++) {
       for (let cz = Math.floor((z - this.body.radius) / 2); cz <= Math.floor((z + this.body.radius) / 2); cz++) {
         for (const entry of this.cells.get(`${cx},${cz}`) ?? []) {
-          if (entry.minY > y + EYE_HEIGHT || entry.maxY < y + 0.24 || seen.has(entry.triangle)) continue;
+          if (entry.minY > y + EYE_HEIGHT || entry.maxY < y + 0.38 || seen.has(entry.triangle)) continue;
           seen.add(entry.triangle);
           const result = this.intersection.triangleCapsuleIntersect(this.body, entry.triangle);
           if (result && result.depth > 0.002) return false;

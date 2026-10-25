@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { sfx } from './sound';
 import { EYE_HEIGHT, loadLibrary } from './libraryAsset';
 import { libraryHologramMaterial } from './libraryHologram';
+import { loadLibraryDog } from './libraryDog';
+import { CATCH_DURATION } from './libraryPursuit';
 
 type Props = { onPing: (x: number, y: number) => Promise<{ strength: number; found: boolean } | null>; onKey: () => void };
 
@@ -21,12 +23,14 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const [found, setFound] = useState(false);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
+  const [caught, setCaught] = useState(false);
+  const [grace, setGrace] = useState(9);
   const inspection = useRef({ overview: false, floor: 0 });
   useEffect(() => {
     inspection.current = { overview, floor: inspectFloor };
     if (overview && document.pointerLockElement) document.exitPointerLock();
   }, [overview, inspectFloor]);
-  const controls = useRef({ forward: false, back: false, left: false, right: false, turnLeft: false, turnRight: false });
+  const controls = useRef({ forward: false, back: false, left: false, right: false, turnLeft: false, turnRight: false, sprint: false });
   const state = useRef({ started: false, found: false });
   useEffect(() => { state.current = { started, found }; }, [started, found]);
 
@@ -36,6 +40,9 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     let dead = false, raf = 0, last = 0, lastPing = 0, pinging = false;
     let currentFloor = 0, yaw = Math.PI / 2, pitch = 0;
     let asset: Awaited<ReturnType<typeof loadLibrary>> | undefined;
+    let dog: Awaited<ReturnType<typeof loadLibraryDog>> | undefined;
+    let catchLeft = 0, runId = 0, shownGrace = -1;
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
     let renderer: THREE.WebGLRenderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: false }); }
     catch { setError(tr('This exploration needs WebGL. Try a browser with hardware acceleration enabled.')); return; }
@@ -53,7 +60,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     const keys = new Set<string>();
     const clear = () => { keys.clear(); for (const key of Object.keys(controls.current) as (keyof typeof controls.current)[]) controls.current[key] = false; };
     const down = (e: KeyboardEvent) => {
-      if ((document.activeElement === renderer.domElement || document.pointerLockElement === renderer.domElement) && ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) { e.preventDefault(); keys.add(e.code); }
+      if ((document.activeElement === renderer.domElement || document.pointerLockElement === renderer.domElement) && ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(e.code)) { e.preventDefault(); keys.add(e.code); }
     };
     const up = (e: KeyboardEvent) => keys.delete(e.code);
     const look = (e: MouseEvent) => {
@@ -82,7 +89,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       materials.forEach(material => material.dispose());
       loaded.lineGeometry.dispose(); loaded.walking.dispose();
     };
-    void loadLibrary(abort.signal).then(loaded => {
+    void loadLibrary(abort.signal).then(async loaded => {
       if (dead) { release(loaded); return; }
       asset = loaded;
       const { manifest, model, lineGeometry } = loaded;
@@ -105,38 +112,66 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       camera.position.copy(feet).y += EYE_HEIGHT; camera.rotation.set(0, yaw, 0);
       const center = new THREE.Vector3().fromArray(manifest.bounds.min).add(new THREE.Vector3().fromArray(manifest.bounds.max)).multiplyScalar(0.5);
       planCamera.position.set(center.x, 60, center.z); planCamera.lookAt(center.x, 0, center.z);
-      setFloor(0); setReady(true);
+      const loadedDog = await loadLibraryDog(abort.signal, loaded.walking, feet);
+      if (dead) { loadedDog.dispose(); return; }
+      dog = loadedDog; scene.add(dog.root);
+      setFloor(0); setCaught(false); setReady(true);
     }).catch(err => { if (!dead && err.name !== 'AbortError') setError(tr('The library map could not be loaded. Please retry.')); });
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       const dt = Math.min((now - last) / 1000, 0.04); last = now;
       const inspect = inspection.current;
-      if (asset && state.current.started && !state.current.found && !inspect.overview) {
-        const c = controls.current;
-        yaw += ((keys.has('ArrowLeft') || c.turnLeft ? 1 : 0) - (keys.has('ArrowRight') || c.turnRight ? 1 : 0)) * dt * 1.6;
-        const forward = (keys.has('KeyW') || keys.has('ArrowUp') || c.forward ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') || c.back ? 1 : 0);
-        const side = (keys.has('KeyD') || c.right ? 1 : 0) - (keys.has('KeyA') || c.left ? 1 : 0);
-        const speed = dt * 2.8 / Math.max(1, Math.hypot(forward, side));
-        const dx = (-Math.sin(yaw) * forward + Math.cos(yaw) * side) * speed;
-        const dz = (-Math.cos(yaw) * forward - Math.sin(yaw) * side) * speed;
-        asset.walking.move(feet, dx, 0); asset.walking.move(feet, 0, dz);
-        camera.position.copy(feet).y += EYE_HEIGHT; camera.rotation.set(pitch, yaw, 0);
-        const nextFloor = feet.y > asset.manifest.floors[1] - 0.2 ? 1 : 0;
-        if (nextFloor !== currentFloor) { currentFloor = nextFloor; setFloor(nextFloor); }
-        if (now - lastPing > 650 && !pinging) {
-          lastPing = now; pinging = true;
-          const upstairs = Math.abs(feet.y - asset.manifest.floors[1]) < 0.2;
-          // Keep the existing API coordinate system and its server-only target unchanged.
-          const x = upstairs ? (feet.x - asset.manifest.sonarAnchor[0]) * 20 + 312 : 2000;
-          const z = upstairs ? (feet.z - asset.manifest.sonarAnchor[1]) * 20 + 175 : 2000;
-          void live.current.onPing(x, z).then(r => {
-            if (dead || !r) return;
-            const strength = Math.max(0, Math.min(1, (r.strength - 0.7) / 0.3)); setHeat(strength);
-            if (strength > 0.05) sfx.beep(strength > 0.6);
-            if (r.found && upstairs) { state.current.found = true; setFound(true); if (document.pointerLockElement === renderer.domElement) document.exitPointerLock(); }
-          }).catch(() => {}).finally(() => { pinging = false; });
+      if (asset && dog && state.current.started && !state.current.found && !inspect.overview && !document.hidden) {
+        if (catchLeft > 0) {
+          catchLeft = Math.max(0, catchLeft - dt);
+          dog.animate(dt, true, reducedMotion.matches);
+          const shake = reducedMotion.matches ? 0 : Math.sin(now * 0.045) * 0.015;
+          camera.rotation.set(pitch + shake, yaw - shake, 0);
+          if (catchLeft === 0) {
+            feet.fromArray(asset.manifest.spawn.position);
+            feet.y = asset.walking.floorAt(feet.x, feet.z, feet.y) ?? feet.y;
+            yaw = asset.manifest.spawn.yaw; pitch = 0;
+            camera.position.copy(feet).y += EYE_HEIGHT; camera.rotation.set(0, yaw, 0);
+            currentFloor = 0; setFloor(0); setHeat(0); setFound(false); state.current.found = false;
+            dog.reset(); setCaught(false); clear(); lastPing = now;
+          }
+        } else {
+          const c = controls.current;
+          yaw += ((keys.has('ArrowLeft') || c.turnLeft ? 1 : 0) - (keys.has('ArrowRight') || c.turnRight ? 1 : 0)) * dt * 1.6;
+          const forward = (keys.has('KeyW') || keys.has('ArrowUp') || c.forward ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') || c.back ? 1 : 0);
+          const side = (keys.has('KeyD') || c.right ? 1 : 0) - (keys.has('KeyA') || c.left ? 1 : 0);
+          const sprinting = keys.has('ShiftLeft') || keys.has('ShiftRight') || c.sprint;
+          const speed = dt * (sprinting ? 5 : 2.8) / Math.max(1, Math.hypot(forward, side));
+          const dx = (-Math.sin(yaw) * forward + Math.cos(yaw) * side) * speed;
+          const dz = (-Math.cos(yaw) * forward - Math.sin(yaw) * side) * speed;
+          asset.walking.move(feet, dx, 0); asset.walking.move(feet, 0, dz);
+          camera.position.copy(feet).y += EYE_HEIGHT; camera.rotation.set(pitch, yaw, 0);
+          const nextFloor = feet.y > asset.manifest.floors[1] - 0.2 ? 1 : 0;
+          if (nextFloor !== currentFloor) { currentFloor = nextFloor; setFloor(nextFloor); }
+          if (dog.pursuit.update(dt, feet)) {
+            runId++; catchLeft = CATCH_DURATION; setCaught(true); setHeat(0); clear(); sfx.beep(true);
+            if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
+          }
+          dog.animate(dt, catchLeft > 0, reducedMotion.matches);
+          if (now - lastPing > 650 && !pinging && catchLeft === 0) {
+            lastPing = now; pinging = true;
+            const requestRun = runId;
+            const upstairs = Math.abs(feet.y - asset.manifest.floors[1]) < 0.2;
+            // Keep the existing API coordinate system and its server-only target unchanged.
+            const x = upstairs ? (feet.x - asset.manifest.sonarAnchor[0]) * 20 + 312 : 2000;
+            const z = upstairs ? (feet.z - asset.manifest.sonarAnchor[1]) * 20 + 175 : 2000;
+            const inBounds = upstairs && x >= 0 && x <= 820 && z >= 0 && z <= 820;
+            void live.current.onPing(inBounds ? x : 820, inBounds ? z : 820).then(r => {
+              if (dead || !r || requestRun !== runId || catchLeft > 0) return;
+              const strength = Math.max(0, Math.min(1, (r.strength - 0.7) / 0.3)); setHeat(strength);
+              if (strength > 0.05) sfx.beep(strength > 0.6);
+              if (r.found && upstairs && r.strength > 1 - 22 / 700) { state.current.found = true; setFound(true); if (document.pointerLockElement === renderer.domElement) document.exitPointerLock(); }
+            }).catch(() => {}).finally(() => { pinging = false; });
+          }
         }
+        const remaining = Math.ceil(dog.pursuit.grace);
+        if (remaining !== shownGrace) { shownGrace = remaining; setGrace(remaining); }
       }
       scene.fog = inspect.overview ? null : fog;
       ceilingClip.constant = inspect.floor * 4.5 + 2.8; floorClip.constant = -inspect.floor * 4.5 + 0.1;
@@ -149,6 +184,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
       removeEventListener('keydown', down); removeEventListener('keyup', up); removeEventListener('mousemove', look); removeEventListener('blur', clear);
       document.removeEventListener('pointerlockchange', lock); renderer.domElement.removeEventListener('click', click);
+      dog?.dispose();
       if (asset) release(asset);
       scene.children.forEach(o => { if (o instanceof THREE.LineSegments) (o.material as THREE.Material).dispose(); });
       renderer.dispose(); renderer.domElement.remove();
@@ -158,7 +194,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const hold = (key: keyof typeof controls.current) => (e: React.PointerEvent<HTMLButtonElement>) => { e.currentTarget.setPointerCapture(e.pointerId); controls.current[key] = true; };
   return <div className="max-w-5xl">
     <div className="mb-3 flex flex-wrap gap-2">
-      <button disabled={!ready} aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300 disabled:opacity-40">{overview ? tr('Return to first person') : tr('Inspect top-down layout')}</button>
+      <button disabled={!ready || caught} aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300 disabled:opacity-40">{overview ? tr('Return to first person') : tr('Inspect top-down layout')}</button>
       {overview && [0, 1].map(f => <button key={f} aria-pressed={inspectFloor === f} onClick={() => setInspectFloor(f)} className={`rounded border px-4 py-2 text-sm ${inspectFloor === f ? 'border-green-300 text-green-200' : 'border-neutral-700 text-neutral-400'}`}>{tr('Floor')}{f + 1}</button>)}
     </div>
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-green-300"><span>{tr('MARX LIBRARY // FLOOR')}{(overview ? inspectFloor : floor) + 1}</span><span>{found ? tr('SIGNAL LOCATED') : `SIGNAL ${Math.round(heat * 100)}%`}</span></div>
@@ -167,10 +203,12 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       {!ready && !error && <p role="status" className="absolute inset-4 bg-black/80 p-4 font-mono text-green-300">{tr('Loading library…')}</p>}
       {ready && !started && !overview && <button onClick={() => setStarted(true)} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">{tr('Begin exploration')}</button>}
       {error && <div role="alert" className="absolute inset-4 bg-black p-4 text-red-300"><p>{error}</p><button onClick={() => { setReady(false); setError(''); setAttempt(n => n + 1); }} className="mt-3 rounded border border-green-700 px-4 py-2 text-green-300">{tr('Retry')}</button></div>}
+      {caught && <div role="status" className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center bg-red-950/70 p-6 text-center font-mono text-red-200"><strong className="text-3xl">{tr("CAUGHT")}</strong><p className="mt-3">{tr("Restarting sonar in room 181. The hunter returns upstairs.")}</p></div>}
       {started && !found && !overview && <><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><div className="pointer-events-none absolute bottom-4 right-4 rounded border border-green-700 bg-black/85 p-3 font-mono text-green-400"><div className="relative mx-auto h-20 w-20 rounded-full border border-green-800"><div className="absolute inset-3 rounded-full border border-green-900" /><div className="absolute inset-7 rounded-full bg-green-400" style={{ opacity: 0.2 + heat * 0.8 }} /><div className="absolute inset-x-0 top-1/2 border-t border-green-900" /></div><p className="mt-2 text-center text-[10px]">{Math.round(heat * 100)}{tr('% // SCANNING')}</p></div></>}
     </div>
-    <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('USB signal located. Recover the device below.') : locked ? tr('WASD to walk · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('Start in room 181. Click the scene for mouse look. WASD to walk, arrow keys to turn.')}</p>
-    {started && !found && <div className="mt-3 flex flex-wrap gap-2">{([['forward', tr('Forward')], ['back', tr('Back')], ['left', tr('Strafe left')], ['right', tr('Strafe right')], ['turnLeft', tr('Turn left')], ['turnRight', tr('Turn right')]] as const).map(([key, label]) => <button key={key} className="touch-none rounded border border-green-900 px-3 py-2 text-xs text-green-300" onPointerDown={hold(key)} onPointerUp={() => { controls.current[key] = false; }} onPointerCancel={() => { controls.current[key] = false; }}>{label}</button>)}
+    {started && !found && <p className="mt-3 font-mono text-xs text-green-300" role="status">{grace > 0 ? `${tr("Hunter re-forming upstairs:")} ${grace}s` : tr("The hunter is moving. Keep your distance.")}</p>}
+    <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('USB signal located. Recover the device below.') : locked ? tr('WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('Start in room 181. WASD to walk; hold Shift to sprint. Click for mouse look. The hunter follows you. Getting caught restarts this search.')}</p>
+    {started && !found && <div className="mt-3 flex flex-wrap gap-2">{([['forward', tr('Forward')], ['back', tr('Back')], ['left', tr('Strafe left')], ['right', tr('Strafe right')], ['turnLeft', tr('Turn left')], ['turnRight', tr('Turn right')], ['sprint', tr('Hold to sprint')]] as const).map(([key, label]) => <button key={key} disabled={caught} className="touch-none rounded border border-green-900 px-3 py-2 text-xs text-green-300 disabled:opacity-40" onPointerDown={hold(key)} onPointerUp={() => { controls.current[key] = false; }} onPointerCancel={() => { controls.current[key] = false; }}>{label}</button>)}
     </div>}
     {found && <button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black">{tr('Recover USB')}</button>}
   </div>;

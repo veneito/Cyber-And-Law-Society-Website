@@ -769,5 +769,13 @@
   "Marx Library first-person exploration": "Exploración en primera persona de la Biblioteca Marx",
   "The library map could not be loaded. Please retry.": "No se pudo cargar el mapa de la biblioteca. Inténtalo de nuevo.",
   "TOP-DOWN INSPECTION · North is up · Exploration is paused.": "VISTA SUPERIOR · Norte arriba · Exploración pausada.",
-  "Start in room 181. Click the scene for mouse look. WASD to walk, arrow keys to turn.": "Comienzas en el salón 181. Haz clic en la escena para mirar con el ratón. WASD para caminar y flechas para girar."
+  "Start in room 181. Click the scene for mouse look. WASD to walk, arrow keys to turn.": "Comienzas en el salón 181. Haz clic en la escena para mirar con el ratón. WASD para caminar y flechas para girar.",
+  "CAUGHT": "ATRAPADO",
+  "Restarting sonar in room 181. The hunter returns upstairs.": "Reiniciando el sonar en el salón 181. El perseguidor vuelve al segundo piso.",
+  "Hunter re-forming upstairs:": "El perseguidor reaparece arriba:",
+  "The hunter is moving. Keep your distance.": "El perseguidor se mueve. Mantén la distancia.",
+  "Start in room 181. WASD to walk; click for mouse look. A slow hunter follows you. Getting caught restarts this search.": "Comienzas en el salón 181. WASD para caminar; haz clic para mirar con el ratón. Un perseguidor lento te sigue. Si te atrapa, se reinicia esta búsqueda.",
+  "Hold to sprint": "Mantén para correr",
+  "WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.": "WASD para caminar · mantén Mayús para correr · ratón para mirar · Esc libera el ratón. Sigue las escaleras centrales curvas al segundo piso.",
+  "Start in room 181. WASD to walk; hold Shift to sprint. Click for mouse look. The hunter follows you. Getting caught restarts this search.": "Empieza en el aula 181. WASD para caminar; mantén Mayús para correr. Haz clic para mirar con el ratón. El cazador te sigue. Si te atrapa, esta búsqueda se reinicia."
 }

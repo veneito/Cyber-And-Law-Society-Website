@@ -82,3 +82,5 @@
 
 - [x] Add English/Español interface, Spanish standard evidence and decoder training, translated Chris subtitles with original audio, and centered El Chigüire survey overlay (2026-10-21).
 - [ ] Review bilingual case/API changes with the other maintainer before merge; configure survey Discord delivery on the server (see docs/features/discord-bot.md).
+
+- [x] Add animated sonar hunter, safe upstairs reset, and keyboard/touch sprint (2026-10-24); see docs/features/library-obj-import.md.
