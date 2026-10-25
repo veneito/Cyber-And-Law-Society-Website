@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {MONSTER_FACE,MONSTER_LAUGH} from '../src/components/monsterFaceArt.ts';
+test('monster portrait is lightweight face-only ASCII with blank silhouette corners',()=>{const rows=MONSTER_FACE.split('\n');assert.equal(rows.length,32);assert(rows.every(r=>r.length<=48));assert(/^[\x20-\x7e\n]+$/.test(MONSTER_FACE));assert(rows[0].startsWith(' '.repeat(12)));assert(rows.at(-1).startsWith(' '.repeat(12)));assert(MONSTER_FACE.length<1800);});
+test('supplied monster laugh is a small local versioned asset',()=>{assert.match(MONSTER_LAUGH,/laugh-[a-f0-9]{10}\.mp3$/);assert(fs.statSync(new URL('../public'+MONSTER_LAUGH,import.meta.url)).size<50000);});

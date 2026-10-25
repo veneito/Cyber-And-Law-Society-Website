@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "sourceHash": "e65fedd1e9",
+  "model": "marx-library-e65fedd1e9.glb",
+  "collision": "marx-library-e65fedd1e9.collision.bin",
+  "edges": "marx-library-e65fedd1e9.edges.bin",
+  "bounds": {
+    "min": [
+      -19.5,
+      -0.25,
+      -34.501251220703125
+    ],
+    "max": [
+      27.75,
+      9,
+      14.75
+    ]
+  },
+  "spawn": {
+    "position": [
+      19,
+      0.002,
+      -31.5
+    ],
+    "yaw": 1.5707963267948966,
+    "room": "Room 181"
+  },
+  "floors": [
+    0,
+    4.5
+  ],
+  "sonarAnchor": [
+    5.125,
+    -1.5
+  ],
+  "stats": {
+    "objects": 10923,
+    "triangles": 154324,
+    "materials": 83
+  }
+}

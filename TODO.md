@@ -29,6 +29,9 @@
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Import the exported Roblox OBJ into sonar with original geometry, room 181 spawn, and tested stairs/collision (2026-10-24; see docs/features/library-obj-import.md)
+- [x] Give the sonar environment a green polygon hologram finish without new geometry or texture buffers (2026-10-24)
+- [ ] Other maintainer: review the OBJ sonar frontend and verify the live target before merging
 - [x] Restore location/USB step animations and wait for arrest artwork before scene timers start
 - [x] Add optional end-of-game survey with validated private persistence and duplicate protection
 - [ ] Verify arrest and step transitions end to end; coordinate survey state/API addition and response retrieval with server owner before merging
@@ -79,3 +82,13 @@
 
 - [x] Add English/Español interface, Spanish standard evidence and decoder training, translated Chris subtitles with original audio, and centered El Chigüire survey overlay (2026-10-21).
 - [ ] Review bilingual case/API changes with the other maintainer before merge; configure survey Discord delivery on the server (see docs/features/discord-bot.md).
+
+- [x] Add animated sonar hunter, safe upstairs reset, and keyboard/touch sprint (2026-10-24); see docs/features/library-obj-import.md.
+
+- [x] Add physical E-to-collect USB, directional hunter/USB radar, and three-second terminal respawn (2026-10-24).
+
+- [x] Integrate supplied growls, near/catch whispers and movement-paced footsteps; show the USB bearing only during sonar pulses (2026-10-24).
+
+- [x] Add Marx Library simulation boot, smaller USB with collection chime, and explicit real-world destination handoff (2026-10-24).
+
+- [x] Replace hack skull with background-free monster ASCII, laughing bounce, and one laugh every three seconds (2026-10-24).

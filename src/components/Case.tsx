@@ -153,6 +153,7 @@ function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
   return (
     <>
       <h2 className={h2}>{tr("Step 3: The drive")}</h2>
+      <p className="mt-3 rounded-lg border border-green-800 bg-green-950/30 p-4 text-green-200">{tr("Now visit the real Marx Library: second floor, bird-book lectern.")} {tr("The simulation showed you the location. Collect the physical drive there, then return here.")}</p>
       <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
         <p className="font-mono text-xs text-neutral-500">{tr("LOCKED")}</p>
         <p className="mt-1 text-white">{tr("Requires Bea F. Wellington&apos;s digital signature.")}</p>
