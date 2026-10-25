@@ -2,6 +2,8 @@ import { t as tr } from '../i18n/language';
 
 type Contact = { x: number; y: number; distance: number };
 export default function LibraryRadar({ usb, dog, dogFloor, floor, heat }: { usb: Contact; dog: Contact; dogFloor: number; floor: number; heat: number }) {
+  const bearing = Math.atan2(usb.x - 50, 50 - usb.y) * 180 / Math.PI;
+  const pulseDuration = `${2 - heat * 1.3}s`;
   return <div aria-label={tr('Directional radar')} className="pointer-events-none absolute bottom-3 right-3 w-36 rounded border border-green-700 bg-black/95 p-2 font-mono text-green-400">
     <p className="text-center text-[9px]">{tr('AHEAD')}</p>
     <svg viewBox="0 0 100 100" className="w-full" aria-hidden>
@@ -9,11 +11,14 @@ export default function LibraryRadar({ usb, dog, dogFloor, floor, heat }: { usb:
       <circle cx="50" cy="50" r="23" fill="none" stroke="#103c25" />
       <path d="M4 50H96M50 4V96" stroke="#176637" />
       <path d="M50 45L46 55L54 55Z" fill="#e5fff0" />
-      <path d={`M50 50L${usb.x} ${usb.y}`} stroke="#54ffc0" strokeDasharray="2 3" />
-      <rect x={usb.x - 3} y={usb.y - 3} width="6" height="6" fill="#54ffc0" />
+      <circle cx="50" cy="50" r="12" fill="none" stroke="#54ffc0" className="library-sonar-pulse" style={{ animationDuration: pulseDuration }} />
+      <g transform={`rotate(${bearing} 50 50)`} className="library-sonar-bearing" style={{ animationDuration: pulseDuration }}>
+        <path d="M34 13Q50 5 66 13" fill="none" stroke="#54ffc0" strokeWidth="3" />
+        <path d="M46 18L50 12L54 18" fill="none" stroke="#b0ffe1" strokeWidth="1.5" />
+      </g>
       <circle cx={dog.x} cy={dog.y} r="3.5" fill="#ff4545" />
     </svg>
-    <p className="text-[9px] text-emerald-200">◆ USB {usb.distance.toFixed(1)}m · F2 {floor === 0 ? '↑' : ''}</p>
+    <p className="text-[9px] text-emerald-200">{tr('SIGNAL BEARING')} · F2 {floor === 0 ? '↑' : ''}</p>
     <p className="mt-1 text-[9px] text-red-400">● {tr('HUNTER')} {dog.distance.toFixed(1)}m · F{dogFloor} {dogFloor > floor + 1 ? '↑' : dogFloor < floor + 1 ? '↓' : ''}</p>
     <p className="mt-1 text-[9px]">50m · {Math.round(heat * 100)}% {tr('SIGNAL')}</p>
   </div>;

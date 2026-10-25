@@ -1,7 +1,8 @@
 import { t as tr } from '../i18n/language';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { sfx } from './sound';
+import { sfx, soundOn, setSound } from './sound';
+import { LibraryAudio } from './libraryAudio';
 import { EYE_HEIGHT, loadLibrary } from './libraryAsset';
 import { libraryHologramMaterial } from './libraryHologram';
 import { loadLibraryDog } from './libraryDog';
@@ -31,6 +32,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const [canCollect, setCanCollect] = useState(false);
   const [radar, setRadar] = useState({ usb: { x: 50, y: 50, distance: 0 }, dog: { x: 50, y: 50, distance: 0 }, dogFloor: 2 });
   const collect = useRef(() => {});
+  const audio = useRef<LibraryAudio | null>(null);
+  const [audioOn, setAudioOn] = useState(soundOn);
   const inspection = useRef({ overview: false, floor: 0 });
   useEffect(() => {
     inspection.current = { overview, floor: inspectFloor };
@@ -43,6 +46,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   useEffect(() => {
     const el = mount.current!;
     const abort = new AbortController();
+    const soundscape = new LibraryAudio(soundOn); audio.current = soundscape;
     let dead = false, raf = 0, last = 0, lastPing = 0, pinging = false;
     let currentFloor = 0, yaw = Math.PI / 2, pitch = 0;
     let asset: Awaited<ReturnType<typeof loadLibrary>> | undefined;
@@ -79,7 +83,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     };
     collect.current = () => {
       if (!pickupAllowed()) return;
-      state.current.found = true; setFound(true); setCanCollect(false); usb.visible = false; clear();
+      soundscape.stop(); state.current.found = true; setFound(true); setCanCollect(false); usb.visible = false; clear();
       if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
     };
     const clear = () => { keys.clear(); for (const key of Object.keys(controls.current) as (keyof typeof controls.current)[]) controls.current[key] = false; };
@@ -103,6 +107,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix();
       planCamera.left = -28 * width / height; planCamera.right = 28 * width / height; planCamera.top = 28; planCamera.bottom = -28; planCamera.updateProjectionMatrix();
     };
+    const visibility = () => { if (document.hidden) { clear(); soundscape.stop(); } };
+    document.addEventListener('visibilitychange', visibility);
     const observer = new ResizeObserver(resize); observer.observe(el); resize();
     addEventListener('keydown', down); addEventListener('keyup', up); addEventListener('mousemove', look); addEventListener('blur', clear);
     document.addEventListener('pointerlockchange', lock); renderer.domElement.addEventListener('click', click);
@@ -172,9 +178,10 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
             camera.position.copy(feet).y += EYE_HEIGHT; camera.rotation.set(0, yaw, 0);
             currentFloor = 0; setFloor(0); setHeat(0); setFound(false); state.current.found = false;
             signalConfirmed = false; pickupReady = false; setCanCollect(false); usb.visible = true;
-            dog.reset(); setCaught(false); clear(); lastPing = now;
+            dog.reset(); soundscape.reset(); setCaught(false); clear(); lastPing = now;
           }
         } else {
+          const oldX = feet.x, oldZ = feet.z, oldDogX = dog.pursuit.position.x, oldDogZ = dog.pursuit.position.z;
           const c = controls.current;
           yaw += ((keys.has('ArrowLeft') || c.turnLeft ? 1 : 0) - (keys.has('ArrowRight') || c.turnRight ? 1 : 0)) * dt * 1.6;
           const forward = (keys.has('KeyW') || keys.has('ArrowUp') || c.forward ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') || c.back ? 1 : 0);
@@ -188,10 +195,16 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
           const nextFloor = feet.y > asset.manifest.floors[1] - 0.2 ? 1 : 0;
           if (nextFloor !== currentFloor) { currentFloor = nextFloor; setFloor(nextFloor); }
           if (dog.pursuit.update(dt, feet)) {
-            runId++; catchLeft = CATCH_DURATION; setRespawnProgress(0); setCanCollect(false); setCaught(true); setHeat(0); clear(); sfx.beep(true);
+            runId++; catchLeft = CATCH_DURATION; setRespawnProgress(0); setCanCollect(false); setCaught(true); setHeat(0); clear(); soundscape.caught();
             if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
           }
           dog.animate(dt, catchLeft > 0, reducedMotion.matches);
+          if (catchLeft === 0) {
+            const dogDx = dog.pursuit.position.x - feet.x, dogDz = dog.pursuit.position.z - feet.z;
+            const distance = dog.pursuit.position.distanceTo(feet);
+            const pan = (Math.cos(yaw) * dogDx - Math.sin(yaw) * dogDz) / Math.max(1, distance);
+            soundscape.update(dt, Math.hypot(feet.x - oldX, feet.z - oldZ), Math.hypot(dog.pursuit.position.x - oldDogX, dog.pursuit.position.z - oldDogZ), distance, Math.abs(feet.y - dog.pursuit.position.y), pan, sprinting);
+          }
           if (now - lastPing > 650 && !pinging && catchLeft === 0) {
             lastPing = now; pinging = true;
             const requestRun = runId;
@@ -217,6 +230,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
         const remaining = Math.ceil(dog.pursuit.grace);
         if (remaining !== shownGrace) { shownGrace = remaining; setGrace(remaining); }
       }
+      if (inspect.overview || document.hidden || state.current.found || !soundOn()) soundscape.stop();
       scene.fog = inspect.overview ? null : fog;
       ceilingClip.constant = inspect.floor * 4.5 + 2.8; floorClip.constant = -inspect.floor * 4.5 + 0.1;
       renderer.clippingPlanes = inspect.overview ? [ceilingClip, floorClip] : [];
@@ -227,8 +241,9 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       dead = true; abort.abort(); cancelAnimationFrame(raf); observer.disconnect(); clear();
       if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
       removeEventListener('keydown', down); removeEventListener('keyup', up); removeEventListener('mousemove', look); removeEventListener('blur', clear);
+      document.removeEventListener('visibilitychange', visibility);
       document.removeEventListener('pointerlockchange', lock); renderer.domElement.removeEventListener('click', click);
-      collect.current = () => {};
+      collect.current = () => {}; soundscape.dispose(); if (audio.current === soundscape) audio.current = null;
       usb.traverse(o => { if (o instanceof THREE.Mesh) { o.geometry.dispose(); (o.material as THREE.Material).dispose(); } });
       dog?.dispose();
       if (asset) release(asset);
@@ -240,6 +255,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const hold = (key: keyof typeof controls.current) => (e: React.PointerEvent<HTMLButtonElement>) => { e.currentTarget.setPointerCapture(e.pointerId); controls.current[key] = true; };
   return <div className="max-w-5xl">
     <div className="mb-3 flex flex-wrap gap-2">
+      <button aria-pressed={audioOn} onClick={() => { const on = !audioOn; setSound(on); setAudioOn(on); if (on) audio.current?.start(); else audio.current?.stop(); }} className="rounded border border-green-900 px-4 py-2 text-sm text-green-300">{tr('Sound:')}{audioOn ? tr('on') : tr('off')}</button>
       <button disabled={!ready || caught} aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300 disabled:opacity-40">{overview ? tr('Return to first person') : tr('Inspect top-down layout')}</button>
       {overview && [0, 1].map(f => <button key={f} aria-pressed={inspectFloor === f} onClick={() => setInspectFloor(f)} className={`rounded border px-4 py-2 text-sm ${inspectFloor === f ? 'border-green-300 text-green-200' : 'border-neutral-700 text-neutral-400'}`}>{tr('Floor')}{f + 1}</button>)}
     </div>
@@ -247,7 +263,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     <div className="relative overflow-hidden rounded-xl border border-green-500/60 bg-black">
       <div ref={mount} className="h-[min(65vh,38rem)] min-h-80 w-full" />
       {!ready && !error && <p role="status" className="absolute inset-4 bg-black/80 p-4 font-mono text-green-300">{tr('Loading library…')}</p>}
-      {ready && !started && !overview && <button onClick={() => setStarted(true)} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">{tr('Begin exploration')}</button>}
+      {ready && !started && !overview && <button onClick={() => { audio.current?.start(); setStarted(true); }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">{tr('Begin exploration')}</button>}
       {error && <div role="alert" className="absolute inset-4 bg-black p-4 text-red-300"><p>{error}</p><button onClick={() => { setReady(false); setError(''); setAttempt(n => n + 1); }} className="mt-3 rounded border border-green-700 px-4 py-2 text-green-300">{tr('Retry')}</button></div>}
       {caught && <LibraryRespawn progress={respawnProgress} />}
       {started && !found && !overview && !caught && <><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><LibraryRadar {...radar} floor={floor} heat={heat} />
