@@ -79,11 +79,11 @@ export class LibraryAudio {
     }
     this.humanStride = humanTravel > 0.001 ? this.humanStride + humanTravel : 0;
     this.dogStride = dogTravel > 0.001 ? this.dogStride + dogTravel : 0;
-    const humanStep = sprint ? 1.05 : 0.78;
-    if (this.humanStride >= humanStep) { this.humanStride %= humanStep; this.play('humanStep', 0.07, 0, sprint ? 1.15 : 1); }
-    if (this.dogStride >= 0.85) {
-      this.dogStride %= 0.85;
-      if (distance < 22) this.play('dogStep', 0.12 * Math.max(0, 1 - distance / 22) * (floorGap > 1 ? 0.25 : 1), pan, 1.05);
+    const humanStep = sprint ? 1.55 : 1.15;
+    if (this.humanStride >= humanStep) { this.humanStride %= humanStep; this.play('humanStep', 0.035, 0, sprint ? 1 : 0.85); }
+    if (this.dogStride >= 1.25) {
+      this.dogStride %= 1.25;
+      if (distance < 22) this.play('dogStep', 0.055 * Math.max(0, 1 - distance / 22) * (floorGap > 1 ? 0.25 : 1), pan, 0.9);
     }
   }
 
