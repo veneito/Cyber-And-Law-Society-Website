@@ -46,3 +46,11 @@ The supplied anxious-dog Blender source is exported read-only by `tools/export-l
 The dog moves at 3.2 m/s, above walking (2.8 m/s) and below sprinting (5 m/s). Hold Shift or the on-screen sprint control; diagonal movement remains normalized. No stamina limit. Catching requires proximity, matching floor and an unobstructed walking path. After the catch animation, the player restarts in room 181 and the dog returns upstairs with nine seconds of grace. Search signal resets; unrelated case progress is preserved. Pending pings from the previous attempt are ignored, and recovery requires a fresh nearby signal. Overview and hidden tabs pause pursuit; reduced-motion settings disable animation and camera shake.
 
 Tests cover export size/clips, connected upstairs spawn, pursuit speed/collision, catches blocked by walls/floors, and repeated safe resets. Review with the other maintainer before merging; server and saved-data formats are unchanged.
+
+## Physical USB and directional radar (2026-10-24)
+
+Signal proximity no longer completes the search. A two-part USB mesh sits just above the existing bird-book lectern; E or the touch pickup button collects it only after a fresh confirmed signal, on floor two, within 1.5 metres and with clear line of sight. The Continue button appears after collection. Collision and server coordinates remain unchanged; the existing key endpoint still advances the case.
+
+The lightweight SVG radar rotates with player heading and shows the USB as a mint square with a bearing line, the hunter as a red dot, exact horizontal distances and floor indicators. Contacts beyond 50 metres clamp to the rim. It is a bearing display, not a route through walls. HUD updates are limited to ten per second; no extra map render or textures.
+
+Catches now show a black PowerShell-style screen with typed recovery text and a progress bar for three seconds, then restart in room 181 with the hunter upstairs and its grace period restored. Hidden tabs and inspection pause the game. Tests cover radar orientation/range, pickup floor/range, and respawn duration. Browser checks verified no automatic collection, E pickup with line of sight, a blocked pickup from downstairs, mobile layout, and the full three-second safe reset. No new audio assets have been added.

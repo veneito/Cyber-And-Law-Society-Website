@@ -84,3 +84,5 @@
 - [ ] Review bilingual case/API changes with the other maintainer before merge; configure survey Discord delivery on the server (see docs/features/discord-bot.md).
 
 - [x] Add animated sonar hunter, safe upstairs reset, and keyboard/touch sprint (2026-10-24); see docs/features/library-obj-import.md.
+
+- [x] Add physical E-to-collect USB, directional hunter/USB radar, and three-second terminal respawn (2026-10-24).

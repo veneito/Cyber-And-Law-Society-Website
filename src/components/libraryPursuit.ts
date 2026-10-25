@@ -3,7 +3,7 @@ import type { LibraryWalking } from './libraryAsset';
 
 export const DOG_SPEED = 3.2;
 export const RESPAWN_GRACE = 9;
-export const CATCH_DURATION = 1.8;
+export const CATCH_DURATION = 3;
 export type NavigationData = { positions: number[]; offsets: number[]; neighbors: number[] };
 
 export class LibraryNavigation {

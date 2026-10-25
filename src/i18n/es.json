@@ -777,5 +777,16 @@
   "Start in room 181. WASD to walk; click for mouse look. A slow hunter follows you. Getting caught restarts this search.": "Comienzas en el salón 181. WASD para caminar; haz clic para mirar con el ratón. Un perseguidor lento te sigue. Si te atrapa, se reinicia esta búsqueda.",
   "Hold to sprint": "Mantén para correr",
   "WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.": "WASD para caminar · mantén Mayús para correr · ratón para mirar · Esc libera el ratón. Sigue las escaleras centrales curvas al segundo piso.",
-  "Start in room 181. WASD to walk; hold Shift to sprint. Click for mouse look. The hunter follows you. Getting caught restarts this search.": "Empieza en el aula 181. WASD para caminar; mantén Mayús para correr. Haz clic para mirar con el ratón. El cazador te sigue. Si te atrapa, esta búsqueda se reinicia."
+  "Start in room 181. WASD to walk; hold Shift to sprint. Click for mouse look. The hunter follows you. Getting caught restarts this search.": "Empieza en el aula 181. WASD para caminar; mantén Mayús para correr. Haz clic para mirar con el ratón. El cazador te sigue. Si te atrapa, esta búsqueda se reinicia.",
+  "Directional radar": "Radar direccional",
+  "AHEAD": "ADELANTE",
+  "HUNTER": "CAZADOR",
+  "SIGNAL": "SEÑAL",
+  "Respawning": "Reapareciendo",
+  "Connection lost. Respawning in room 181…": "Conexión perdida. Reapareciendo en el aula 181…",
+  "Hunter reset: floor 2 // safe restart": "Cazador: piso 2 // reinicio seguro",
+  "E · Collect USB": "E · Recoger USB",
+  "USB collected. Continue below.": "USB recogido. Continúa abajo.",
+  "USB COLLECTED": "USB RECOGIDO",
+  "WASD to walk · Shift to sprint · E to collect the USB on the bird-book lectern. Radar points ahead; floor arrows show upstairs/downstairs.": "WASD para caminar · Mayús para correr · E para recoger el USB del atril del libro de aves. El radar apunta hacia delante; las flechas indican subir o bajar."
 }
