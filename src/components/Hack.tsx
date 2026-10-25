@@ -1,7 +1,7 @@
 import { t as tr } from "../i18n/language";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Skull } from "./Skull";
+import { MonsterFace } from "./MonsterFace";
 import { Portrait } from "./Briefing";
 import { InteractiveHack } from "./InteractiveHack";
 import { BreachIntro } from "./BreachIntro";
@@ -29,7 +29,7 @@ export function Hack({ hack, onSolve, mood }: { mood?: "happy" | "angry" | "scar
   const dotTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(dotTimer.current), []);
   const [mem, setMem] = useState<{ stage: "ready" | "show" | "input"; lit: number; entered: number[] }>({ stage: "ready", lit: -1, entered: [] });
-  const [glitching, setGlitching] = useState(true); // the screen breaks for a moment before the skull appears
+  const [glitching, setGlitching] = useState(true); // the screen breaks for a moment before the monster appears
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 200); return () => clearInterval(i); }, []);
   useEffect(() => {
     // Shake the app root, not the body: a transformed body would pin fixed overlays to the top of the page.
@@ -99,7 +99,7 @@ export function Hack({ hack, onSolve, mood }: { mood?: "happy" | "angry" | "scar
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/90 p-4">
       <div className="fixed right-6 top-1/2 hidden -translate-y-1/2 lg:block"><Portrait label="Chris P. Bacon" sub="FBI" mood={mood} /></div>
       <div className="my-auto w-full max-w-md rounded-xl border border-red-500/60 bg-neutral-950 p-6">
-        <Skull />
+        <MonsterFace />
         <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-red-400">{tr("You have been hacked")}</p>
         <p className="mt-1 text-white">{tr("Bea F. Wellington locked your screen. Solve this to get back in.")}</p>
         <p className="mt-1 font-mono text-xs text-neutral-500">{secs}{tr("s. Under 20s: +20 points. Over 60s: -20 points.")}</p>

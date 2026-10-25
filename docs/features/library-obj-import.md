@@ -70,3 +70,9 @@ Further listening adjustment: step intervals are about 45% longer (roughly 30% f
 Begin investigation now shows a 3.8-second terminal boot sequence: loading a simulation of Marx Library, then finding the item and leaving before Bea finds the player. The hunt, grace countdown and movement do not start until boot finishes; reduced-motion users see the complete text. The USB model is 55% of its former size and stays aligned with the bird-book surface. Successful collection plays the existing short three-note chime, respecting mute.
 
 Collection focuses a completion panel explaining that this was a virtual location clue and directing players to the real Marx Library, second floor, bird-book lectern. Continue explicitly starts the real-world search. The sonar celebration says LOCATION FOUND instead of USB RECOVERED, and the drive-signature step retains the physical destination/instructions so they are not lost after leaving the simulation. API routes, phase validation and saved state formats are unchanged. Browser checks verified intro/grace timing, smaller USB, collection chime, destination panel, original pickup/reset flow and mobile layout.
+
+## Monster portrait in hack interruptions (2026-10-24)
+
+The old skull is replaced by a 48-column, 32-line ASCII portrait traced from the supplied monster screenshot. Only pixels inside the facial silhouette are represented; the screenshot background and raster image are not shipped. A small CSS laughing bounce runs on each laugh and respects reduced-motion settings.
+
+The supplied 16 KB laugh MP3 plays once every three seconds, with a brief laughing bounce on each play. A single audio element prevents stacked playback, at 24% volume, following the case-wide sound preference. Audio pauses on mute/hidden tabs; all playback and timers stop when the hack closes. Browser checks cover portrait replacement, desktop/mobile sizing, laugh cadence, reduced motion and cleanup.

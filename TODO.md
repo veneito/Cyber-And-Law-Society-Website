@@ -90,3 +90,5 @@
 - [x] Integrate supplied growls, near/catch whispers and movement-paced footsteps; show the USB bearing only during sonar pulses (2026-10-24).
 
 - [x] Add Marx Library simulation boot, smaller USB with collection chime, and explicit real-world destination handoff (2026-10-24).
+
+- [x] Replace hack skull with background-free monster ASCII, laughing bounce, and one laugh every three seconds (2026-10-24).
