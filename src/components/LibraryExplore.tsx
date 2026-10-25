@@ -8,7 +8,7 @@ import { libraryHologramMaterial } from './libraryHologram';
 import { loadLibraryDog } from './libraryDog';
 import LibraryBoot from './LibraryBoot';
 import LibraryRadar, { LibraryRespawn } from './LibraryRadar';
-import { radarContact, withinUsbReach } from './libraryObjective';
+import { radarContact, withinUsbReach, sonarFeedback } from './libraryObjective';
 import { CATCH_DURATION } from './libraryPursuit';
 
 type Props = { onPing: (x: number, y: number) => Promise<{ strength: number; found: boolean } | null>; onKey: () => void };
@@ -240,8 +240,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
             const inBounds = upstairs && x >= 0 && x <= 820 && z >= 0 && z <= 820;
             void live.current.onPing(inBounds ? x : 820, inBounds ? z : 820).then(r => {
               if (dead || !r || requestRun !== runId || catchLeft > 0) return;
-              const strength = Math.max(0, Math.min(1, (r.strength - 0.7) / 0.3)); setHeat(strength);
-              if (strength > 0.05) sfx.beep(strength > 0.6);
+              const feedback = sonarFeedback(r.strength); setHeat(feedback.strength);
+              if (feedback.strength > 0.02) sfx.beep(feedback.close, feedback.volume);
               if (r.found && upstairs && r.strength > 1 - 22 / 700) signalConfirmed = true;
             }).catch(() => {}).finally(() => { pinging = false; });
           }

@@ -94,3 +94,5 @@
 - [x] Replace hack skull with background-free monster ASCII, laughing bounce, and one laugh every three seconds (2026-10-24).
 
 - [x] Subdivide hologram tiles 3×3 with darker faces and physically raised laser grid lines (2026-10-24).
+
+- [x] Extend sonar range and soften distant pings with a quieter near-signal volume cap (2026-10-24).
