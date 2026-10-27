@@ -269,3 +269,11 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - Standard evidence has six Spanish cipher messages and Spanish answer validation. Saved evidence remains canonical English for compatibility; custom event configurations retain their own evidence.
 - Optional completion survey appears as a one-question-at-a-time overlay with a centered green ASCII capybara portrait. Preview submissions are simulated. Discord delivery setup remains an owner task in the bot notes.
 - Coordinate the case API changes with the other maintainer before merging; no live server configuration was changed.
+
+## Spanish court dialogue (2026-10-25)
+
+Changed the Spanish translation of the porker-to-court line to 'Ahora llevemos a esa villana al tribunal.' to preserve dramatic emphasis with clean wording.
+
+## Expanded sonar exploration (2026-10-25)
+
+The library viewport fills the browser window while mouse pointer lock is active. Collecting the USB or releasing the mouse with Esc restores its inline size. The existing ResizeObserver adjusts rendering without resetting exploration.
