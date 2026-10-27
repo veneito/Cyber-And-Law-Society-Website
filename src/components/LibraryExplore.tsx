@@ -278,6 +278,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     };
   }, [attempt]);
 
+  const expanded = locked && !found;
   const hold = (key: keyof typeof controls.current) => (e: React.PointerEvent<HTMLButtonElement>) => { e.currentTarget.setPointerCapture(e.pointerId); controls.current[key] = true; };
   return <div className="max-w-5xl">
     <div className="mb-3 flex flex-wrap gap-2">
@@ -286,8 +287,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       {overview && [0, 1].map(f => <button key={f} aria-pressed={inspectFloor === f} onClick={() => setInspectFloor(f)} className={`rounded border px-4 py-2 text-sm ${inspectFloor === f ? 'border-green-300 text-green-200' : 'border-neutral-700 text-neutral-400'}`}>{tr('Floor')}{f + 1}</button>)}
     </div>
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-green-300"><span>{tr('MARX LIBRARY // FLOOR')}{(overview ? inspectFloor : floor) + 1}</span><span>{found ? tr('USB COLLECTED') : `SIGNAL ${Math.round(heat * 100)}%`}</span></div>
-    <div className="relative overflow-hidden rounded-xl border border-green-500/60 bg-black">
-      <div ref={mount} className="h-[min(65vh,38rem)] min-h-80 w-full" />
+    <div className={`${expanded ? "fixed inset-0 z-[80]" : "relative rounded-xl"} overflow-hidden border border-green-500/60 bg-black`}>
+      <div ref={mount} className={expanded ? "h-full w-full" : "h-[min(65vh,38rem)] min-h-80 w-full"} />
       {!ready && !error && <p role="status" className="absolute inset-4 bg-black/80 p-4 font-mono text-green-300">{tr('Loading library…')}</p>}
       {ready && !started && !booting && !overview && <button onClick={() => { audio.current?.start(); setBootProgress(0); setBooting(true); }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-400 bg-black/90 px-6 py-3 font-mono text-green-300">{tr('Begin investigation')}</button>}
       {error && <div role="alert" className="absolute inset-4 bg-black p-4 text-red-300"><p>{error}</p><button onClick={() => { setReady(false); setError(''); setAttempt(n => n + 1); }} className="mt-3 rounded border border-green-700 px-4 py-2 text-green-300">{tr('Retry')}</button></div>}

@@ -96,3 +96,9 @@
 - [x] Subdivide hologram tiles 3×3 with darker faces and physically raised laser grid lines (2026-10-24).
 
 - [x] Extend sonar range and soften distant pings with a quieter near-signal volume cap (2026-10-24).
+
+- [x] Replace the Spanish porker-to-court wording with the clean, emphatic 'villana' (2026-10-25).
+
+- [x] Reuse the officer application Discord webhook for case surveys when no dedicated bot channel is configured (2026-10-25).
+
+- [x] Expand sonar while mouse control is active and restore its size when the USB is collected or Esc releases the mouse (2026-10-25).

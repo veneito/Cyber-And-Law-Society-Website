@@ -1,13 +1,15 @@
-// Posts through Lady Justice's existing bot identity; no second Gateway connection.
+// Uses the configured survey bot channel, or the existing officer application webhook.
 export async function notifySurvey(teamName, survey) {
   const token = process.env.DISCORD_BOT_TOKEN;
   const channel = process.env.CASE_SURVEY_CHANNEL_ID;
-  if (!token || !channel) return "unconfigured";
-  if (!/^\d{16,22}$/.test(channel)) return "failed";
+  const webhook = process.env.DISCORD_WEBHOOK_URL;
+  const useBot = !!(token && channel);
+  if (!useBot && !webhook) return "unconfigured";
+  if (useBot && !/^\d{16,22}$/.test(channel)) return "failed";
   try {
-    const response = await fetch(`https://discord.com/api/v10/channels/${channel}/messages`, {
+    const response = await fetch(useBot ? `https://discord.com/api/v10/channels/${channel}/messages` : webhook, {
       method: "POST",
-      headers: { Authorization: `Bot ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(useBot ? { Authorization: `Bot ${token}` } : {}) },
       signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         allowed_mentions: { parse: [] },
