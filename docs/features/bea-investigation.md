@@ -277,3 +277,7 @@ Changed the Spanish translation of the porker-to-court line to 'Ahora llevemos a
 ## Expanded sonar exploration (2026-10-25)
 
 The library viewport fills the browser window while mouse pointer lock is active. Collecting the USB or releasing the mouse with Esc restores its inline size. The existing ResizeObserver adjusts rendering without resetting exploration.
+
+## Fullscreen USB pickup prompt (2026-10-28)
+
+Moved the E-to-collect prompt below the crosshair. Its previous bottom-left position overlapped the fixed language selector in expanded exploration. Pickup distance, visibility checks, and keyboard handling are unchanged.
