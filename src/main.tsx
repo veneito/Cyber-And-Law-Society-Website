@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { LanguageSwitch } from './i18n/language'
 import { CodeRain } from './components/CodeRain.tsx'
 
 // Always land at the very top on page load (no restored scroll), unless
@@ -31,5 +32,6 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <CodeRain />
     <App />
+    <LanguageSwitch />
   </StrictMode>,
 )

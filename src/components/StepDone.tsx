@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useRef } from "react";
 import { CyberLock, CyberLocation, CyberUsb } from "./CyberArt";
 import { sfx } from "./sound";
@@ -5,10 +6,10 @@ import { sfx } from "./sound";
 export type StepKind = "photo" | "sonar" | "drive" | "ciphers";
 
 const TITLE: Record<StepKind, [string, string]> = {
-  photo: ["LOCATION CONFIRMED", "The photo was taken at the Marx Library."],
-  sonar: ["USB RECOVERED", "Bea’s digital signature is on the drive."],
-  drive: ["ACCESS GRANTED", "Bea's digital signature verified."],
-  ciphers: ["ALL EVIDENCE DECODED", "Six messages. Six crimes. Time to accuse."],
+  photo: [tr("LOCATION CONFIRMED"), tr("The photo was taken at the Marx Library.")],
+  sonar: [tr("LOCATION FOUND"), tr("Now visit the real Marx Library: second floor, bird-book lectern.")],
+  drive: [tr("ACCESS GRANTED"), tr("Bea's digital signature verified.")],
+  ciphers: [tr("ALL EVIDENCE DECODED"), tr("Six messages. Six crimes. Time to accuse.")],
 };
 
 // One unique animation per completed step.

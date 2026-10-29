@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { sfx } from "./sound";
 type Clip = { idle: string; frames: { art: string; duration: number }[] };
@@ -33,10 +34,10 @@ export function CourtJudge({ children, reaction, smacks = false }: { children: R
     return () => clearTimeout(timer);
   }, [reaction, clip, smacks]);
   return <div className="mb-5 rounded border border-orange-700/40 bg-black p-4">
-    <div className="flex items-center justify-between font-mono text-[9px] tracking-widest text-orange-600"><span>THE PEOPLE v. WELLINGTON</span><span>COURT IN SESSION</span></div>
+    <div className="flex items-center justify-between font-mono text-[9px] tracking-widest text-orange-600"><span>{tr("THE PEOPLE v. WELLINGTON")}</span><span>{tr("COURT IN SESSION")}</span></div>
     <div ref={viewport} role="img" aria-label="Orange ASCII judge, reacting when a charge is selected" className="mx-auto my-4 w-full max-w-lg overflow-hidden">
-      <pre aria-hidden className="m-0 text-orange-400" style={{fontFamily:'"Courier New", monospace',fontSize:width/(160*0.6),lineHeight:1.2,fontWeight:700,minHeight:width*49/80}}>{(frame>=0 ? clip?.frames[frame]?.art : clip?.idle) ?? (failed ? "[ COURT IN SESSION ]" : "[ CONNECTING TO COURT… ]")}</pre>
+      <pre aria-hidden className="m-0 text-orange-400" style={{fontFamily:'"Courier New", monospace',fontSize:width/(160*0.6),lineHeight:1.2,fontWeight:700,minHeight:width*49/80}}>{(frame>=0 ? clip?.frames[frame]?.art : clip?.idle) ?? (failed ? tr("[ COURT IN SESSION ]") : tr("[ CONNECTING TO COURT… ]"))}</pre>
     </div>
-    <div className="border-t border-orange-900 pt-3"><p className="mb-2 font-mono text-[9px] tracking-widest text-orange-600">THE JUDGE</p><p className="font-serif text-lg leading-relaxed text-orange-200">{children}</p></div>
+    <div className="border-t border-orange-900 pt-3"><p className="mb-2 font-mono text-[9px] tracking-widest text-orange-600">{tr("THE JUDGE")}</p><p className="font-serif text-lg leading-relaxed text-orange-200">{children}</p></div>
   </div>;
 }

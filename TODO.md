@@ -23,10 +23,19 @@
 - [ ] Add .impeccable/ and .claude/ to .gitignore
 
 ## Discord bot (see docs/features/discord-bot.md)
+- [x] Prepare Lady Justice survey notifications for #ticket-bot using server-only credentials
+- [ ] Server owner: configure CASE_SURVEY_CHANNEL_ID for #ticket-bot, grant Lady Justice channel permissions, restart site and verify delivery
 - [ ] Upload `lady-justice-avatar.png` as the bot avatar (Developer Portal → Bot tab)
 - [ ] Confirm the bot shows online in the server; optional: welcome message / auto-role on join
 
 ## Bea F. Wellington investigation (see docs/features/bea-investigation.md)
+- [x] Import the exported Roblox OBJ into sonar with original geometry, room 181 spawn, and tested stairs/collision (2026-10-24; see docs/features/library-obj-import.md)
+- [x] Give the sonar environment a green polygon hologram finish without new geometry or texture buffers (2026-10-24)
+- [ ] Other maintainer: review the OBJ sonar frontend and verify the live target before merging
+- [x] Restore location/USB step animations and wait for arrest artwork before scene timers start
+- [x] Add optional end-of-game survey with validated private persistence and duplicate protection
+- [ ] Verify arrest and step transitions end to end; coordinate survey state/API addition and response retrieval with server owner before merging
+- [x] Shrink ambient click effects into soft water-like code ripples
 - [x] Gate all four decoder tools behind related training ciphers, including a Julius Caesar dispatch and shift dial
 - [x] First-person two-floor green/black library blockout with walking, central stair flight and radar; add isolated preview
 - [ ] Walk through the library blockout in-browser, refine doorways and plan proportions, verify live sonar target mapping with owner before merging
@@ -48,6 +57,11 @@
 - [x] Prep all 9 team drives (done)
 
 ## Ideas
+- [x] Close the initial section reveal mask so the hologram head cannot peek through before the contact content appears (2026-10-22).
+- [x] Fix the case Activities back-link displaying the HTML arrow code in English (2026-10-22).
+- [x] Add short personalized officer bio intros for Jon, Alfred, Andrew, and Michelle; Professor Wang opens directly (2026-10-22).
+- [x] Clean malformed binary digits in the hero artwork and replace them with crisp monospace vector text (2026-10-22).
+- [x] Replace the contact poster with the Lady Justice 3D network and custom scale symbols; include model attribution and lazy, paused rendering (2026-10-22).
 - [ ] Crest logo with a transparent background (looks better on black)
 - [ ] Consider a shorter intro or skip hint if visitors find 4s long
 - [ ] Hero buttons still sit in the centered max-w-6xl column; maybe align with the full-width header
@@ -65,3 +79,28 @@
 - [ ] Discord bot stays on Vene's old server for now; move it only after stopping the old copy
 - [ ] Remove Vene's Windows PC key (`claude-desktop-itt842f`) from `~grenudo/.ssh/authorized_keys` when no longer needed
 - [ ] Dashboard: maintenance mode and rollback are unavailable for the remote site
+
+- [x] Add English/Español interface, Spanish standard evidence and decoder training, translated Chris subtitles with original audio, and centered El Chigüire survey overlay (2026-10-21).
+- [ ] Review bilingual case/API changes with the other maintainer before merge; configure survey Discord delivery on the server (see docs/features/discord-bot.md).
+
+- [x] Add animated sonar hunter, safe upstairs reset, and keyboard/touch sprint (2026-10-24); see docs/features/library-obj-import.md.
+
+- [x] Add physical E-to-collect USB, directional hunter/USB radar, and three-second terminal respawn (2026-10-24).
+
+- [x] Integrate supplied growls, near/catch whispers and movement-paced footsteps; show the USB bearing only during sonar pulses (2026-10-24).
+
+- [x] Add Marx Library simulation boot, smaller USB with collection chime, and explicit real-world destination handoff (2026-10-24).
+
+- [x] Replace hack skull with background-free monster ASCII, laughing bounce, and one laugh every three seconds (2026-10-24).
+
+- [x] Subdivide hologram tiles 3×3 with darker faces and physically raised laser grid lines (2026-10-24).
+
+- [x] Extend sonar range and soften distant pings with a quieter near-signal volume cap (2026-10-24).
+
+- [x] Replace the Spanish porker-to-court wording with the clean, emphatic 'villana' (2026-10-25).
+
+- [x] Reuse the officer application Discord webhook for case surveys when no dedicated bot channel is configured (2026-10-25).
+
+- [x] Expand sonar while mouse control is active and restore its size when the USB is collected or Esc releases the mouse (2026-10-25).
+
+- [x] Move the fullscreen USB pickup prompt below the crosshair so the language selector cannot cover it (2026-10-28).

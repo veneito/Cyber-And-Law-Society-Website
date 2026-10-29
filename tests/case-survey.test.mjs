@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { EventEmitter } from 'node:events';
+import assert from 'node:assert/strict';
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cls-survey-check-'));
+delete process.env.DISCORD_BOT_TOKEN;
+delete process.env.CASE_SURVEY_CHANNEL_ID;
+process.env.CASE_CONFIG=path.join(dir,'config.json');process.env.CASE_STATE=path.join(dir,'state.json');
+fs.writeFileSync(process.env.CASE_CONFIG,JSON.stringify({teams:{DONE:'Finished',ACTIVE:'Active',INVALID:'Invalid'},answers:['A']}));
+fs.writeFileSync(process.env.CASE_STATE,JSON.stringify({DONE:{startedAt:Date.now()-1000,finishedAt:Date.now()},ACTIVE:{startedAt:Date.now()},INVALID:{startedAt:Date.now()-1000,finishedAt:Date.now()}}));
+const {handleCase}=await import(pathToFileURL(path.resolve('deploy/case.mjs')).href);
+function request(body){return new Promise(resolve=>{const req=new EventEmitter();req.url='/api/case/survey';req.method='POST';let status;handleCase(req,{writeHead(s){status=s;},end(s){resolve({status,body:JSON.parse(s)});}});req.emit('data',JSON.stringify(body));req.emit('end');});}
+assert.equal((await request({code:'ACTIVE',enjoyment:5,difficulty:3,learning:4})).status,409);
+assert.equal((await request({code:'INVALID',enjoyment:0,difficulty:3,learning:4})).status,400);
+assert.equal((await request({code:'MISSING',enjoyment:5,difficulty:3,learning:4})).status,403);
+const result=await request({code:'DONE',enjoyment:5,difficulty:3,learning:4,feedback:'Good game'});assert.equal(result.status,200,JSON.stringify(result));
+assert.equal((await request({code:'DONE',enjoyment:1,difficulty:1,learning:1})).body.repeat,true);
+const saved=JSON.parse(fs.readFileSync(process.env.CASE_STATE));assert.equal(saved.DONE.survey.enjoyment,5);assert.equal(saved.DONE.survey.feedback,'Good game');
+console.log('Survey checks passed: completion gate, ratings, unknown team, persistence and duplicate protection.');

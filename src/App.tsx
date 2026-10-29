@@ -1,3 +1,4 @@
+import { t as tr } from "./i18n/language";
 import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
@@ -6,6 +7,8 @@ import { Icon } from "./components/Icon";
 import { CasePage } from "./components/Case";
 import { Logo } from "./components/Logo";
 import { Network } from "./components/Network";
+import { JusticeHologram } from "./components/JusticeHologram";
+import { OfficerIntro } from "./components/OfficerIntro";
 import { Phage } from "./components/Phage";
 import { DecodeText } from "./components/Materialize";
 import { Quarantine } from "./components/Quarantine";
@@ -14,12 +17,12 @@ import { Socials } from "./components/Socials";
 import { hasLink, siteConfig, type Officer } from "./config/site";
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#events", label: "Events" },
-  { href: "/#officers", label: "Officers" },
-  { href: "/#faq", label: "FAQ" },
-  { href: "/activities", label: "Activities" },
+  { href: "/", label: tr("Home") },
+  { href: "/#about", label: tr("About") },
+  { href: "/#events", label: tr("Events") },
+  { href: "/#officers", label: tr("Officers") },
+  { href: "/#faq", label: tr("FAQ") },
+  { href: "/activities", label: tr("Activities") },
 ];
 
 const initials = (name: string) =>
@@ -138,6 +141,7 @@ const SAMPLE_BIO = "Sample bio: this is placeholder text about the officer. Add 
 function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: () => void }) {
   const dlg = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false); // replays the decode effect on each open
+  const [intro, setIntro] = useState(false);
   const avatar = (size: string) =>
     o.image ? (
       <img src={o.image} alt={o.name} className={`mx-auto ${size} rounded-full object-cover`} />
@@ -150,7 +154,12 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
     <>
       {/* Centre card opens the pop-up; side cards slide to the centre. Cards beyond two steps fade out. */}
       <button
-        onClick={() => (pos === 0 ? (dlg.current?.showModal(), setOpen(true)) : onSelect())}
+        onClick={() => {
+          if (pos !== 0) { onSelect(); return; }
+          setIntro(Boolean(o.intro) && !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+          dlg.current?.showModal();
+          setOpen(true);
+        }}
         aria-label={pos === 0 ? `${o.name}, open bio` : `Show ${o.name}`}
         tabIndex={Math.abs(pos) > 2 ? -1 : 0}
         className={`group absolute left-1/2 top-6 ${pos === 0 ? "" : "max-sm:hidden"} aspect-square w-56 overflow-hidden rounded-2xl border bg-neutral-900 text-left transition-all duration-500 ease-out sm:w-72${
@@ -169,7 +178,7 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         ) : (
           <div className="grid h-full w-full place-items-center bg-gradient-to-br from-green-500/30 to-green-900/40 text-6xl font-semibold text-white">{initials(o.name)}</div>
         )}
-        {pos === 0 && <span className="absolute left-3 top-3 rounded-full border border-green-400/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-green-300 backdrop-blur">Read bio</span>}
+        {pos === 0 && <span className="absolute left-3 top-3 rounded-full border border-green-400/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-green-300 backdrop-blur">{tr("Read bio")}</span>}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/75 to-transparent p-5 pt-16">
           <h3 className={`font-semibold text-white ${pos === 0 ? "text-xl" : ""}`}>{o.name}</h3>
           <p className="font-mono text-xs uppercase tracking-wider text-green-300">{o.role}</p>
@@ -177,9 +186,10 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         </div>
       </button>
       {/* showModal() traps focus, handles Escape and restores focus; a click on the dialog itself is a backdrop click */}
-      <dialog ref={dlg} aria-label={o.name} onClose={() => setOpen(false)} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
+      <dialog ref={dlg} aria-label={o.name} onClose={() => { setOpen(false); setIntro(false); }} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
         <div className="relative rounded-xl border border-neutral-700 bg-neutral-950 p-8 text-center">
-          <button onClick={() => dlg.current?.close()} aria-label="Close" className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
+          <button onClick={() => dlg.current?.close()} aria-label={tr("Close")} className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
+          {open && intro && o.intro ? <OfficerIntro kind={o.intro} name={o.name} onComplete={() => setIntro(false)} /> : <>
           {avatar("h-32 w-32")}
           <h3 className="mt-4 text-xl font-semibold text-white"><DecodeText text={o.name} active={open} /></h3>
           <p className="text-sm text-green-300"><DecodeText text={`${o.role} · ${o.major}`} active={open} /></p>
@@ -191,6 +201,7 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
             </p>
           )}
           {o.email && <a href={`mailto:${o.email}`} className="mt-5 inline-flex max-w-full items-center justify-center gap-2 break-all rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black"><Mail className="h-4 w-4 shrink-0" aria-hidden />{o.email}</a>}
+          </>}
         </div>
       </dialog>
     </>
@@ -236,7 +247,7 @@ function Footer() {
     <footer className="border-t border-neutral-800 py-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-neutral-500 sm:flex-row sm:px-6">
         <div className="flex items-center gap-3"><Logo className="h-7 w-7" /> {siteConfig.name}</div>
-        <p>© {new Date().getFullYear()} {siteConfig.name}. Student organization.</p>
+        <p>© {new Date().getFullYear()} {siteConfig.name}{tr(". Student organization.")}</p>
       </div>
     </footer>
   );
@@ -244,22 +255,22 @@ function Footer() {
 
 function ActivitiesPage() {
   const items = [
-    { href: "/play", tag: "Mini-game", title: "Quarantine the viruses", text: "Scan the file system, track down the malware and lock it away. Climb the leaderboard." },
-    { href: "/case/wellington", tag: "Investigation", title: "The Bea F. Wellington case file", text: "A cyber-crime investigation. Follow the photo, find the key, crack the ciphers and prove what she did." },
+    { href: "/play", tag: tr("Mini-game"), title: tr("Quarantine the viruses"), text: tr("Scan the file system, track down the malware and lock it away. Climb the leaderboard.") },
+    { href: "/case/wellington", tag: tr("Investigation"), title: tr("The Bea F. Wellington case file"), text: tr("A cyber-crime investigation. Follow the photo, find the key, crack the ciphers and prove what she did.") },
   ];
   return (
     <>
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Activities</p>
-        <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Pick a challenge</h1>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Activities")}</p>
+        <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{tr("Pick a challenge")}</h1>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {items.map((a) => (
             <a key={a.href} href={a.href} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 transition hover:border-green-400/50">
               <span className="rounded-full bg-green-500/10 px-2.5 py-1 font-mono text-xs text-green-300">{a.tag}</span>
               <h2 className="mt-4 text-xl font-semibold text-white">{a.title}</h2>
               <p className="mt-2 text-sm text-neutral-400">{a.text}</p>
-              <p className="mt-4 inline-flex items-center gap-1 text-sm text-green-300">Open <ArrowRight className="h-4 w-4" aria-hidden /></p>
+              <p className="mt-4 inline-flex items-center gap-1 text-sm text-green-300">{tr("Open")}<ArrowRight className="h-4 w-4" aria-hidden /></p>
             </a>
           ))}
         </div>
@@ -286,9 +297,7 @@ function PlayPage() {
             <span className="text-green-400">&gt;</span> <DecodeText text="Quarantine the viruses" active={ready} />
             <span className="cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.1em] bg-green-400" aria-hidden />
           </h1>
-          <p className="q-rise mt-3 mb-10 max-w-2xl text-neutral-400" style={{ animationDelay: "0.2s" }}>
-            Malware is hiding in the file system. Scan carefully, use the numbers to track it down, and lock every virus behind our shield.
-          </p>
+          <p className="q-rise mt-3 mb-10 max-w-2xl text-neutral-400" style={{ animationDelay: "0.2s" }}>{tr("Malware is hiding in the file system. Scan carefully, use the numbers to track it down, and lock every virus behind our shield.")}</p>
           <div className="q-rise" style={{ animationDelay: "0.3s" }}><Quarantine /></div>
         </div>
       </main>
@@ -310,7 +319,7 @@ function SubPage({ children }: { children: React.ReactNode }) {
 function MeetingsPage() {
   return (
     <SubPage>
-      <Section id="meetings" eyebrow="Archive" title="Past meetings">
+      <Section id="meetings" eyebrow="Archive" title={tr("Past meetings")}>
         <div>
           <div className="grid content-start gap-4">
             {siteConfig.pastMeetings.map((m) => (
@@ -340,22 +349,22 @@ function OfficerPage() {
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   return (
     <SubPage>
-      <Section id="apply" eyebrow="Leadership" title="Become an officer">
+      <Section id="apply" eyebrow={tr("Leadership")} title={tr("Become an officer")}>
         <div className="max-w-2xl space-y-4 text-neutral-400">
-          <p>The main goal of an officer is to be passionate about how cyber is evolving, and to keep a focus on the law that has to evolve with it.</p>
-          <p>No title or experience required. Show up, help out, and tell us you want more.</p>
+          <p>{tr("The main goal of an officer is to be passionate about how cyber is evolving, and to keep a focus on the law that has to evolve with it.")}</p>
+          <p>{tr("No title or experience required. Show up, help out, and tell us you want more.")}</p>
         </div>
         <div className="mt-10 max-w-2xl rounded-xl border border-neutral-800 bg-neutral-950 p-6">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">Step one</p>
-          <p className="mt-2 text-neutral-300">Somewhere on this website is an anomaly, and it hides in a different place for every visitor. Find it and fix the bug.</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Step one")}</p>
+          <p className="mt-2 text-neutral-300">{tr("Somewhere on this website is an anomaly, and it hides in a different place for every visitor. Find it and fix the bug.")}</p>
           {fixed ? (
             <>
-              <p className="mt-4 font-mono text-sm text-green-400">&gt; Bug fixed. You're cleared to apply.</p>
-              <button onClick={() => { resetHunt(); rerender(); }} className="mt-4 rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black">Play again</button>
+              <p className="mt-4 font-mono text-sm text-green-400">{tr("&gt; Bug fixed. You're cleared to apply.")}</p>
+              <button onClick={() => { resetHunt(); rerender(); }} className="mt-4 rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black">{tr("Play again")}</button>
               <ApplyForm />
             </>
           ) : (
-            <p className="mt-4 text-sm text-neutral-500">Hint: look closely at the sections. It flickers.</p>
+            <p className="mt-4 text-sm text-neutral-500">{tr("Hint: look closely at the sections. It flickers.")}</p>
           )}
         </div>
       </Section>
@@ -378,7 +387,7 @@ export default function App() {
         <Hero />
         <Anomaly spot="hero" />
 
-        <Section id="about" eyebrow="Who We Are" title={siteConfig.pillarsHeading}>
+        <Section id={"about"} eyebrow="Who We Are" title={siteConfig.pillarsHeading}>
           <p className="-mt-4 mb-10 max-w-2xl text-neutral-400">{siteConfig.description}</p>
           <div className="grid gap-6 lg:grid-cols-3">
             {pillars.map((p) => (
@@ -396,7 +405,7 @@ export default function App() {
             ))}
           </div>
 
-          <h3 className="mt-20 font-mono text-xs uppercase tracking-[0.2em] text-green-400">What We Do</h3>
+          <h3 className="mt-20 font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("What We Do")}</h3>
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {siteConfig.activities.map((a) => (
               <div key={a.title}>
@@ -407,11 +416,11 @@ export default function App() {
             ))}
           </div>
         </Section>
-        <Anomaly spot="about" />
+        <Anomaly spot={"about"} />
 
-        <Section id="events" eyebrow="Events" title="Upcoming meetings & workshops">
+        <Section id={"events"} eyebrow={tr("Events")} title={tr("Upcoming meetings & workshops")}>
           {upcomingEvents.length === 0 ? (
-            <Empty>No events scheduled yet — check back soon.</Empty>
+            <Empty>{tr("No events scheduled yet — check back soon.")}</Empty>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               {upcomingEvents.map((e) => (
@@ -425,16 +434,14 @@ export default function App() {
                   </div>
                   {e.promoVideo !== undefined && (
                     hasLink(e.promoVideo) ? (
-                      <a href={e.promoVideo} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">
-                        Watch the promo video <ArrowRight className="h-3 w-3" aria-hidden />
+                      <a href={e.promoVideo} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">{tr("Watch the promo video")}<ArrowRight className="h-3 w-3" aria-hidden />
                       </a>
                     ) : (
-                      <p className="mt-4 text-sm text-neutral-400">Promo video coming soon</p>
+                      <p className="mt-4 text-sm text-neutral-400">{tr("Promo video coming soon")}</p>
                     )
                   )}
                   {hasLink(e.link) && (
-                    <a href={e.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">
-                      Details <ArrowRight className="h-3 w-3" aria-hidden />
+                    <a href={e.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm text-green-300 hover:underline">{tr("Details")}<ArrowRight className="h-3 w-3" aria-hidden />
                     </a>
                   )}
                 </article>
@@ -442,14 +449,13 @@ export default function App() {
             </div>
           )}
         <div className="mt-8">
-            <a href="/meetings" className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-5 py-3 font-semibold text-white hover:border-green-400">
-              Past meetings <ArrowRight className="h-4 w-4" aria-hidden />
+            <a href="/meetings" className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-5 py-3 font-semibold text-white hover:border-green-400">{tr("Past meetings")}<ArrowRight className="h-4 w-4" aria-hidden />
             </a>
           </div>
         </Section>
-        <Anomaly spot="events" />
+        <Anomaly spot={"events"} />
 
-        <Section id="officers" eyebrow="Leadership" title="Meet the officers">
+        <Section id={"officers"} eyebrow={tr("Leadership")} title={tr("Meet the officers")}>
           {officersPhoto && (
             <figure className="relative mb-8 overflow-hidden rounded-xl border border-white/10">
               <img src={officersPhoto} alt="The CLS officers" loading="lazy" className="aspect-[16/9] w-full object-cover sm:aspect-[21/9]" />
@@ -457,7 +463,7 @@ export default function App() {
             </figure>
           )}
           {officers.length === 0 ? (
-            <Empty>Officer roster coming soon.</Empty>
+            <Empty>{tr("Officer roster coming soon.")}</Empty>
           ) : (
             <OfficerCarousel officers={officers} />
           )}
@@ -465,14 +471,13 @@ export default function App() {
             <a
               href="/become-an-officer"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-green-400 px-5 py-3 font-semibold text-green-300 hover:bg-green-400 hover:text-black"
-            >
-              Become an officer <ArrowRight className="h-4 w-4" aria-hidden />
+            >{tr("Become an officer")}<ArrowRight className="h-4 w-4" aria-hidden />
             </a>
           </div>
         </Section>
-        <Anomaly spot="officers" />
+        <Anomaly spot={"officers"} />
 
-        <Section id="faq" eyebrow="FAQ" title="Frequently asked questions">
+        <Section id={"faq"} eyebrow={tr("FAQ")} title={tr("Frequently asked questions")}>
           <div className="max-w-3xl divide-y divide-neutral-800 rounded-xl border border-neutral-800">
             {faq.map((f) => (
               <details key={f.question} className="group p-5">
@@ -485,10 +490,10 @@ export default function App() {
             ))}
           </div>
         </Section>
-        <Anomaly spot="faq" />
+        <Anomaly spot={"faq"} />
 
-        <Section id="contact" eyebrow="Get Involved" title="Ready to join?">
-          <div className="grid items-start gap-10 lg:grid-cols-[1fr_320px]">
+        <Section id={"contact"} eyebrow={tr("Get Involved")} title={tr("Ready to join?")}>
+          <div className="grid items-start gap-10 lg:grid-cols-[1fr_440px]">
             <div>
               <p className="font-mono text-lg text-white">{siteConfig.slogan}</p>
               <div className="mt-6 max-w-xl rounded-xl border border-green-400/30 bg-green-400/5 p-5">
@@ -500,14 +505,10 @@ export default function App() {
                 <Socials />
               </div>
             </div>
-            {siteConfig.branding.flyerPath && (
-              <a href={siteConfig.branding.flyerPath} target="_blank" rel="noreferrer" className="block">
-                <img src={siteConfig.branding.flyerPath} alt={`${siteConfig.name} flyer`} loading="lazy" className="w-full rounded-xl border border-neutral-800 transition hover:border-green-400/50" />
-              </a>
-            )}
+            <JusticeHologram />
           </div>
         </Section>
-        <Anomaly spot="contact" />
+        <Anomaly spot={"contact"} />
       </main>
 
       <Footer />

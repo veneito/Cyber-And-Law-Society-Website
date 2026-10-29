@@ -1,3 +1,4 @@
+import { t as tr } from "../i18n/language";
 import { Bug, RotateCcw, Shield, ShieldCheck, Timer, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,9 +27,9 @@ type SubmitState =
 
 function errorMessage(status: number, body: { error?: string; retryIn?: number }) {
   if (status === 429) return `Someone on your network just saved a score. Try again in ${body.retryIn ?? 10} seconds.`;
-  if (body.error === "name") return "Add a name using letters, numbers, spaces, or . - _";
-  if (body.error === "time") return "This time didn't pass the leaderboard's check, so it wasn't saved.";
-  return "Couldn't reach the leaderboard. Check your connection and try again.";
+  if (body.error === "name") return tr("Add a name using letters, numbers, spaces, or . - _");
+  if (body.error === "time") return tr("This time didn't pass the leaderboard's check, so it wasn't saved.");
+  return tr("Couldn't reach the leaderboard. Check your connection and try again.");
 }
 
 function Leaderboard({ level, board, mine }: { level: Level; board: Board | null; mine: number }) {
@@ -36,13 +37,12 @@ function Leaderboard({ level, board, mine }: { level: Level; board: Board | null
   return (
     <aside className="q-rise w-full rounded-xl border border-neutral-800 bg-neutral-950/80 p-5 lg:w-72" style={{ animationDelay: "0.5s" }}>
       <h2 className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-wide text-white">
-        <Trophy className="h-4 w-4 text-yellow-300" aria-hidden /> Leaderboard
-        <span className="ml-auto text-xs font-normal text-green-400">{level}</span>
+        <Trophy className="h-4 w-4 text-yellow-300" aria-hidden />{tr("Leaderboard")}<span className="ml-auto text-xs font-normal text-green-400">{level}</span>
       </h2>
       {board === null ? (
-        <p className="mt-4 text-sm text-neutral-500">Loading scores…</p>
+        <p className="mt-4 text-sm text-neutral-500">{tr("Loading scores…")}</p>
       ) : list.length === 0 ? (
-        <p className="mt-4 text-sm text-neutral-500">No {level} scores yet. Win a game to claim #1.</p>
+        <p className="mt-4 text-sm text-neutral-500">No {level}{tr("scores yet. Win a game to claim #1.")}</p>
       ) : (
         <ol className="mt-4 space-y-1 font-mono text-sm">
           {list.map((s, k) => {
@@ -233,8 +233,7 @@ export function Quarantine() {
             className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs ${flagMode ? "border-green-400 bg-green-400/15 text-green-300" : "border-neutral-700 text-neutral-400"}`}
             aria-pressed={flagMode}
           >
-            <Shield className="h-3.5 w-3.5" aria-hidden /> Quarantine mode
-          </button>
+            <Shield className="h-3.5 w-3.5" aria-hidden />{tr("Quarantine mode")}</button>
           <button onClick={() => reset()} className="rounded-md border border-neutral-700 p-1.5 text-neutral-300 hover:text-white" aria-label="New game">
             <RotateCcw className="h-4 w-4" />
           </button>
@@ -249,7 +248,7 @@ export function Quarantine() {
         >
           <div className="min-w-0 flex-1 basis-56">
             <p className={`font-mono text-xl font-extrabold ${status === "won" ? "text-green-400" : "text-red-400"}`}>
-              {status === "won" ? "> SYSTEM SECURED" : "> SYSTEM INFECTED"}
+              {status === "won" ? tr("> SYSTEM SECURED") : tr("> SYSTEM INFECTED")}
             </p>
             <p className="mt-1 text-sm text-neutral-300">
               {status === "won"
@@ -270,7 +269,7 @@ export function Quarantine() {
           <div className="flex flex-wrap items-end gap-2">
             {status === "won" && submit.kind !== "done" && (
               <form onSubmit={submitScore}>
-                <label htmlFor="q-name" className="block text-xs text-neutral-400">Name on the {level} leaderboard</label>
+                <label htmlFor="q-name" className="block text-xs text-neutral-400">{tr("Name on the")}{level}{"leaderboard"}</label>
                 <div className="mt-1.5 flex gap-2">
                   <input
                     id="q-name"
@@ -282,14 +281,12 @@ export function Quarantine() {
                     className="w-36 rounded-lg border border-neutral-700 bg-black px-3 py-2 font-mono text-sm text-white outline-none focus:border-green-400"
                   />
                   <button disabled={!name.trim() || submit.kind === "sending"} className="rounded-lg border border-green-400 px-3 py-2 text-sm font-semibold text-green-300 hover:bg-green-400/10 disabled:opacity-40">
-                    {submit.kind === "sending" ? "Saving…" : "Save score"}
+                    {submit.kind === "sending" ? tr("Saving…") : tr("Save score")}
                   </button>
                 </div>
               </form>
             )}
-            <button onClick={() => reset()} className="rounded-lg bg-green-400 px-4 py-2 text-sm font-semibold text-black hover:bg-green-300">
-              Play again
-            </button>
+            <button onClick={() => reset()} className="rounded-lg bg-green-400 px-4 py-2 text-sm font-semibold text-black hover:bg-green-300">{tr("Play again")}</button>
           </div>
         </section>
       )}
@@ -331,9 +328,7 @@ export function Quarantine() {
         </div>
         </div>
       </div>
-      <p className="mt-4 text-center text-sm text-neutral-500">
-        Click to scan a file. Right-click, long-press, or use Quarantine mode to lock down a suspected virus with our shield.
-      </p>
+      <p className="mt-4 text-center text-sm text-neutral-500">{tr("Click to scan a file. Right-click, long-press, or use Quarantine mode to lock down a suspected virus with our shield.")}</p>
     </div>
     <Leaderboard level={level} board={board} mine={mine} />
     </div>

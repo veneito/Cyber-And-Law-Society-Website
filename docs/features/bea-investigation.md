@@ -1,4 +1,19 @@
+# OBJ library import (2026-10-24)
+
+The active sonar scene now uses the exported Roblox library, with room 181 spawn, triangle-based walking/collision, and the existing sonar API callbacks. This supersedes the approximate blockout described below. Conversion steps, asset details, and validation: [library-obj-import.md](library-obj-import.md). No server configuration was changed; the live target still requires owner verification before merging.
+
 # Bea F. Wellington Investigation: Handoff
+
+2026-10-22: Fixed the Activities back-link showing literal `&larr;` in English; use a Unicode arrow in the translated label. Presentation only; no game/API/state changes.
+
+## Scene reliability and debrief survey (2026-10-21)
+Preview menu includes a complete survey demo with browser validation and a simulated confirmation; it sends no API request or saved response. Close and reopen resets the demo.
+Location, USB recovery and drive verification animations trigger explicitly from successful building/key/unlock actions; removed the old sonar branch that suppressed USB artwork. The opening arrest asset is reduced from 1.25MB to ~140KB under a new filename. Arrest timers wait for the current artwork, show a real loading/failure placeholder, clamp frame indexes, and prefetch the next clip.
+
+Victory/timeout now includes an optional one-response-per-team survey: enjoyment, difficulty and learning ratings (1–5), plus up to 500 characters of feedback. POST /api/case/survey requires a known finished/timed-out team, validates input, persists only the first response as an optional `survey` field in the private team state, and exposes only `surveySubmitted` to clients. Scores/leaderboards do not expose responses. Coordinate this additive private-state/API change with the server owner before merging. No email/export integration is configured. Run `node tests/case-survey.test.mjs` for isolated validation/persistence checks.
+
+## Ambient click ripple (2026-10-21)
+Clicks now produce small damped code wavelets (96px maximum radius, 1.1s lifetime), with subtle glyph displacement and stable characters instead of a large bright sonar ring. Limited to six overlapping primary-pointer ripples; existing reduced-motion behavior is preserved.
 
 ## Evidence and mission panels (2026-10-21)
 Evidence dossier uses numbered exhibit cards, verified/encrypted labels and readable sentence-case decoded quotations. Mission Control separates team, score and clock with six evidence progress segments. Shared leaderboard wraps team names, separates status/progress from score and highlights the current team. Cosmetic only; original solved messages and scoring remain unchanged.
@@ -249,3 +264,21 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - The "FOUND GUILTY." gavel (`Gavel` in `Case.tsx`, triggered when `finishedAt` is set) plays first, and the arrest starts after it closes.
 - Every incoming call (`Codec` in `Briefing.tsx`) rings (`sfx.ring`, a synthesized two-tone ring that ignores the effects mute) until "Answer call" is clicked.
 - The "You" portrait (`rookie.txt`) is a new cat, and Chris's normal portrait (`bacon.txt`) is cropped to its art so both sit centered; the portrait is auto-scaled to the frame, so crop any new art to its bounding box.
+
+## Bilingual interface and El Chigüire debrief (2026-10-21)
+- English/Español switch applies to site content, case controls, puzzles, legal checks and subtitles. Language is kept in the URL and browser storage; changing language reloads the page. Chris's recordings remain unchanged.
+- Standard evidence has six Spanish cipher messages and Spanish answer validation. Saved evidence remains canonical English for compatibility; custom event configurations retain their own evidence.
+- Optional completion survey appears as a one-question-at-a-time overlay with a centered green ASCII capybara portrait. Preview submissions are simulated. Discord delivery setup remains an owner task in the bot notes.
+- Coordinate the case API changes with the other maintainer before merging; no live server configuration was changed.
+
+## Spanish court dialogue (2026-10-25)
+
+Changed the Spanish translation of the porker-to-court line to 'Ahora llevemos a esa villana al tribunal.' to preserve dramatic emphasis with clean wording.
+
+## Expanded sonar exploration (2026-10-25)
+
+The library viewport fills the browser window while mouse pointer lock is active. Collecting the USB or releasing the mouse with Esc restores its inline size. The existing ResizeObserver adjusts rendering without resetting exploration.
+
+## Fullscreen USB pickup prompt (2026-10-28)
+
+Moved the E-to-collect prompt below the crosshair. Its previous bottom-left position overlapped the fixed language selector in expanded exploration. Pickup distance, visibility checks, and keyboard handling are unchanged.

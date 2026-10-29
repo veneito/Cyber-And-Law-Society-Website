@@ -67,7 +67,7 @@ export const sfx = {
   errorSpread: () => { tone(780, 0, 0.05, "square", 0.05); tone(390, 0.07, 0.09, "triangle", 0.07); },
   dismissError: () => tone(900, 0, 0.045, "triangle", 0.06, 500),
   ring,
-  beep: (high = false) => tone(high ? 880 : 440, 0, 0.18),
+  beep: (high = false, volume = 0.12) => tone(high ? 880 : 440, 0, 0.18, "square", volume),
   glitch: () => { for (let i = 0; i < 8; i++) tone(120 + Math.random() * 900, i * 0.07, 0.06, "sawtooth", 0.1); },
   laugh: () => { // slow, low, descending "HA HA HA HA" with a growl at the end
     for (let i = 0; i < 7; i++) {
