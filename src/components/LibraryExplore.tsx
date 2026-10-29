@@ -295,7 +295,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       {booting && <LibraryBoot progress={bootProgress} />}
       {caught && <LibraryRespawn progress={respawnProgress} />}
       {started && !found && !overview && !caught && <><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><LibraryRadar {...radar} floor={floor} heat={heat} />
-        {canCollect && <button onClick={() => collect.current()} className="absolute bottom-6 left-3 max-w-[45%] rounded border border-emerald-300 bg-black/95 px-3 py-3 font-mono text-sm text-emerald-200">{tr('E · Collect USB')}</button>}</>}
+        {canCollect && <button onClick={() => collect.current()} className="absolute left-1/2 top-1/2 z-10 mt-10 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded border border-emerald-300 bg-black/95 px-3 py-3 text-center font-mono text-sm text-emerald-200">{tr('E · Collect USB')}</button>}</>}
     </div>
     {started && !found && <p className="mt-3 font-mono text-xs text-green-300" role="status">{grace > 0 ? `${tr("Hunter re-forming upstairs:")} ${grace}s` : tr("The hunter is moving. Keep your distance.")}</p>}
     <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('Simulation complete. Now visit this location in the real Marx Library.') : locked ? tr('WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('WASD to walk · Shift to sprint · E to collect the USB on the bird-book lectern. Radar points ahead; floor arrows show upstairs/downstairs.')}</p>

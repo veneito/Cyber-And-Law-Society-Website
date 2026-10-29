@@ -102,3 +102,5 @@
 - [x] Reuse the officer application Discord webhook for case surveys when no dedicated bot channel is configured (2026-10-25).
 
 - [x] Expand sonar while mouse control is active and restore its size when the USB is collected or Esc releases the mouse (2026-10-25).
+
+- [x] Move the fullscreen USB pickup prompt below the crosshair so the language selector cannot cover it (2026-10-28).
