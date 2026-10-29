@@ -137,7 +137,7 @@ function PhotoStep({ send, over }: { send: (route: string, body: object) => Prom
 }
 
 // Browsers cannot see a USB plug-in, so "inserting the drive" means picking its folder or file.
-function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
+function DriveStep({ team, onSig }: { team: string; onSig: (sig: string) => void }) {
   const [text, setText] = useState("");
   const pickFolder = async () => {
     try {
@@ -149,13 +149,21 @@ function DriveStep({ onSig }: { onSig: (sig: string) => void }) {
   };
   const pickFile = async (f?: File) => f && onSig(await f.text());
   const canFolder = "showDirectoryPicker" in window;
+  const paper = Number(/Team (\d+)/.exec(team)?.[1]) > 9; // teams 10+ have a printed slip, no flash drive
   return (
     <>
       <h2 className={h2}>Step 3: The drive</h2>
       <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
         <p className="font-mono text-xs text-neutral-500">LOCKED</p>
         <p className="mt-1 text-white">Requires Bea F. Wellington&apos;s digital signature.</p>
-        <p className="mt-1 text-sm text-neutral-400">Plug in the flash drive you found, then insert it here.</p>
+        {paper ? (
+          <p className="mt-1 text-sm text-neutral-400">
+            Your team gets a piece of paper instead of a flash drive. Type the signature code from it below.
+            You will also need the symbol key: ask the host for it.
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-neutral-400">Plug in the flash drive you found, then insert it here.</p>
+        )}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {canFolder && <button onClick={pickFolder} className={btn}>Insert drive</button>}
           <label className={`${ghost} cursor-pointer`}>
@@ -450,7 +458,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
             <Sonar onPing={onPing} onKey={() => send("key", {})} />
           </>
         )}
-        {!done && !over && t.phase === "drive" && <DriveStep onSig={(sig) => send("unlock", { sig })} />}
+        {!done && !over && t.phase === "drive" && <DriveStep team={t.name} onSig={(sig) => send("unlock", { sig })} />}
         {!done && !over && t.phase === "ciphers" && (accusing ? <AccuseStep t={t} send={send} over={over} mood={mood} onBack={() => setAccusing(false)} /> : <CipherStep t={t} send={send} over={over} mood={mood} setMood={setMood} onAccuse={() => setAccusing(true)} />)}
       </section>
       <aside className="order-first lg:order-none">
