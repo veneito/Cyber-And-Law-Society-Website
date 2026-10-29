@@ -104,3 +104,5 @@
 - [x] Expand sonar while mouse control is active and restore its size when the USB is collected or Esc releases the mouse (2026-10-25).
 
 - [x] Move the fullscreen USB pickup prompt below the crosshair so the language selector cannot cover it (2026-10-28).
+
+- [x] Anchor USB pickup to the aiming cursor and add capped, directional hunter roars with distance and wall muffling (2026-10-28).
