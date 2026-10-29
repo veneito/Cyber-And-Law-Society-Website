@@ -282,3 +282,9 @@ The library viewport fills the browser window while mouse pointer lock is active
 ## Fullscreen USB pickup prompt (2026-10-28)
 
 Moved the E-to-collect prompt below the crosshair. Its previous bottom-left position overlapped the fixed language selector in expanded exploration. Pickup distance, visibility checks, and keyboard handling are unchanged.
+
+The USB prompt and crosshair now share one centered aiming anchor; the prompt sits directly below the cursor with a 0.75rem gap (2026-10-28).
+
+## Directional hunter roars (2026-10-28)
+
+Growls use HRTF positional audio and follow the monster relative to the player throughout playback. Volume decreases with distance, capped at 0.24 before the existing 0.7 master/compressor. A five-times-per-second sight check against the library model lowers gain and low-pass filters blocked sounds at 900 Hz; other floors also sound muffled. Quiet distant growls remain audible. No extra audio files or dependencies; footstep and catch-whisper levels are unchanged. Headphone loudness still needs a listening check.

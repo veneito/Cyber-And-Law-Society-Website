@@ -91,6 +91,8 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
     usb.scale.setScalar(0.55);
     usbPlug.position.z = -0.17; usb.add(usbBody, usbPlug); usb.name = 'Collectible USB';
     const sight = new THREE.Raycaster(), sightDirection = new THREE.Vector3();
+    const soundRay = new THREE.Raycaster(), soundDirection = new THREE.Vector3(), hunterEar = new THREE.Vector3();
+    let soundBlocked = false, lastSoundCheck = -Infinity;
     const pickupAllowed = () => {
       if (!asset || !state.current.started || state.current.found || catchLeft > 0 || inspection.current.overview || !signalConfirmed || document.hidden) return false;
       if (!withinUsbReach(feet.x, feet.y, feet.z, usb.position.x, asset.manifest.floors[1], usb.position.z)) return false;
@@ -228,7 +230,16 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
             const dogDx = dog.pursuit.position.x - feet.x, dogDz = dog.pursuit.position.z - feet.z;
             const distance = dog.pursuit.position.distanceTo(feet);
             const pan = (Math.cos(yaw) * dogDx - Math.sin(yaw) * dogDz) / Math.max(1, distance);
-            soundscape.update(dt, Math.hypot(feet.x - oldX, feet.z - oldZ), Math.hypot(dog.pursuit.position.x - oldDogX, dog.pursuit.position.z - oldDogZ), distance, Math.abs(feet.y - dog.pursuit.position.y), pan, sprinting);
+            if (now - lastSoundCheck > 200) {
+              lastSoundCheck = now;
+              hunterEar.copy(dog.pursuit.position).y += 0.65;
+              soundDirection.copy(hunterEar).sub(camera.position);
+              const soundDistance = soundDirection.length();
+              soundRay.set(camera.position, soundDirection.normalize()); soundRay.far = Math.max(0, soundDistance - 0.2);
+              soundBlocked = soundRay.intersectObject(asset.model, true).length > 0;
+            }
+            soundscape.update(dt, Math.hypot(feet.x - oldX, feet.z - oldZ), Math.hypot(dog.pursuit.position.x - oldDogX, dog.pursuit.position.z - oldDogZ), distance, Math.abs(feet.y - dog.pursuit.position.y), pan, sprinting,
+              { right: Math.cos(yaw) * dogDx - Math.sin(yaw) * dogDz, up: dog.pursuit.position.y + 0.65 - camera.position.y, ahead: -Math.sin(yaw) * dogDx - Math.cos(yaw) * dogDz, occluded: soundBlocked });
           }
           if (now - lastPing > 650 && !pinging && catchLeft === 0) {
             lastPing = now; pinging = true;
@@ -294,8 +305,13 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       {error && <div role="alert" className="absolute inset-4 bg-black p-4 text-red-300"><p>{error}</p><button onClick={() => { setReady(false); setError(''); setAttempt(n => n + 1); }} className="mt-3 rounded border border-green-700 px-4 py-2 text-green-300">{tr('Retry')}</button></div>}
       {booting && <LibraryBoot progress={bootProgress} />}
       {caught && <LibraryRespawn progress={respawnProgress} />}
-      {started && !found && !overview && !caught && <><span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 text-green-300/60">+</span><LibraryRadar {...radar} floor={floor} heat={heat} />
-        {canCollect && <button onClick={() => collect.current()} className="absolute left-1/2 top-1/2 z-10 mt-10 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded border border-emerald-300 bg-black/95 px-3 py-3 text-center font-mono text-sm text-emerald-200">{tr('E · Collect USB')}</button>}</>}
+      {started && !found && !overview && !caught && <>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-center">
+          <span aria-hidden className="block text-green-300/60">+</span>
+          {canCollect && <button onClick={() => collect.current()} className="pointer-events-auto absolute left-1/2 top-full mt-3 w-max max-w-[80vw] -translate-x-1/2 rounded border border-emerald-300 bg-black/95 px-3 py-3 font-mono text-sm text-emerald-200">{tr('E · Collect USB')}</button>}
+        </div>
+        <LibraryRadar {...radar} floor={floor} heat={heat} />
+      </>}
     </div>
     {started && !found && <p className="mt-3 font-mono text-xs text-green-300" role="status">{grace > 0 ? `${tr("Hunter re-forming upstairs:")} ${grace}s` : tr("The hunter is moving. Keep your distance.")}</p>}
     <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('Simulation complete. Now visit this location in the real Marx Library.') : locked ? tr('WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('WASD to walk · Shift to sprint · E to collect the USB on the bird-book lectern. Radar points ahead; floor arrows show upstairs/downstairs.')}</p>

@@ -1,11 +1,19 @@
 import { LIBRARY_AUDIO } from './libraryAudioAssets.ts';
 
 type Sound = keyof typeof LIBRARY_AUDIO;
+type HunterPosition = { right: number; up: number; ahead: number; occluded: boolean };
+export function hunterAcoustics(distance: number, floorGap: number, occluded: boolean) {
+  const muffled = occluded || floorGap > 1;
+  return { volume: (0.09 + 0.15 / (1 + (Math.max(0, distance) / 12) ** 2)) * (muffled ? 0.8 : 1),
+    cutoff: muffled ? 900 : 5000 / (1 + Math.max(0, distance) / 70) };
+}
 export class LibraryAudio {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private buffers = new Map<Sound, AudioBuffer>();
   private voices = new Set<AudioBufferSourceNode>();
+  private hunterMix = { ...hunterAcoustics(100, 0, false), right: 0, up: 0, ahead: 1 };
+  private roars = new Set<{ gain: GainNode; filter: BiquadFilterNode; panner: PannerNode }>();
   private abort = new AbortController();
   private disposed = false;
   private growlIn = 7;
@@ -56,22 +64,44 @@ export class LibraryAudio {
     source.buffer = buffer; source.playbackRate.value = rate;
     stereo.pan.value = Math.max(-1, Math.min(1, pan));
     const at = ctx.currentTime + delay, duration = Math.min(2.8 - delay, buffer.duration / rate);
-    gain.gain.setValueAtTime(volume, at);
-    gain.gain.setValueAtTime(volume, at + Math.max(0, duration - 0.12));
-    gain.gain.linearRampToValueAtTime(0, at + duration);
-    source.connect(gain).connect(stereo).connect(this.master);
+    const spatial = key.startsWith('growl');
+    gain.gain.setValueAtTime(spatial ? this.hunterMix.volume : volume, at);
+    const envelope = spatial ? ctx.createGain() : gain;
+    envelope.gain.setValueAtTime(spatial ? 1 : volume, at);
+    envelope.gain.setValueAtTime(spatial ? 1 : volume, at + Math.max(0, duration - 0.12));
+    envelope.gain.linearRampToValueAtTime(0, at + duration);
+    let roar: { gain: GainNode; filter: BiquadFilterNode; panner: PannerNode } | undefined;
+    if (spatial) {
+      const filter = ctx.createBiquadFilter(), panner = ctx.createPanner();
+      filter.type = 'lowpass'; filter.Q.value = 0.7; filter.frequency.value = this.hunterMix.cutoff;
+      panner.panningModel = 'HRTF'; panner.rolloffFactor = 0;
+      panner.positionX.value = this.hunterMix.right; panner.positionY.value = this.hunterMix.up; panner.positionZ.value = -this.hunterMix.ahead;
+      source.connect(envelope).connect(gain).connect(filter).connect(panner).connect(this.master);
+      roar = { gain, filter, panner }; this.roars.add(roar);
+    } else source.connect(gain).connect(stereo).connect(this.master);
     this.voices.add(source);
-    source.onended = () => { this.voices.delete(source); source.disconnect(); gain.disconnect(); stereo.disconnect(); };
+    source.onended = () => { if (roar) { this.roars.delete(roar); roar.filter.disconnect(); roar.panner.disconnect(); } this.voices.delete(source); source.disconnect(); envelope.disconnect(); gain.disconnect(); stereo.disconnect(); };
     source.start(at); source.stop(at + duration);
   }
 
-  update(dt: number, humanTravel: number, dogTravel: number, distance: number, floorGap: number, pan: number, sprint: boolean) {
+  update(dt: number, humanTravel: number, dogTravel: number, distance: number, floorGap: number, pan: number, sprint: boolean, hunter?: HunterPosition) {
     if (!this.enabled()) { this.stop(); return; }
+    this.hunterMix = { ...hunterAcoustics(distance, floorGap, hunter?.occluded ?? false),
+      right: hunter?.right ?? pan * distance, up: hunter?.up ?? floorGap, ahead: hunter?.ahead ?? Math.sqrt(Math.max(0, 1 - pan * pan)) * distance };
+    if (this.ctx) for (const roar of this.roars) {
+      const at = this.ctx.currentTime;
+      // Follow player turns and hunter movement without sudden volume changes.
+      roar.gain.gain.setTargetAtTime(this.hunterMix.volume, at, 0.08);
+      roar.filter.frequency.setTargetAtTime(this.hunterMix.cutoff, at, 0.12);
+      roar.panner.positionX.setTargetAtTime(this.hunterMix.right, at, 0.05);
+      roar.panner.positionY.setTargetAtTime(this.hunterMix.up, at, 0.05);
+      roar.panner.positionZ.setTargetAtTime(-this.hunterMix.ahead, at, 0.05);
+    }
     this.growlIn -= dt; this.nearIn -= dt;
     if (this.growlIn <= 0) {
-      // Pick a different growl each time, independently of hunter location.
+      // Vary the recording while positioning it at the hunter.
       const next = (this.lastGrowl + 1 + Math.floor(Math.random() * 3)) % 4;
-      this.lastGrowl = next; this.play((['growl1', 'growl2', 'growl3', 'growl4'] as const)[next], 0.2);
+      this.lastGrowl = next; this.play((['growl1', 'growl2', 'growl3', 'growl4'] as const)[next], this.hunterMix.volume, pan);
       this.growlIn = 12 + Math.random() * 14;
     }
     if (distance < 9 && floorGap < 1 && this.nearIn <= 0) {
@@ -94,7 +124,7 @@ export class LibraryAudio {
       this.play('caught', volume, pan, rate, delay);
     }
   }
-  stop() { for (const voice of this.voices) { try { voice.stop(); } catch { /* Already ended. */ } } this.voices.clear(); }
+  stop() { for (const voice of this.voices) { try { voice.stop(); } catch { /* Already ended. */ } } this.voices.clear(); this.roars.clear(); }
   reset() { this.stop(); this.humanStride = 0; this.dogStride = 0; this.growlIn = 7 + Math.random() * 5; this.nearIn = 5; }
   dispose() { this.disposed = true; this.abort.abort(); this.stop(); this.buffers.clear(); void this.ctx?.close().catch(() => {}); }
 }
