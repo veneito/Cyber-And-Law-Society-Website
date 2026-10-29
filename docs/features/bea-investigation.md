@@ -202,6 +202,7 @@ Entry: top menu **Activities** page (`/activities`) lists the Quarantine game an
 - Each `data/drives/team-N/` folder holds what goes on drive N: `wellington.sig` (that team's signature) plus `symbol-key.png` and `symbol-key.pdf` (printable A4 key sheet for the symbol cipher, evidence 4).
 - Regenerate with `python deploy/make-key-sheet.py` (needs Pillow and Windows fonts; uses Segoe UI Symbol, the same glyphs the site shows on Windows). Players on Mac or phones may see slightly different glyph shapes on the site than on the sheet.
 - `make-teams.mjs` recreates the team folders, so re-run `make-key-sheet.py` after it.
+- More than 9 teams: `node deploy/make-teams.mjs --add 20` keeps existing teams and appends 20 (teams 10-29), writing `data/case-team-codes-10-29.txt` (codes page) and `data/case-team-keys-10-29.txt` (signatures page). Re-run `make-key-sheet.py` for the new drive folders and re-copy `data/case-config.json` to the live server.
 - Evidence 4 plaintext: THE IT MAN WILL STAY QUIET OR HIS SECRETS GO PUBLIC.
 
 ## Randomized puzzles, shuffled accusation, victory (built)
