@@ -1,3 +1,5 @@
+import { OfficerUSB } from "./OfficerUSB";
+import { TeamAssignment } from "./TeamAssignment";
 import { t as tr } from "../i18n/language";
 import { useRef, useState } from "react";
 import { Arrest } from "./Arrest";
@@ -61,6 +63,8 @@ export function Preview() {
   };
   const end = () => setScene(null);
   const list: [string, string][] = [
+    ["team", "Team assignment (PowerShell)"],
+    ["officer", "Officer dispatch: fetch team USB"],
     ["briefing", tr("Briefing (before 3-2-1)")], ["building", tr("Found the building")], ["court", tr("To court (before accusation)")],
     ["arrest", tr("Arrest, then closing call")], ["endcall", tr("Closing call only")], ["gameover", tr("Game over")],
     ["gavel1", tr("Gavel: order in the court")], ["gavel2", tr("Gavel: found guilty")],
@@ -98,6 +102,8 @@ export function Preview() {
           <button key={id} onClick={() => setScene(id)} className="rounded-lg border border-neutral-700 px-4 py-2 text-left text-sm text-white hover:border-green-400">{label}</button>
         ))}
       </div>
+      {scene === "officer" && <div className="fixed inset-0 z-50 overflow-y-auto bg-black p-5 pt-20"><button onClick={end} className="absolute right-5 top-5 rounded border border-neutral-700 px-4 py-2 text-white">{tr("Close preview")}</button><OfficerUSB onRecover={async () => { setScene("drive"); return true; }} /></div>}
+      {scene === "team" && <TeamAssignment team="Team 1" onDone={end} />}
       {scene === "briefing" && <Briefing onDone={end} />}
       {scene === "building" && <FoundBuilding onDone={end} />}
       {scene === "court" && <ToCourt onDone={end} />}

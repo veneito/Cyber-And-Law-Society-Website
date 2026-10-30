@@ -1,3 +1,4 @@
+process.env.NODE_ENV="test";process.env.CASE_EVENT_DISABLED="1";
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';

@@ -1,3 +1,27 @@
+## Timed Discord event (2026-10-30)
+
+The public case now requires Discord sign-in and club membership, with one server-owned attempt per account. Homepage promotion, schedule, final-score rules, configuration and validation are documented in [live-case-event.md](live-case-event.md). OAuth credentials must be configured before entry works; legacy anonymous test codes no longer grant event access.
+
+## Actual map lectern still (2026-10-30)
+
+Officer dispatch renders a single still from the imported library model at its USB anchor, with no added bird artwork. Item answers accept book without size or bird qualifiers; the floor prompt remains. Camera rendering failure leaves the directions form usable.
+
+## Officer camera lectern (2026-10-30)
+
+USB dispatch shows a responsive monospace ASCII lectern: sloping book rest, open book and USB on top, with a large spread-wing bird carved into the front panel. Replaced the earlier SVG illustration at user request. USB disappears after retrieval. Black/green terminal frame, accessible image description and no dependencies.
+
+## Officer USB dispatch (2026-10-30)
+
+The drive phase now dispatches an officer and asks for the floor, then the supporting item seen in the simulation. Shared client/server checks accept second-floor variants and big/large/bird book descriptions (including bird book 2nd floor). Wrong directions allow retry without score penalties. Correct directions play a 2.8-second retrieval scene (300ms with reduced motion), then offer signature verification; no physical USB is needed. Existing phase and found gates remain. Dev preview includes Officer dispatch: fetch team USB, with simulated verification and no team-state writes. Team assignment terminal now uses black to match the site.
+
+## Team assignment cutscene (2026-10-30)
+
+New registrations show a 3.4-second PowerShell-style terminal announcing the assigned Team N, with loading progress including 76% and 100%, before team naming. Rejoining skips it. Reduced motion shows 100% briefly; timers clean up on unmount. The game clock still starts after briefing.
+
+## Online team assignment (2026-10-30)
+
+The entry screen can reserve a team with POST /api/case/register, or rejoin an existing code. Reservations use the highest Team N in saved state plus one (empty state starts at Team 1); unused preprinted config teams do not reserve numbers. Random team codes and onlineTeam records persist in the existing private state file. Synchronous reservation/save prevents duplicate assignment in the single Node server. The clock starts after briefing. The drive step verifies the recovered virtual USB online; existing signature requests still work and server phase/found gates remain enforced. Reset clears reservations with other progress. Coordinate this API/state change with the other maintainer before merging.
+
 # OBJ library import (2026-10-24)
 
 The active sonar scene now uses the exported Roblox library, with room 181 spawn, triangle-based walking/collision, and the existing sonar API callbacks. This supersedes the approximate blockout described below. Conversion steps, asset details, and validation: [library-obj-import.md](library-obj-import.md). No server configuration was changed; the live target still requires owner verification before merging.

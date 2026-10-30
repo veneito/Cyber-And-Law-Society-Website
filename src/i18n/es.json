@@ -802,5 +802,15 @@
   "Continue to the real-world search": "Continuar con la búsqueda en el mundo real",
   "LOCATION FOUND": "UBICACIÓN ENCONTRADA",
   "Now visit the real Marx Library: second floor, bird-book lectern.": "Ahora visita la Biblioteca Marx real: segundo piso, atril del libro de aves.",
-  "The simulation showed you the location. Collect the physical drive there, then return here.": "La simulación te mostró el lugar. Recoge la memoria física allí y vuelve aquí."
+  "The simulation showed you the location. Collect the physical drive there, then return here.": "La simulación te mostró el lugar. Recoge la memoria física allí y vuelve aquí.",
+  "Get the next available team number, or enter an existing team code to rejoin.": "Obtén el siguiente número de equipo disponible o ingresa un código existente para volver a unirte.",
+  "Create team": "Crear equipo",
+  "Virtual USB recovered. Verify its digital signature to continue.": "USB virtual recuperada. Verifica su firma digital para continuar.",
+  "Verify recovered USB": "Verificar USB recuperada",
+  "Assigning your team": "Asignando tu equipo",
+  "Team assignment confirmed.": "Asignación de equipo confirmada.",
+  "You are": "Tu equipo es",
+  "Loading investigation…": "Cargando investigación…",
+  "Ready. Opening team setup…": "Listo. Abriendo configuración del equipo…",
+  "Preparing your case file…": "Preparando tu expediente…"
 }

@@ -1,3 +1,10 @@
+- [x] Promote the timed online case on the homepage; archive October 29; require club Discord membership and bind one final-score attempt per Discord account.
+- [ ] Owner: configure Discord OAuth credentials and callback, coordinate with Vene and review PR before deploying the live event. See docs/features/live-case-event.md.
+- [x] Show a detailed bird-emblem lectern and USB in officer dispatch.
+- [x] Add officer dispatch, floor/item direction prompts and virtual USB retrieval; match terminal backgrounds to the black site theme.
+- [x] Show a PowerShell-style team assignment cutscene before naming a new investigation team.
+- [x] Assign online investigation teams sequentially and verify the recovered virtual USB without physical drives or printed slips.
+- [ ] Coordinate online registration/API change with Vene before merging; deploy through reviewed PR.
 # TODO
 
 ## Waiting on the club

@@ -1,3 +1,6 @@
+import { CASE_EVENT, eventStatus, attemptEndsAt } from "../shared/case-event.mjs";
+import { handleCaseAuth, caseParticipant, discordReady } from "./case-auth.mjs";
+import { correctFloor, correctItem } from "../shared/usb-location.mjs";
 // Bea F. Wellington case API. No dependencies.
 // Each team moves through phases: photo -> sonar -> drive -> ciphers. The server enforces the order.
 //   POST /api/case/start     {code}                     -> team state (starts that team's 90 min clock)
@@ -12,6 +15,7 @@
 //   POST /api/case/reset     {key}                      -> wipes all team progress (needs config.adminKey; no ssh or restart)
 //   GET  /api/case/state?code=   GET /api/case/scoreboard
 // Answers, team codes, sigs, sonar target and evidence live in a config file outside git (see case-config.example.json).
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +26,8 @@ import { notifySurvey } from "./survey-discord.mjs";
 const CONFIG_FILE = process.env.CASE_CONFIG || fileURLToPath(new URL("../data/case-config.json", import.meta.url));
 const STATE_FILE = process.env.CASE_STATE || fileURLToPath(new URL("../data/case-state.json", import.meta.url));
 const EVENT_MS = 90 * 60_000;
+const liveEvent = !(process.env.NODE_ENV === "test" && process.env.CASE_EVENT_DISABLED === "1");
+const deadline = t => liveEvent ? attemptEndsAt(t.startedAt) : t.startedAt + EVENT_MS;
 const STAGE_POINTS = 150, MAX_TIME_BONUS = 100, ACCUSE_BONUS = 300, WRONG_EVIDENCE = 10;
 const LOCK_BASE_S = 15, LOCK_MAX_S = 120;
 const HACK_AFTER_WRONG = 1, HACK_GAP_MS = [8 * 60_000, 12 * 60_000]; // hack after every miss, and roughly every 10 min
@@ -63,7 +69,7 @@ function send(res, code, body) {
 }
 
 const team = (code) => {
-  const name = loadConfig()?.teams?.[code];
+  const name = loadState()[code]?.onlineTeam ? loadState()[code].name : Object.hasOwn(loadConfig()?.teams ?? {}, code) ? loadConfig().teams[code] : null;
   if (!name) return null;
   // Spread over the defaults so a record saved by an older version still gets any new fields.
   return (loadState()[code] = {
@@ -128,7 +134,7 @@ function makeHack(t, now) {
 // Called after every state read or write; starts a hack on the random timer or after a wrong answer.
 function maybeHack(t, now, afterWrong) {
   if (t.hack && !KINDS.includes(t.hack.kind)) t.hack = makeHack(t, now);
-  if (t.hack || t.finishedAt || !t.startedAt || now > t.startedAt + EVENT_MS) return;
+  if (t.hack || t.finishedAt || !t.startedAt || now >= deadline(t)) return;
   const timed = t.phase === "ciphers"; // the random timer starts once the flash-drive key is entered
   if (timed && !t.nextHackAt) t.nextHackAt = now + rand(...HACK_GAP_MS);
   if ((afterWrong && Math.random() < HACK_AFTER_WRONG) || (timed && now >= t.nextHackAt)) {
@@ -148,7 +154,7 @@ const label = (t) => (t.custom ? `${t.custom} (${t.name})` : t.name); // "Pandas
 const view = (t, now = Date.now(), locale = "en") => ({
   name: label(t),
   startedAt: t.startedAt,
-  endsAt: t.startedAt && t.startedAt + EVENT_MS,
+  endsAt: t.startedAt && deadline(t),
   score: t.score,
   phase: t.phase,
   found: t.found,
@@ -181,7 +187,7 @@ function readBody(req, cb, fail) {
   });
 }
 
-const ROUTES = ["start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset", "survey"];
+const ROUTES = ["register", "start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset", "survey"];
 
 // Returns true if the request was handled.
 export function handleCase(req, res) {
@@ -190,24 +196,31 @@ export function handleCase(req, res) {
   const locale = url.searchParams.get("lang") === "es" ? "es" : "en";
   const render = (t, now) => view(t, now, locale);
   const route = url.pathname.slice("/api/case/".length);
+  if (handleCaseAuth(req, res)) return true;
+  const participant = liveEvent ? caseParticipant(req) : null;
+  if (route === "entry" && req.method === "GET") {
+    const existing = participant && Object.entries(loadState()).find(([, t]) => t.participantId === participant.id);
+    return send(res, 200, { status: eventStatus(), event: CASE_EVENT, user: participant, configured: discordReady(), code: existing?.[0] ?? null, started: !!existing?.[1].startedAt }), true;
+  }
   if (!loadConfig()) return send(res, 503, { error: "not configured" }), true;
 
   if (route === "scoreboard" && req.method === "GET") {
     const now = Date.now();
-    const started = Object.values(loadState()).filter((t) => t.startedAt);
-    const end = (t) => t.finishedAt ?? Math.min(now, t.startedAt + EVENT_MS);
+    const started = Object.values(loadState()).filter((t) => t.startedAt && (!liveEvent || t.participantId));
+    const end = (t) => t.finishedAt ?? Math.min(now, deadline(t));
     const rows = started
       .map((t) => ({
         name: label(t), score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
-        finished: !!t.finishedAt, active: !t.finishedAt && now <= t.startedAt + EVENT_MS, elapsed: end(t) - t.startedAt,
+        finished: !!t.finishedAt, active: !t.finishedAt && now < deadline(t), elapsed: end(t) - t.startedAt,
       }))
       .sort((a, b) => b.score - a.score || a.elapsed - b.elapsed); // ties go to the faster team
     // Over when every team that has started has finished or run out of time (a team that never starts does not block).
-    return send(res, 200, { rows, over: rows.length > 0 && rows.every((r) => !r.active) }), true;
+    return send(res, 200, { rows, over: liveEvent ? eventStatus(now) === "closed" : rows.length > 0 && rows.every((r) => !r.active) }), true;
   }
   if (route === "state" && req.method === "GET") {
     const t = team(url.searchParams.get("code"));
     if (!t) return send(res, 403, { error: "unknown team" }), true;
+    if (liveEvent && (!participant || t.participantId !== participant.id)) return send(res, 401, { error: "Discord sign-in required" }), true;
     maybeHack(t, Date.now(), false);
     save();
     return send(res, 200, render(t)), true;
@@ -218,23 +231,43 @@ export function handleCase(req, res) {
     if (route === "reset") {
       // Clears the in-memory state as well as the file; deleting only the file does not work because open pages re-save it.
       if (!config.adminKey || body.key !== config.adminKey) return send(res, 403, { error: "forbidden" });
+      if (liveEvent) return send(res, 409, { error: "Live event attempts cannot be reset" });
       state = {};
       save();
       return send(res, 200, { ok: true });
     }
+    if (route === "register") {
+      if (liveEvent) {
+        if (!participant) return send(res, 401, { error: "Discord sign-in required" });
+        const existing = Object.entries(loadState()).find(([, t]) => t.participantId === participant.id);
+        if (existing) return send(res, 200, { code: existing[0], ...render(team(existing[0])) });
+        if (eventStatus() !== "live") return send(res, 403, { error: "The live event is not open." });
+      }
+      // Reservation and save are synchronous so concurrent requests cannot share a number.
+      const used = Object.values(loadState());
+      const number = used.reduce((max, t) => Math.max(max, Number(/^Team (\d+)$/.exec(t.name)?.[1]) || 0), 0) + 1;
+      const code = 'T' + number + '-' + randomUUID();
+      loadState()[code] = { name: 'Team ' + number, onlineTeam: true, ...(participant ? { participantId: participant.id } : {}) };
+      const t = team(code);
+      save();
+      return send(res, 200, { code, ...render(t) });
+    }
     const t = team(body.code);
     if (!t) return send(res, 403, { error: "unknown team" });
+    if (liveEvent && (!participant || t.participantId !== participant.id)) return send(res, 401, { error: "Discord sign-in required" });
     const now = Date.now();
 
     if (route === "start") {
-      t.startedAt ??= now;
+      if (t.startedAt) return send(res, 200, render(t, now));
+      if (liveEvent && eventStatus(now) !== "live") return send(res, 403, { error: "The live event is not open." });
+      t.startedAt = now;
       const custom = String(body.name ?? "").replace(/[^\w .'!&-]/g, "").trim().slice(0, 24);
       if (custom) t.custom = custom;
       save();
       return send(res, 200, render(t, now));
     }
     if (route === "survey") {
-      if (!t.startedAt || (!t.finishedAt && now <= t.startedAt + EVENT_MS)) return send(res, 409, { error: "case not finished" });
+      if (!t.startedAt || (!t.finishedAt && now < deadline(t))) return send(res, 409, { error: "case not finished" });
       if (t.survey) return send(res, 200, { ok: true, repeat: true });
       if (![body.enjoyment, body.difficulty, body.learning].every(n => Number.isInteger(n) && n >= 1 && n <= 5) || (body.feedback !== undefined && (typeof body.feedback !== "string" || body.feedback.length > 500))) return send(res, 400, { error: "invalid survey" });
       t.survey = { enjoyment: body.enjoyment, difficulty: body.difficulty, learning: body.learning, feedback: (body.feedback ?? "").trim(), submittedAt: now };
@@ -245,7 +278,7 @@ export function handleCase(req, res) {
     }
     if (!t.startedAt) return send(res, 409, { error: "not started" });
     if (t.finishedAt) return send(res, 409, { error: "finished", ...render(t, now) });
-    if (now > t.startedAt + EVENT_MS) return send(res, 410, { error: "time is up", ...render(t, now) });
+    if (now >= deadline(t)) return send(res, 410, { error: "time is up", ...render(t, now) });
 
     if (route === "hack") {
       if (!t.hack) return send(res, 200, { ok: true, ...render(t, now) });
@@ -287,13 +320,14 @@ export function handleCase(req, res) {
     }
     if (route === "key") {
       if (!t.found) return send(res, 403, { error: "not found yet" });
-      t.phase = config.sigs ? "drive" : "ciphers";
+      t.phase = "drive";
       save();
       return send(res, 200, render(t, now));
     }
     if (route === "unlock") {
+      if (body.recovered === true && (!correctFloor(body.floor) || !correctItem(body.item))) return send(res, 400, { error: "USB location required" });
       const want = norm(config.sigs?.[body.code]);
-      if (!want || norm(body.sig) !== want) {
+      if (body.recovered !== true && (!want || norm(body.sig) !== want)) {
         wrong(t, now); // shares the answer lockout so signatures cannot be brute-forced
         save();
         return send(res, 200, { ok: false, ...render(t, now) });

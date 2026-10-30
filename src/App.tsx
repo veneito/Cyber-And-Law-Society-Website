@@ -1,3 +1,4 @@
+import { LiveCaseEvent } from "./components/LiveCaseEvent";
 import { t as tr } from "./i18n/language";
 import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
@@ -19,6 +20,7 @@ import { hasLink, siteConfig, type Officer } from "./config/site";
 const NAV = [
   { href: "/", label: tr("Home") },
   { href: "/#about", label: tr("About") },
+  { href: "/#live-event", label: tr("Live event") },
   { href: "/#events", label: tr("Events") },
   { href: "/#officers", label: tr("Officers") },
   { href: "/#faq", label: tr("FAQ") },
@@ -384,6 +386,7 @@ export default function App() {
     <>
       <Header />
       <main>
+        <LiveCaseEvent />
         <Hero />
         <Anomaly spot="hero" />
 

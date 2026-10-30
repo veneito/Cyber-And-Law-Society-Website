@@ -68,6 +68,8 @@ export function Victory({ t, timeout, code }: { t: Finished; timeout?: boolean; 
         ))}
       </div>
 
+      <p className="mt-5 rounded-lg border border-green-900 p-4 text-sm text-green-200">{tr("This is your final score. Your attempt cannot be restarted. Event rankings remain provisional until closing; the winner will be announced in the club Discord.")}</p>
+      <a href="https://discord.gg/ZKsKn9WNvX" target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-green-300 underline">{tr("Open the club Discord ↗")}</a>
       <h3 className="mt-8 font-mono text-sm uppercase tracking-wide text-white">{tr("Score breakdown")}</h3>
       <ul className="mt-3 divide-y divide-neutral-800 rounded-xl border border-neutral-800 text-sm">
         {lines.map(([k, v]) => (
@@ -78,9 +80,9 @@ export function Victory({ t, timeout, code }: { t: Finished; timeout?: boolean; 
 
       <div className="mt-8 rounded-xl border border-green-500/40 bg-green-500/5 p-4">
         {board.over && winner ? (
-          <p className="text-white">{tr("Event over. Winner:")}<strong className="text-green-300">{winner.name}</strong>{tr("with")}{winner.score}{tr("points")}{winner.name === t.name && ". That's you!"}</p>
+          <p className="text-white">{tr("Event closed. Highest score:")}<strong className="text-green-300">{winner.name}</strong>{tr("with")}{winner.score}{tr("points")}{winner.name === t.name && ". That's you!"}</p>
         ) : (
-          <p className="text-neutral-300">{tr("Other teams are still playing. The winner is announced when every team has finished or run out of time. Leading now:")}<strong className="text-green-300">{winner?.name ?? "..."}</strong>.</p>
+          <p className="text-neutral-300">{tr("The event is still open for other participants. The winner will be announced in Discord after closing. Leading now:")}<strong className="text-green-300">{winner?.name ?? "..."}</strong>.</p>
         )}
       </div>
 
