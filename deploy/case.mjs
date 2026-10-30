@@ -190,7 +190,7 @@ function readBody(req, cb, fail) {
 const ROUTES = ["register", "start", "building", "ping", "key", "unlock", "answer", "law", "accuse", "hack", "reset", "survey"];
 
 // Returns true if the request was handled.
-export function handleCase(req, res) {
+export function handleCase(req, res, { preview = false } = {}) {
   const url = new URL(req.url, "http://x");
   if (!url.pathname.startsWith("/api/case/")) return false;
   const locale = url.searchParams.get("lang") === "es" ? "es" : "en";
@@ -201,6 +201,14 @@ export function handleCase(req, res) {
   if (route === "entry" && req.method === "GET") {
     const existing = participant && Object.entries(loadState()).find(([, t]) => t.participantId === participant.id);
     return send(res, 200, { status: eventStatus(), event: CASE_EVENT, user: participant, configured: discordReady(), code: existing?.[0] ?? null, started: !!existing?.[1].startedAt }), true;
+  }
+  if (["symbol-key.pdf", "symbol-key.png"].includes(route) && req.method === "GET") {
+    const owner = participant && Object.values(loadState()).find(t => t.participantId === participant.id);
+    if (!(preview && url.searchParams.get("preview") === "1") && (!owner || owner.phase !== "ciphers")) return send(res, 403, { error: "Recover and verify the USB before opening this attachment." }), true;
+    const extension = route.endsWith(".pdf") ? "pdf" : "png";
+    const attachment = readFileSync(new URL("./case-assets/symbol-key-62e425188ea2." + extension, import.meta.url));
+    res.writeHead(200, { "Content-Type": extension === "pdf" ? "application/pdf" : "image/png", "Content-Length": attachment.length, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" });
+    res.end(attachment);return true;
   }
   if (!loadConfig()) return send(res, 503, { error: "not configured" }), true;
 

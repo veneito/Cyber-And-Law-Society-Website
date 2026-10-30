@@ -39,7 +39,7 @@ export function OfficerUSB({ onRecover }: { onRecover: (location: { floor: strin
       </form>}
       {step === "fetching" && <div role="status" className="space-y-4"><p>&gt; {tr("Directions received. Officer moving to the USB…")}</p><p className="text-white">{tr("Stand by. Retrieving your team's drive…")} ▌</p></div>}
       {step === "ready" && <>
-        <p role="status" className="text-white">&gt; {tr("USB secured. Your team's drive is ready for signature verification.")}</p>
+        <p role="status" className="text-white">&gt; {tr("USB secured. Verify the recovered drive so I can open its files and send you anything useful.")}</p>
         <button disabled={busy} className="rounded bg-green-400 px-4 py-2 font-semibold text-black hover:bg-green-300 disabled:opacity-40" onClick={async () => {
           setBusy(true);setError("");
           try { if (!await onRecover({ floor, item })) setError(tr("Verification failed. Please try again.")); }

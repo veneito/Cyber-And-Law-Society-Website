@@ -1,3 +1,4 @@
+import { SymbolKeyWindow } from "./SymbolKeyWindow";
 import { CASE_EVENT } from "../../shared/case-event.mjs";
 import { CaseEventRules } from "./LiveCaseEvent";
 import { OfficerUSB } from "./OfficerUSB";
@@ -416,6 +417,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   return (
     <div className={`mt-8 grid gap-8 ${!done && !over && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
+      <SymbolKeyWindow available={t.phase === "ciphers"} />
       {!done && !over && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
       <section className="order-1 min-w-0 lg:order-none">
         {msg && <p className="mb-4 font-mono text-sm text-green-300">{tr(msg)}</p>}

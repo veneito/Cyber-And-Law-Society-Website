@@ -1,3 +1,4 @@
+- [x] Have officer send the symbol-key PDF in a movable, resizable desktop window with minimize/maximize/close/reopen and zoom controls.
 - [x] Make online USB recovery explicit in event rules, simulation and officer dispatch; no physical drive or library visit needed.
 - [x] Promote the timed online case on the homepage; archive October 29; require club Discord membership and bind one final-score attempt per Discord account.
 - [ ] Owner: configure Discord OAuth credentials and callback, coordinate with Vene and review PR before deploying the live event. See docs/features/live-case-event.md.

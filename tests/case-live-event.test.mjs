@@ -15,7 +15,7 @@ const actualNow=Date.now, actualFetch=globalThis.fetch;
 let now=Date.parse(CASE_EVENT.opensAt)+1000;
 Date.now=()=>now;
 fs.writeFileSync(process.env.CASE_CONFIG,JSON.stringify({teams:{OLD:'Team 9'},answers:['A'],building:['library']}));
-fs.writeFileSync(process.env.CASE_STATE,JSON.stringify({FINAL:{participantId:'33333333',onlineTeam:true,name:'Team 3',startedAt:now-1000,finishedAt:now,score:456,solved:{}}}));
+fs.writeFileSync(process.env.CASE_STATE,JSON.stringify({FINAL:{participantId:'33333333',onlineTeam:true,name:'Team 3',startedAt:now-1000,finishedAt:now,score:456,solved:{},phase:'ciphers'}}));
 globalThis.fetch=async (url, options)=>{
  const address=String(url);
  if(address.endsWith('/oauth2/token'))return {ok:true,json:async()=>({access_token:options.body.get('code')})};
@@ -28,7 +28,7 @@ const {handleCase}=await import('../deploy/case.mjs');
 function request(route,body,cookie='') {return new Promise(resolve=>{
  const req=new EventEmitter();req.url='/api/case/'+route;req.method=body===undefined?'GET':'POST';req.headers={cookie};req.socket={remoteAddress:'test'};
  const headers={};let status;
- handleCase(req,{setHeader(k,v){headers[k.toLowerCase()]=v},writeHead(s,h){status=s;Object.entries(h||{}).forEach(([k,v])=>headers[k.toLowerCase()]=v)},end(text=''){resolve({status,headers,body:text?JSON.parse(text):null})}});
+ handleCase(req,{setHeader(k,v){headers[k.toLowerCase()]=v},writeHead(s,h){status=s;Object.entries(h||{}).forEach(([k,v])=>headers[k.toLowerCase()]=v)},end(text=''){resolve({status,headers,body:headers['content-type']?.includes('application/json') && text ? JSON.parse(text) : text})}});
  if(body!==undefined){req.emit('data',JSON.stringify(body));req.emit('end')}
 });}
 async function signIn(id){
@@ -42,6 +42,7 @@ try {
  assert.equal(eventStatus(Date.parse(CASE_EVENT.closesAt)),'closed');
  assert.equal(attemptEndsAt(Date.parse(CASE_EVENT.closesAt)-1000),Date.parse(CASE_EVENT.closesAt));
  assert.equal((await request('register',{})).status,401);
+ assert.equal((await request('symbol-key.pdf?preview=1')).status,403);
  assert.equal((await request('start',{code:'OLD'})).status,401);
  assert.equal((await request('callback?code=11111111&state=invalid')).headers.location,'/case/wellington/?signin=expired');
  assert.match((await signIn('44444444')).headers.location,/membership/);
@@ -52,6 +53,7 @@ try {
  const attempts=await Promise.all(Array.from({length:5},()=>request('register',{},cookie)));
  assert.equal(new Set(attempts.map(x=>x.body.code)).size,1);
  const code=attempts[0].body.code;
+ assert.equal((await request('symbol-key.png',undefined,cookie)).status,403);
  assert.equal((await request('entry',undefined,cookie)).body.code,code);
  const newBrowser=await signIn('11111111');
  assert.equal((await request('register',{},newBrowser.headers['set-cookie'].split(';')[0])).body.code,code);
@@ -67,6 +69,7 @@ try {
  assert.equal((await request('scoreboard')).body.over,false);
  const finalSignIn=await signIn('33333333'), finalCookie=finalSignIn.headers['set-cookie'].split(';')[0];
  assert.equal((await request('register',{},finalCookie)).body.code,'FINAL');
+ const attachment=await request('symbol-key.pdf',undefined,finalCookie);assert.equal(attachment.status,200);assert.equal(attachment.headers['content-type'],'application/pdf');assert.equal(attachment.body.subarray(0,4).toString(),'%PDF');
  assert.equal((await request('building',{code:'FINAL',answer:'library'},finalCookie)).status,409);
  assert.equal((await request('start',{code:'FINAL'},finalCookie)).body.score,456);
  const late=await request('register',{},otherCookie);
