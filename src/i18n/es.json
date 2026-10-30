@@ -812,5 +812,11 @@
   "You are": "Tu equipo es",
   "Loading investigation…": "Cargando investigación…",
   "Ready. Opening team setup…": "Listo. Abriendo configuración del equipo…",
-  "Preparing your case file…": "Preparando tu expediente…"
+  "Preparing your case file…": "Preparando tu expediente…",
+  "Playing online? Use the officer.": "¿Juegas en línea? Envía al oficial.",
+  "Stay on this website. You do not need to visit Marx Library, find a real USB drive, or upload a physical e-signature file.": "Quédate en este sitio web. No necesitas visitar Marx Library, buscar una USB real ni cargar un archivo de firma electrónica de una unidad física.",
+  "Find the USB in the library simulation and remember its floor and the item underneath it. Choose Dispatch the officer, give those directions, then verify the USB the officer retrieves for you online.": "Encuentra la USB en la simulación y recuerda el piso y el objeto debajo de ella. Selecciona Enviar al oficial, dale las indicaciones y verifica la USB que recupera para ti en línea.",
+  "USB recovery is online: give the officer directions. No library visit, real flash drive or e-signature file is required.": "La recuperación de la USB es en línea: dale indicaciones al oficial. No necesitas visitar la biblioteca, tener una USB real ni un archivo de firma electrónica.",
+  "Online mission: send the officer to retrieve the USB. No library visit or physical flash drive is required.": "Misión en línea: envía al oficial a recuperar la USB. No necesitas visitar la biblioteca ni una unidad física.",
+  "Dispatch the officer": "Enviar al oficial"
 }

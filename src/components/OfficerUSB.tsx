@@ -1,3 +1,4 @@
+import { OnlineUSBNotice } from "./OnlineUSBNotice";
 import { USBLectern } from "./USBLectern";
 import { useEffect, useState } from "react";
 import { t as tr } from "../i18n/language";
@@ -18,6 +19,7 @@ export function OfficerUSB({ onRecover }: { onRecover: (location: { floor: strin
   return <section aria-label={tr("Officer dispatch")} className="mx-auto w-full max-w-2xl overflow-hidden rounded-lg border border-green-900 bg-black font-mono text-green-300 shadow-2xl">
     <div className="border-b border-green-900 bg-neutral-950 px-4 py-3 text-xs tracking-widest">PS &gt; {tr("OFFICER DISPATCH // USB RECOVERY")}</div>
     <div className="space-y-5 p-5 sm:p-8">
+      <OnlineUSBNotice />
       <p className="text-white">&gt; {tr("Officer sent to fetch your team's USB. Stand by.")}</p>
       <p className="text-sm text-neutral-400">{tr("Tell the officer where you found it in the library simulation.")}</p>
       <USBLectern recovered={step === "ready"} />

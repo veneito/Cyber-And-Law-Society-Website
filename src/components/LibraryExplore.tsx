@@ -1,3 +1,4 @@
+import { OnlineUSBNotice } from "./OnlineUSBNotice";
 import { t as tr } from '../i18n/language';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
@@ -292,6 +293,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const expanded = locked && !found;
   const hold = (key: keyof typeof controls.current) => (e: React.PointerEvent<HTMLButtonElement>) => { e.currentTarget.setPointerCapture(e.pointerId); controls.current[key] = true; };
   return <div className="max-w-5xl">
+    <OnlineUSBNotice />
     <div className="mb-3 flex flex-wrap gap-2">
       <button aria-pressed={audioOn} onClick={() => { const on = !audioOn; setSound(on); setAudioOn(on); if (on) audio.current?.start(); else audio.current?.stop(); }} className="rounded border border-green-900 px-4 py-2 text-sm text-green-300">{tr('Sound:')}{audioOn ? tr('on') : tr('off')}</button>
       <button disabled={!ready || caught || booting} aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300 disabled:opacity-40">{overview ? tr('Return to first person') : tr('Inspect top-down layout')}</button>

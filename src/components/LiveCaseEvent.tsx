@@ -8,6 +8,7 @@ export function CaseEventRules() {
     <ul className="mt-3 grid gap-2 sm:grid-cols-2">
       <li>{tr('Join our Discord and sign in with that account to enter.')}</li>
       <li>{tr('Play online whenever you are ready during the event window.')}</li>
+      <li>{tr('USB recovery is online: give the officer directions. No library visit, real flash drive or e-signature file is required.')}</li>
       <li>{tr('You have up to 90 minutes after the briefing. The timer keeps running if you leave.')}</li>
       <li>{tr('All attempts end when the event closes, even if time remains on your timer.')}</li>
       <li>{tr('Returning with the same Discord account resumes your attempt. There are no restarts.')}</li>

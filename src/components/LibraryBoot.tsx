@@ -3,7 +3,7 @@ import { t as tr } from '../i18n/language';
 export default function LibraryBoot({ progress }: { progress: number }) {
   const message = [
     'PS > ' + tr('Loading simulation of Marx Library…'),
-    '> ' + tr('Explore the simulation. An officer will retrieve the USB using your directions.'),
+    '> ' + tr('Online mission: send the officer to retrieve the USB. No library visit or physical flash drive is required.'),
     '> ' + tr('Find the item and leave FAST, before Bea finds you…'),
   ].join('\n\n');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
