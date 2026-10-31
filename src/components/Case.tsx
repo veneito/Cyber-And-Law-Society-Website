@@ -1,6 +1,11 @@
+import { SymbolKeyWindow } from "./SymbolKeyWindow";
+import { CASE_EVENT } from "../../shared/case-event.mjs";
+import { CaseEventRules } from "./LiveCaseEvent";
+import { OfficerUSB } from "./OfficerUSB";
 import { t as tr } from "../i18n/language";
 import { language } from "../i18n/language";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TeamAssignment } from "./TeamAssignment";
 import { Arrest } from "./Arrest";
 import { Countdown, Helix, Rain } from "./Ambient";
 import { Briefing, FoundBuilding, Portrait, ToCourt, EndCall } from "./Briefing";
@@ -38,8 +43,7 @@ type TeamState = {
   pts: { base: number; time: number; hack: number; penalty: number; accuse: number };
 };
 
-const CODE_KEY = "case-code";
-const SIG_FILE = "wellington.sig";
+
 const clock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -59,23 +63,33 @@ function Scoreboard({ me }: { me: string }) {
   return <Leaderboard board={useScoreboard()} me={me} />;
 }
 
-function Gate({ onCode }: { onCode: (c: string) => void }) {
-  const [v, setV] = useState("");
+function Gate({ onCode, resumeCode = "" }: { onCode: (c: string) => void; resumeCode?: string }) {
+  const [v, setV] = useState(resumeCode);
   const [err, setErr] = useState("");
   const [counting, setCounting] = useState(false);
   const [briefing, setBriefing] = useState(false);
   const [name, setName] = useState("");
-  const [naming, setNaming] = useState(false);
+  const [naming, setNaming] = useState(!!resumeCode);
   const [checking, setChecking] = useState(false);
+  const [assigned, setAssigned] = useState("");
+  const finishAssignment = useCallback(() => { setAssigned(""); setNaming(true); }, []);
   const go = async () => {
-    if (checking || !v.trim()) return;
+    if (checking) return;
     setChecking(true);
     setErr("");
     // The state call checks the code without starting the clock; the clock starts once the case opens.
     try {
-      const { status } = await api("state?code=" + encodeURIComponent(v.trim()));
-      if (status === 200) setNaming(true);
-      else setErr(status === 503 ? tr("Case not open yet.") : tr("Unknown team code."));
+      const { status, data } = v.trim()
+        ? await api("state?code=" + encodeURIComponent(v.trim()))
+        : await api("register", {});
+      if (status === 200) {
+        if (data.startedAt && data.code) { onCode(data.code); return; }
+        if (data.code) {
+          setV(data.code);
+          setAssigned(data.name);
+        } else setNaming(true);
+      }
+      else setErr(status === 401 ? tr("Please sign in with Discord again.") : data.error || tr("Case not open yet."));
     } catch {
       setErr(tr("Could not check your team code. Please try again."));
     } finally {
@@ -85,6 +99,7 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
   return (
     <div className="relative mt-8 min-h-[26rem]">
       <Helix />
+      {assigned && <TeamAssignment team={assigned} onDone={finishAssignment} />}
       <div className="relative">
         {naming ? (
           <form className="grid max-w-md gap-3" onSubmit={(e) => {
@@ -93,24 +108,24 @@ function Gate({ onCode }: { onCode: (c: string) => void }) {
             setName(name.trim());
             setBriefing(true);
           }}>
-            <label htmlFor="case-team-name" className="text-neutral-400">{tr("Choose your team name to begin the briefing.")}</label>
+            <p className="break-all font-mono text-sm text-green-300">{tr("Team code")}: {v}</p>
+            <label htmlFor="case-team-name" className="text-neutral-400">{tr("Choose your leaderboard name to begin the briefing.")}</label>
             <input id="case-team-name" autoFocus required value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder={tr("Team name")} className={field} disabled={briefing} />
             <button type="submit" disabled={!name.trim() || briefing} className={`${btn} justify-self-start`}>{tr("Begin briefing")}</button>
-            <p className="text-sm text-neutral-500">{tr("Your 90 minutes begin after the intro.")}</p>
+            <p className="text-sm text-neutral-500">{tr("Your timer starts after the briefing and cannot be paused. Your final score is permanent.")}</p>
           </form>
         ) : (
           <form onSubmit={(e) => { e.preventDefault(); void go(); }}>
-            <p className="text-neutral-400">{tr("Enter your team code to continue. Your 90 minutes begin after the intro.")}</p>
+            <p className="text-neutral-400">{tr("Ready for your one attempt? Your team number will be assigned automatically.")}</p>
             <div className="mt-3 flex max-w-md gap-2">
-              <input aria-label={tr("Team code")} required value={v} onChange={(e) => setV(e.target.value)} placeholder={tr("TEAM CODE")} className={`${field} font-mono`} disabled={checking} />
-              <button type="submit" disabled={checking || !v.trim()} className={btn}>{checking ? tr("Checking…") : tr("Continue")}</button>
+              <button type="submit" disabled={checking} className={btn}>{checking ? tr("Checking…") : tr("Reserve my attempt")}</button>
             </div>
           </form>
         )}
         {err && <p role="alert" className="mt-2 text-sm text-red-400">{err}</p>}
       </div>
       {briefing && !counting && <Briefing onDone={() => setCounting(true)} />}
-      {counting && <Countdown onDone={async () => { await api("start", { code: v.trim(), name }); onCode(v.trim()); }} />}
+      {counting && <Countdown onDone={async () => { try { const result = await api("start", { code: v.trim(), name }); if (result.status === 200) onCode(v.trim()); else { setCounting(false); setBriefing(false); setErr(result.data.error || "Unable to start the case."); } } catch { setCounting(false); setBriefing(false); setErr("Connection interrupted. Please try again."); } }} />}
     </div>
   );
 }
@@ -137,48 +152,6 @@ function PhotoStep({ send, over }: { send: (route: string, body: object) => Prom
   );
 }
 
-// Browsers cannot see a USB plug-in, so "inserting the drive" means picking its folder or file.
-function DriveStep({ team, onSig }: { team: string; onSig: (sig: string) => void }) {
-  const [text, setText] = useState("");
-  const pickFolder = async () => {
-    try {
-      // @ts-expect-error File System Access API, desktop Chrome/Edge only
-      const dir = await window.showDirectoryPicker();
-      const file = await (await dir.getFileHandle(SIG_FILE)).getFile();
-      onSig(await file.text());
-    } catch { /* cancelled, or no signature file on that drive */ }
-  };
-  const pickFile = async (f?: File) => f && onSig(await f.text());
-  const canFolder = "showDirectoryPicker" in window;
-  const paper = Number(/Team (\d+)/.exec(team)?.[1]) > 9; // teams 10+ have a printed slip, no flash drive
-  return (
-    <>
-      <h2 className={h2}>{tr("Step 3: The drive")}</h2>
-      <p className="mt-3 rounded-lg border border-green-800 bg-green-950/30 p-4 text-green-200">{tr("Now visit the real Marx Library: second floor, bird-book lectern.")} {tr("The simulation showed you the location. Collect the physical drive there, then return here.")}</p>
-      <div className="mt-4 rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
-        <p className="font-mono text-xs text-neutral-500">{tr("LOCKED")}</p>
-        <p className="mt-1 text-white">{tr("Requires Bea F. Wellington&apos;s digital signature.")}</p>
-        <p className="mt-1 text-sm text-neutral-400">
-          {paper
-            ? tr("Your team gets a piece of paper instead of a flash drive. Type the signature code from it below. You will also need the symbol key: ask the host for it.")
-            : tr("Plug in the flash drive you found, then insert it here.")}
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          {canFolder && <button onClick={pickFolder} className={btn}>{tr("Insert drive")}</button>}
-          <label className={`${ghost} cursor-pointer`}>
-            {canFolder ? "or choose the signature file" : `Choose ${SIG_FILE} from the drive`}
-            <input type="file" className="hidden" onChange={(e) => pickFile(e.target.files?.[0])} />
-          </label>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && onSig(text)}
-            placeholder="No laptop? Type the signature code" className={field} />
-          <button onClick={() => onSig(text)} className={ghost}>{tr("Submit")}</button>
-        </div>
-      </div>
-    </>
-  );
-}
 
 type Send = (route: string, body: object) => Promise<boolean>;
 
@@ -378,11 +351,11 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
   }, []);
   const poll = useCallback(async () => {
     const r = await api("state?code=" + encodeURIComponent(code));
-    if (r.status === 403) { onLeave(); return; } // remembered code no longer exists (e.g. config replaced)
+    if (r.status === 401 || r.status === 403) { onLeave(); return; } // remembered code no longer exists (e.g. config replaced)
     if (r.status !== 200) return;
     // A remembered code with no server-side start (e.g. progress was reset) starts the clock instead of showing TIME UP.
-    apply(r.data.startedAt ? r.data : (await api("start", { code })).data);
-  }, [code, apply]);
+    if (r.data.startedAt) apply(r.data); else onLeave();
+  }, [code, apply, onLeave]);
   useEffect(() => {
     poll();
     const i = setInterval(poll, 4000); // also how a random hack reaches the player
@@ -444,6 +417,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   return (
     <div className={`mt-8 grid gap-8 ${!done && !over && t.phase === "ciphers" ? "lg:grid-cols-[16rem_1fr_18rem]" : "lg:grid-cols-[1fr_18rem]"}`}>
+      <SymbolKeyWindow available={t.phase === "ciphers"} />
       {!done && !over && t.phase === "ciphers" && <div className="order-2 lg:order-none"><Decoders /></div>}
       <section className="order-1 min-w-0 lg:order-none">
         {msg && <p className="mb-4 font-mono text-sm text-green-300">{tr(msg)}</p>}
@@ -458,7 +432,7 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
             <Sonar onPing={onPing} onKey={() => send("key", {})} />
           </>
         )}
-        {!done && !over && t.phase === "drive" && <DriveStep team={t.name} onSig={(sig) => send("unlock", { sig })} />}
+        {!done && !over && t.phase === "drive" && <OfficerUSB onRecover={(location) => send("unlock", { recovered: true, ...location })} />}
         {!done && !over && t.phase === "ciphers" && (accusing ? <AccuseStep t={t} send={send} over={over} mood={mood} onBack={() => setAccusing(false)} /> : <CipherStep t={t} send={send} over={over} mood={mood} setMood={setMood} onAccuse={() => setAccusing(true)} />)}
       </section>
       <aside className="order-first lg:order-none">
@@ -470,7 +444,6 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
             <div className="border-l border-green-950 pl-3"><p className="font-mono text-[9px] tracking-widest text-neutral-500">{done ? tr("ELAPSED") : tr("TIME LEFT")}</p><p className={`mt-1 font-mono text-2xl tabular-nums ${over ? "text-red-400" : "text-green-100"}`}>{done ? mmss((t.finishedAt ?? 0) - (t.startedAt ?? 0)) : over ? tr("TIME UP") : clock(left)}</p></div>
           </div>
           <div className="mt-4 flex gap-1" aria-label={`${Object.keys(t.solved).length} of 6 messages decoded`}>{CRIMES.map((_, i) => <span key={i} className={`h-1 flex-1 ${t.solved[i] ? "bg-green-500" : "bg-green-950"}`} />)}</div>
-          <button onClick={onLeave} className="mt-4 font-mono text-[9px] text-neutral-600 hover:text-green-300">{tr("Switch team ↗")}</button>
         </div>
         <h2 className={`${h2} mt-6`}>{tr("Leaderboard")}</h2>
         <Scoreboard me={t.name} />
@@ -488,22 +461,50 @@ function Game({ code, onLeave }: { code: string; onLeave: () => void }) {
 }
 
 export function CasePage() {
-  const [code, setCode] = useState(() => { try { return localStorage.getItem(CODE_KEY) ?? ""; } catch { return ""; } });
-  const set = (c: string) => { try { localStorage.setItem(CODE_KEY, c); } catch { /* private mode */ } setCode(c); };
+  const [entry, setEntry] = useState<{ user: { name: string } | null; configured: boolean; code: string | null; started: boolean; status: string } | null>(null);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
   const [snd, setSnd] = useState(soundOn);
+  const leave = useCallback(() => { window.location.reload(); }, []);
+  useEffect(() => {
+    if (import.meta.env.DEV && location.search.includes("preview")) return;
+    let active = true;
+    api("entry").then(({ status, data }) => {
+      if (!active) return;
+      if (status !== 200) { setError("Could not load the event. Please refresh to retry."); return; }
+      setEntry(data); if (data.started && data.code) setCode(data.code);
+    }).catch(() => { if (active) setError("Could not load the event. Please refresh to retry."); });
+    return () => { active = false; };
+  }, []);
   if (import.meta.env.DEV && location.search.includes("preview")) return <Preview />;
-  return (
-    <>
+  const signin = new URLSearchParams(location.search).get("signin");
+  return <>
     <Rain />
     <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <div className="flex items-center justify-between">
-        <a href="/activities" className="font-mono text-xs text-neutral-500 hover:text-white">{tr("← Activities")}</a>
-        <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500 hover:text-white">{tr("sound:")}{snd ? tr("on") : tr("off")}</button>
+        <a href="/" className="font-mono text-xs text-neutral-500 hover:text-white">← {tr("Home")}</a>
+        <button onClick={() => { setSound(!snd); setSnd(!snd); }} className="font-mono text-xs text-neutral-500">{tr("sound:")}{snd ? tr("on") : tr("off")}</button>
       </div>
-      <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-green-400">{tr("Case file")}</p>
-      <h1 className="mt-2 text-3xl font-bold text-white">Bea F. Wellington</h1>
-      {code ? <Game code={code} onLeave={() => set("")} /> : <Gate onCode={set} />}
+      <p className="mt-6 font-mono text-xs uppercase tracking-widest text-green-400">{entry?.status === "closed" ? tr("Event closed") : entry?.status === "upcoming" ? tr("Upcoming event") : tr("Live event · Online investigation")}</p>
+      <h1 className="mt-2 text-3xl font-bold text-white">{CASE_EVENT.title}</h1>
+      {!code && <>
+        <p className="mt-3 text-neutral-300">{tr("Follow the clues, decode the evidence and bring Bea F. Wellington to justice. Take your time reading the instructions, then give this one attempt your best.")}</p>
+        <p className="mt-3 text-sm text-green-300">{tr("Event closes November 6, 2026 at 4:45 p.m. Central. You have up to 90 minutes, or until the event closes, whichever comes first.")}</p>
+        <CaseEventRules />
+      </>}
+      {error && <p role="alert" className="mt-5 text-red-300">{error}</p>}
+      {!entry && !error && <p role="status" className="mt-6 text-green-300">{tr("Loading event…")}</p>}
+      {entry && !entry.user && <section className="mt-7 max-w-2xl rounded-xl border border-green-800 bg-black p-6">
+        <h2 className="text-lg font-bold text-white">{tr("Join the club. Take the case.")}</h2>
+        <p className="mt-3 text-neutral-300">{tr("First join our club Discord, then sign in with the same Discord account. We verify server membership and use your account to keep one attempt and one final score. Stay in the server for the winner announcement and future club events.")}</p>
+        {signin && <p role="alert" className="mt-4 text-amber-300">{signin === "membership" ? tr("Join the club server and complete any membership screening, then sign in again.") : tr("Sign-in was not completed. Please try again; if it continues, contact a club officer.")}</p>}
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a href={CASE_EVENT.discord} target="_blank" rel="noreferrer" className={ghost}>{tr("1. Join the club Discord ↗")}</a>
+          {entry.configured ? <a href="/api/case/auth" className={btn}>{tr("2. Sign in with Discord")}</a> : <p className="text-sm text-amber-300">{tr("Discord entry is being prepared. Please check back shortly; no attempt has started.")}</p>}
+        </div>
+      </section>}
+      {entry?.user && <p className="mt-5 text-sm text-green-300">{tr("Signed in as")} {entry.user.name}</p>}
+      {entry?.user && (code ? <Game code={code} onLeave={leave} /> : entry.status === "live" ? <Gate key={entry.code || "new"} resumeCode={entry.code || ""} onCode={setCode} /> : <p className="mt-6 text-neutral-300">{tr("The event is not open for new attempts. Join Discord for the winner announcement.")}</p>)}
     </main>
-    </>
-  );
+  </>;
 }

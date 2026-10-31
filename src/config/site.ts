@@ -134,17 +134,14 @@ export const siteConfig = {
   },
   slogan: tr("Think. Investigate. Argue. Reflect."),
 
-  upcomingEvents: [
+  upcomingEvents: [] satisfies ClubEvent[] as ClubEvent[],
+
+  pastMeetings: [
     {
       title: tr("Metadata Scavenger Hunt: Revamped"),
       date: tr("October 29, 2026"),
-      location: tr("Marx Library Meeting Room 181"),
-      tag: tr("Upcoming"),
-      promoVideo: "", // Add the promotional video URL when ready.
+      summary: tr("A digital forensics scavenger hunt at Marx Library, exploring metadata, hidden clues and the evidence behind a cyber investigation."),
     },
-  ] satisfies ClubEvent[] as ClubEvent[],
-
-  pastMeetings: [
     {
       title: tr("Interest Meeting"),
       date: tr("August 20, 2026"),

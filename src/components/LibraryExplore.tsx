@@ -1,3 +1,4 @@
+import { OnlineUSBNotice } from "./OnlineUSBNotice";
 import { t as tr } from '../i18n/language';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
@@ -292,6 +293,7 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
   const expanded = locked && !found;
   const hold = (key: keyof typeof controls.current) => (e: React.PointerEvent<HTMLButtonElement>) => { e.currentTarget.setPointerCapture(e.pointerId); controls.current[key] = true; };
   return <div className="max-w-5xl">
+    <OnlineUSBNotice />
     <div className="mb-3 flex flex-wrap gap-2">
       <button aria-pressed={audioOn} onClick={() => { const on = !audioOn; setSound(on); setAudioOn(on); if (on) audio.current?.start(); else audio.current?.stop(); }} className="rounded border border-green-900 px-4 py-2 text-sm text-green-300">{tr('Sound:')}{audioOn ? tr('on') : tr('off')}</button>
       <button disabled={!ready || caught || booting} aria-pressed={overview} onClick={() => setOverview(!overview)} className="rounded border border-green-600 px-4 py-2 text-sm text-green-300 disabled:opacity-40">{overview ? tr('Return to first person') : tr('Inspect top-down layout')}</button>
@@ -314,9 +316,9 @@ export default function LibraryExplore({ onPing, onKey }: Props) {
       </>}
     </div>
     {started && !found && <p className="mt-3 font-mono text-xs text-green-300" role="status">{grace > 0 ? `${tr("Hunter re-forming upstairs:")} ${grace}s` : tr("The hunter is moving. Keep your distance.")}</p>}
-    <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('Simulation complete. Now visit this location in the real Marx Library.') : locked ? tr('WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('WASD to walk · Shift to sprint · E to collect the USB on the bird-book lectern. Radar points ahead; floor arrows show upstairs/downstairs.')}</p>
+    <p className="mt-3 text-sm text-neutral-400">{overview ? tr('TOP-DOWN INSPECTION · North is up · Exploration is paused.') : found ? tr('Simulation complete. Send the officer to recover the USB.') : locked ? tr('WASD to walk · hold Shift to sprint · mouse to look · Esc releases mouse. Follow the curved central stairs to floor two.') : tr('WASD to walk · Shift to sprint · E to collect the USB on the book lectern. Radar points ahead; floor arrows show upstairs/downstairs.')}</p>
     {started && !found && <div className="mt-3 flex flex-wrap gap-2">{([['forward', tr('Forward')], ['back', tr('Back')], ['left', tr('Strafe left')], ['right', tr('Strafe right')], ['turnLeft', tr('Turn left')], ['turnRight', tr('Turn right')], ['sprint', tr('Hold to sprint')]] as const).map(([key, label]) => <button key={key} disabled={caught} className="touch-none rounded border border-green-900 px-3 py-2 text-xs text-green-300 disabled:opacity-40" onPointerDown={hold(key)} onPointerUp={() => { controls.current[key] = false; }} onPointerCancel={() => { controls.current[key] = false; }}>{label}</button>)}
     </div>}
-    {found && <div ref={completion} tabIndex={-1} role="status" className="mt-4 rounded-lg border border-green-500 bg-green-950/30 p-5 text-green-100"><h3 className="font-mono text-lg">{tr('SIMULATION COMPLETE')}</h3><p className="mt-3">{tr('You found the location in the simulation. Now go there in person: Marx Library, second floor, at the lectern with the open bird book.')}</p><p className="mt-2 text-sm text-green-300">{tr('The virtual USB is your location clue. Visit the real location to continue the investigation.')}</p><button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black">{tr('Continue to the real-world search')}</button></div>}
+    {found && <div ref={completion} tabIndex={-1} role="status" className="mt-4 rounded-lg border border-green-500 bg-green-950/30 p-5 text-green-100"><h3 className="font-mono text-lg">{tr('SIMULATION COMPLETE')}</h3><p className="mt-3">{tr('You found the location. Remember the floor and the item under the USB, then give the officer directions.')}</p><p className="mt-2 text-sm text-green-300">{tr('Your investigation continues online. The officer will recover the drive for you.')}</p><button onClick={onKey} className="mt-4 rounded-lg bg-green-400 px-5 py-3 font-semibold text-black">{tr('Dispatch the officer')}</button></div>}
   </div>;
 }

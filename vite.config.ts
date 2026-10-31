@@ -15,7 +15,7 @@ const leaderboardApi: Plugin = {
   name: 'leaderboard-api',
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
-      if (!handleLeaderboard(req, res) && !handleApply(req, res) && !handleCase(req, res)) next()
+      if (!handleLeaderboard(req, res) && !handleApply(req, res) && !handleCase(req, res, { preview: true })) next()
     })
   },
 }
