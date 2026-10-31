@@ -61,6 +61,13 @@
 - [ ] Record `end-call.mp3` and the other missing call audio if any are still absent
 - [ ] Get Marx Library floor plans (requested) and pick the flash-drive hiding spot
 
+## Investigation desktop (see docs/features/investigation-desktop.md)
+- [x] GNOME-style desktop at `/activity` with Start button, fullscreen, README, Circle social network, locked `deity_drive`, Tor (needs VPN) and VPN apps
+- [ ] Build the .onion sites and their cyber puzzles; add the second USB and password
+- [ ] Confirm relations for Enrique, Tim and El Chiguire and write their real posts
+- [ ] Add Spanish strings to `src/i18n/es.json`; link `/activity` from the site when ready
+- [ ] Pull request: needs the other maintainer's review before merging
+
 ## Flash drive prep (see docs/features/flash-drive-prep.md)
 - [x] tools/PrepDrive.ps1 works on a real drive
 - [x] Prep all 9 team drives (done)
