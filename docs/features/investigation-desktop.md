@@ -1,6 +1,6 @@
 # Investigation desktop (`/activity`)
 
-A GNOME-style virtual desktop (`src/components/ActivityDesktop.tsx`) behind a "Start activity" button, which also asks for fullscreen. Black and green site theme, wallpaper `public/assets/desktop-wallpaper-v1.png` (use a new filename if replaced, Cloudflare caches `/assets/*`). Nothing links to `/activity` yet; share the URL directly.
+A GNOME-style virtual desktop (`src/components/ActivityDesktop.tsx`) behind a "Start activity" button, which also asks for fullscreen. Black and green site theme, wallpaper `public/assets/desktop-wallpaper-v1.png` (use a new filename if replaced, Cloudflare caches `/assets/*`). Linked from the Activities page ("Find the missing woman" card).
 
 ## Apps
 - **README.txt**: player-facing scenario plus the people of interest and their relation to the victim (the list is `PEOPLE` in `ActivityDesktop.tsx`; relations for Enrique, Tim and El Chiguire are placeholders).
