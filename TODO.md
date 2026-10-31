@@ -69,6 +69,9 @@
 - [ ] Pull request: needs the other maintainer's review before merging
 - [x] Password-lock `/activity` (client-side) and move the case event one week later, Nov 6 to Nov 13 (2026-10-31)
 
+- [x] Live leaderboard message in #wellington-case (2026-10-31); see docs/features/live-case-event.md
+- [ ] Server owner: set CASE_LEADERBOARD_CHANNEL_ID, give Lady Justice channel permissions, restart cls-site
+
 ## Flash drive prep (see docs/features/flash-drive-prep.md)
 - [x] tools/PrepDrive.ps1 works on a real drive
 - [x] Prep all 9 team drives (done)
