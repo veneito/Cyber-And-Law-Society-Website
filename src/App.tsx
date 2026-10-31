@@ -260,6 +260,7 @@ function ActivitiesPage() {
   const items = [
     { href: "/play", tag: tr("Mini-game"), title: tr("Quarantine the viruses"), text: tr("Scan the file system, track down the malware and lock it away. Climb the leaderboard.") },
     { href: "/case/wellington", tag: tr("Investigation"), title: tr("The Bea F. Wellington case file"), text: tr("A cyber-crime investigation. Follow the photo, find the key, crack the ciphers and prove what she did.") },
+    { href: "/activity", tag: tr("Investigation"), title: tr("Find the missing woman"), text: tr("Search social media, unlock suspicious flash drives and trace a missing woman's last known location on a virtual desktop.") },
   ];
   return (
     <>
