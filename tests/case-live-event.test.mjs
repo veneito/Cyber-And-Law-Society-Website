@@ -9,33 +9,24 @@ const dir=fs.mkdtempSync(new URL('live-event-',root));
 process.env.CASE_CONFIG=path.join(dir,'config.json');
 process.env.CASE_STATE=path.join(dir,'state.json');
 process.env.CASE_AUTH_FILE=path.join(dir,'auth.json');
-process.env.DISCORD_CLIENT_ID='test-client';process.env.DISCORD_CLIENT_SECRET='test-secret';process.env.DISCORD_GUILD_ID='99999999';process.env.DISCORD_REDIRECT_URI='http://localhost/api/case/callback';
+process.env.CASE_BOT_SECRET='test-secret';
 delete process.env.CASE_EVENT_DISABLED;
 const actualNow=Date.now, actualFetch=globalThis.fetch;
 let now=Date.parse(CASE_EVENT.opensAt)+1000;
 Date.now=()=>now;
 fs.writeFileSync(process.env.CASE_CONFIG,JSON.stringify({teams:{OLD:'Team 9'},answers:['A'],building:['library']}));
 fs.writeFileSync(process.env.CASE_STATE,JSON.stringify({FINAL:{participantId:'33333333',onlineTeam:true,name:'Team 3',startedAt:now-1000,finishedAt:now,score:456,solved:{},phase:'ciphers'}}));
-globalThis.fetch=async (url, options)=>{
- const address=String(url);
- if(address.endsWith('/oauth2/token'))return {ok:true,json:async()=>({access_token:options.body.get('code')})};
- const id=options.headers.Authorization.slice(7);
- if(address.endsWith('/users/@me')) return {ok:true,json:async()=>({id,username:'Tester'})};
- if(address.endsWith('/member')) return {ok:id!=='44444444',status:404,json:async()=>({user:{id},pending:id==='55555555'})};
- throw new Error('Unexpected network request');
-};
 const {handleCase}=await import('../deploy/case.mjs');
-function request(route,body,cookie='') {return new Promise(resolve=>{
- const req=new EventEmitter();req.url='/api/case/'+route;req.method=body===undefined?'GET':'POST';req.headers={cookie};req.socket={remoteAddress:'test'};
+function request(route,body,cookie='',extra={}) {return new Promise(resolve=>{
+ const req=new EventEmitter();req.url='/api/case/'+route;req.method=body===undefined?'GET':'POST';req.headers={cookie,...extra};req.socket={remoteAddress:'test'};
  const headers={};let status;
  handleCase(req,{setHeader(k,v){headers[k.toLowerCase()]=v},writeHead(s,h){status=s;Object.entries(h||{}).forEach(([k,v])=>headers[k.toLowerCase()]=v)},end(text=''){resolve({status,headers,body:headers['content-type']?.includes('application/json') && text ? JSON.parse(text) : text})}});
  if(body!==undefined){req.emit('data',JSON.stringify(body));req.emit('end')}
 });}
+// The bot mints a one-time code for a Discord id; the player redeems it on the site.
 async function signIn(id){
- const auth=await request('auth');assert.equal(auth.status,302);
- const target=new URL(auth.headers.location);assert.equal(target.searchParams.get('scope'),'identify guilds.members.read');
- const cookie=auth.headers['set-cookie'].split(';')[0];
- return request('callback?state='+target.searchParams.get('state')+'&code='+id,undefined,cookie);
+ const minted=await request('bot-code',{id,name:'Tester'},'',{authorization:'Bearer test-secret'});
+ return request('login',{code:minted.body.code});
 }
 try {
  assert.equal(eventStatus(Date.parse(CASE_EVENT.opensAt)-1),'upcoming');
@@ -44,9 +35,11 @@ try {
  assert.equal((await request('register',{})).status,401);
  assert.equal((await request('symbol-key.pdf?preview=1')).status,403);
  assert.equal((await request('start',{code:'OLD'})).status,401);
- assert.equal((await request('callback?code=11111111&state=invalid')).headers.location,'/case/wellington/?signin=expired');
- assert.match((await signIn('44444444')).headers.location,/membership/);
- assert.match((await signIn('55555555')).headers.location,/membership/);
+ assert.equal((await request('bot-code',{id:'11111111'},'',{authorization:'Bearer wrong'})).status,401);
+ assert.equal((await request('login',{code:'NOPE1234'})).status,400);
+ const once=await request('bot-code',{id:'22222222'},'',{authorization:'Bearer test-secret'});
+ assert.equal((await request('login',{code:once.body.code})).status,200);
+ assert.equal((await request('login',{code:once.body.code})).status,400);
  const signed=await signIn('11111111'), cookie=signed.headers['set-cookie'].split(';')[0];
  assert.match(signed.headers['set-cookie'],/HttpOnly; SameSite=Lax/);
  const session=await request('session',undefined,cookie);assert.equal(session.body.user.id,'11111111');
@@ -83,5 +76,5 @@ try {
  assert.equal((await request('state?code=FINAL',undefined,finalCookie)).body.score,456);
  assert.equal((await request('scoreboard')).body.over,true);
  const saved=fs.readFileSync(process.env.CASE_AUTH_FILE,'utf8');assert.ok(!saved.includes(cookie.split('=')[1]));
- console.log('Live event checks passed: Discord membership, OAuth state, account ownership, one attempt across sessions, immutable start/final scores, deadline and hashed sessions.');
+ console.log('Live event checks passed: bot-issued one-time codes, account ownership, one attempt across sessions, immutable start/final scores, deadline and hashed sessions.');
 } finally {Date.now=actualNow;globalThis.fetch=actualFetch;fs.rmSync(dir,{recursive:true,force:true})}
