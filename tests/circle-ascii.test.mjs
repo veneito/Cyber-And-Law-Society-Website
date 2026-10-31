@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { asciiImage } from '../src/components/circleAscii.ts';
+assert.equal(asciiImage('sunny'), asciiImage('sunny'));
+assert.notEqual(asciiImage('sunny'), asciiImage('amy'));
+assert.notEqual(asciiImage('sunny'), asciiImage('sunny', true));
+const svg = decodeURIComponent(asciiImage('sunny').split(',').slice(1).join(','));
+assert.ok(svg.includes('<tspan'));
+assert.ok(svg.includes('#bca4b8'));
+assert.ok(!svg.includes('undefined'));
+console.log('ASCII image checks passed.');

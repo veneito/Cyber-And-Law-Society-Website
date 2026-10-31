@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { searchAccounts, suggestedAccounts } from '../src/components/circleSearch.ts';
+const accounts = [{ id: 'julieta.dubois', name: 'Julieta Dubois' }, ...suggestedAccounts.map(([id, name]) => ({ id, name }))];
+assert.deepEqual(searchAccounts(accounts, 'j'), []);
+const matches = searchAccounts(accounts, 'jul');
+assert.ok(matches.some(p => p.id === 'julieta.dubois'));
+assert.ok(matches.some(p => p.id === 'juliette.dubois'));
+assert.equal(searchAccounts(accounts, '@JULIETA DÚBOIS')[0].id, 'julieta.dubois');
+assert.deepEqual(searchAccounts(accounts, 'not-a-person'), []);
+assert.ok(searchAccounts(accounts, 'ch').length <= 8);
+console.log('Circle search checks passed.');
