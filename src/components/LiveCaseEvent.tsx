@@ -31,7 +31,7 @@ export function LiveCaseEvent() {
       </div>
       <h1 id="live-event-title" className="mt-5 max-w-3xl text-3xl font-bold leading-tight text-white sm:text-5xl">{CASE_EVENT.title}</h1>
       <p className="mt-4 max-w-2xl text-lg text-neutral-300">{tr('A hacker. A trail of hidden evidence. One chance to build your case. Step into our online cybercrime investigation and see where you place.')}</p>
-      <p className="mt-4 font-mono text-sm text-green-300">{tr('October 30 – November 6, 2026 · closes November 6 at 4:45 p.m. Central')}</p>
+      <p className="mt-4 font-mono text-sm text-green-300">{tr('November 6 – November 13, 2026 · closes November 13 at 4:45 p.m. Central')}</p>
       <div className="mt-6 flex flex-wrap gap-3">
         <a href="/case/wellington/" className="rounded-lg bg-green-400 px-6 py-3 font-bold text-black hover:bg-green-300">{status === 'live' ? tr('Enter the live case →') : status === 'closed' ? tr('View case results →') : tr('View event details →')}</a>
         <a href={CASE_EVENT.discord} target="_blank" rel="noreferrer" className="rounded-lg border border-green-700 px-5 py-3 font-semibold text-green-200 hover:border-green-300">{tr('Join Discord · winner announced here ↗')}</a>

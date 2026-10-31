@@ -42,13 +42,26 @@ type Win = { x: number; y: number; min: boolean };
 
 export function ActivityPage() {
   const [started, setStarted] = useState(false);
+  const [pw, setPw] = useState("");
+  const [bad, setBad] = useState(false);
+  const unlock = () => {
+    // shortcut: password ships in the page source, fine for a club game, move it server-side if prizes are ever at stake.
+    if (pw.trim().toUpperCase() !== "BRUH1") { setBad(true); return; }
+    document.documentElement.requestFullscreen?.().catch(() => {});
+    setStarted(true);
+  };
   return started ? <Desktop /> : (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-black px-4 text-center">
       <a href="/" className="absolute left-4 top-4 font-mono text-xs text-neutral-500 hover:text-green-400">← {tr("Back to site")}</a>
       <p className="font-mono text-sm uppercase tracking-widest text-green-400">{tr("Cyber and Law Society")}</p>
       <h1 className="font-mono text-3xl font-bold uppercase text-white sm:text-5xl">{tr("Activity")}</h1>
       <p className="max-w-md text-neutral-400">{tr("You will be taken to a virtual desktop. Start when your team is ready.")}</p>
-      <button autoFocus onClick={() => { document.documentElement.requestFullscreen?.().catch(() => {}); setStarted(true); }} className="rounded-lg border border-green-400 bg-black px-8 py-3 font-mono text-sm uppercase tracking-wide text-green-200 shadow-[0_0_24px_rgba(74,222,128,0.25)] hover:bg-green-950">{tr("Start activity")}</button>
+      <form onSubmit={e => { e.preventDefault(); unlock(); }} className="flex flex-col items-center gap-3">
+          <label className="text-xs text-neutral-400" htmlFor="act-pw">{tr("Enter the password to unlock this activity.")}</label>
+          <input id="act-pw" autoFocus type="password" value={pw} onChange={e => { setPw(e.target.value); setBad(false); }} className="rounded-lg border border-green-800 bg-black px-4 py-2 text-center font-mono text-green-200" />
+          {bad && <p role="alert" className="text-xs text-red-400">{tr("Wrong password.")}</p>}
+          <button type="submit" className="rounded-lg border border-green-400 bg-black px-8 py-3 font-mono text-sm uppercase tracking-wide text-green-200 shadow-[0_0_24px_rgba(74,222,128,0.25)] hover:bg-green-950">{tr("Start activity")}</button>
+      </form>
     </main>
   );
 }

@@ -49,6 +49,26 @@ const clock = (ms: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
 
+function CodeLogin({ onDone }: { onDone: () => void }) {
+  const [text, setText] = useState(""), [err, setErr] = useState(""), [busy, setBusy] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setBusy(true); setErr("");
+    try {
+      const { status, data } = await api("login", { code: text });
+      if (status === 200) onDone(); else setErr(data.error || "Sign-in failed. Try again.");
+    } catch { setErr("Sign-in failed. Try again."); }
+    setBusy(false);
+  };
+  return <form onSubmit={submit} className="mt-4 max-w-sm">
+    <label htmlFor="case-code" className="text-sm text-neutral-300">{tr("2. In the club Discord, type /play, then enter the code it gives you.")}</label>
+    <div className="mt-2 flex gap-2">
+      <input id="case-code" value={text} onChange={e => setText(e.target.value)} autoComplete="off" maxLength={12} className={field + " font-mono uppercase"} />
+      <button disabled={busy || !text.trim()} className={btn}>{tr("Sign in")}</button>
+    </div>
+    {err && <p role="alert" className="mt-2 text-sm text-amber-300">{err}</p>}
+  </form>;
+}
+
 async function api(path: string, body?: unknown) {
   const r = await fetch(`/api/case/${path}${path.includes("?") ? "&" : "?"}lang=${language}`, body ? { method: "POST", body: JSON.stringify(body) } : undefined);
   return { status: r.status, data: await r.json() };
@@ -477,7 +497,6 @@ export function CasePage() {
     return () => { active = false; };
   }, []);
   if (import.meta.env.DEV && location.search.includes("preview")) return <Preview />;
-  const signin = new URLSearchParams(location.search).get("signin");
   return <>
     <Rain />
     <main className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -489,7 +508,7 @@ export function CasePage() {
       <h1 className="mt-2 text-3xl font-bold text-white">{CASE_EVENT.title}</h1>
       {!code && <>
         <p className="mt-3 text-neutral-300">{tr("Follow the clues, decode the evidence and bring Bea F. Wellington to justice. Take your time reading the instructions, then give this one attempt your best.")}</p>
-        <p className="mt-3 text-sm text-green-300">{tr("Event closes November 6, 2026 at 4:45 p.m. Central. You have up to 90 minutes, or until the event closes, whichever comes first.")}</p>
+        <p className="mt-3 text-sm text-green-300">{tr("Event closes November 13, 2026 at 4:45 p.m. Central. You have up to 90 minutes, or until the event closes, whichever comes first.")}</p>
         <CaseEventRules />
       </>}
       {error && <p role="alert" className="mt-5 text-red-300">{error}</p>}
@@ -497,11 +516,10 @@ export function CasePage() {
       {entry && !entry.user && <section className="mt-7 max-w-2xl rounded-xl border border-green-800 bg-black p-6">
         <h2 className="text-lg font-bold text-white">{tr("Join the club. Take the case.")}</h2>
         <p className="mt-3 text-neutral-300">{tr("First join our club Discord, then sign in with the same Discord account. We verify server membership and use your account to keep one attempt and one final score. Stay in the server for the winner announcement and future club events.")}</p>
-        {signin && <p role="alert" className="mt-4 text-amber-300">{signin === "membership" ? tr("Join the club server and complete any membership screening, then sign in again.") : tr("Sign-in was not completed. Please try again; if it continues, contact a club officer.")}</p>}
         <div className="mt-5 flex flex-wrap gap-3">
           <a href={CASE_EVENT.discord} target="_blank" rel="noreferrer" className={ghost}>{tr("1. Join the club Discord ↗")}</a>
-          {entry.configured ? <a href="/api/case/auth" className={btn}>{tr("2. Sign in with Discord")}</a> : <p className="text-sm text-amber-300">{tr("Discord entry is being prepared. Please check back shortly; no attempt has started.")}</p>}
         </div>
+        {entry.configured ? <CodeLogin onDone={() => location.reload()} /> : <p className="mt-4 text-sm text-amber-300">{tr("Discord entry is being prepared. Please check back shortly; no attempt has started.")}</p>}
       </section>}
       {entry?.user && <p className="mt-5 text-sm text-green-300">{tr("Signed in as")} {entry.user.name}</p>}
       {entry?.user && (code ? <Game code={code} onLeave={leave} /> : entry.status === "live" ? <Gate key={entry.code || "new"} resumeCode={entry.code || ""} onCode={setCode} /> : <p className="mt-6 text-neutral-300">{tr("The event is not open for new attempts. Join Discord for the winner announcement.")}</p>)}
