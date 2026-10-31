@@ -3,7 +3,8 @@ import { t as tr } from "./i18n/language";
 import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
-import { Anomaly, isFixed, resetHunt, startHunt } from "./components/Anomaly";
+import { ActivityPage } from "./components/ActivityDesktop";
+import { Anomaly,isFixed, resetHunt, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
 import { CasePage } from "./components/Case";
 import { Logo } from "./components/Logo";
@@ -378,6 +379,7 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "");
   if (path === "/become-an-officer") return <OfficerPage />;
   if (path === "/case/wellington") return <CasePage />;
+  if (path === "/activity") return <ActivityPage />;
   if (path === "/activities") return <ActivitiesPage />;
   if (path === "/meetings") return <MeetingsPage />;
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
