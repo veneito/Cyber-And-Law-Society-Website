@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { LAW } from "./law.mjs";
 import { EVIDENCE_ES, spanishEvidence, normalized } from "../shared/evidence.mjs";
 import { notifySurvey } from "./survey-discord.mjs";
+import { postLeaderboard } from "./leaderboard-discord.mjs";
 
 const CONFIG_FILE = process.env.CASE_CONFIG || fileURLToPath(new URL("../data/case-config.json", import.meta.url));
 const STATE_FILE = process.env.CASE_STATE || fileURLToPath(new URL("../data/case-state.json", import.meta.url));
@@ -61,6 +62,26 @@ function save() {
   mkdirSync(dirname(STATE_FILE), { recursive: true });
   writeFileSync(STATE_FILE + ".tmp", JSON.stringify(state));
   renameSync(STATE_FILE + ".tmp", STATE_FILE);
+  scheduleBoard();
+}
+
+// Every save may change a score; edit the Discord leaderboard at most once per 15 s so bursts stay inside rate limits.
+let boardTimer;
+function scheduleBoard() {
+  if (!liveEvent || boardTimer) return;
+  boardTimer = setTimeout(() => { boardTimer = null; const { rows, over } = scoreboard(Date.now()); void postLeaderboard(rows, over); }, 15_000).unref();
+}
+function scoreboard(now) {
+  const started = Object.values(loadState()).filter((t) => t.startedAt && (!liveEvent || t.participantId));
+  const end = (t) => t.finishedAt ?? Math.min(now, deadline(t));
+  const rows = started
+    .map((t) => ({
+      name: label(t), score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
+      finished: !!t.finishedAt, active: !t.finishedAt && now < deadline(t), elapsed: end(t) - t.startedAt,
+    }))
+    .sort((a, b) => b.score - a.score || a.elapsed - b.elapsed); // ties go to the faster team
+  // Over when every team that has started has finished or run out of time (a team that never starts does not block).
+  return { rows, over: liveEvent ? eventStatus(now) === "closed" : rows.length > 0 && rows.every((r) => !r.active) };
 }
 
 function send(res, code, body) {
@@ -212,19 +233,7 @@ export function handleCase(req, res, { preview = false } = {}) {
   }
   if (!loadConfig()) return send(res, 503, { error: "not configured" }), true;
 
-  if (route === "scoreboard" && req.method === "GET") {
-    const now = Date.now();
-    const started = Object.values(loadState()).filter((t) => t.startedAt && (!liveEvent || t.participantId));
-    const end = (t) => t.finishedAt ?? Math.min(now, deadline(t));
-    const rows = started
-      .map((t) => ({
-        name: label(t), score: t.score, solved: Object.keys(t.solved).length, accused: t.accused,
-        finished: !!t.finishedAt, active: !t.finishedAt && now < deadline(t), elapsed: end(t) - t.startedAt,
-      }))
-      .sort((a, b) => b.score - a.score || a.elapsed - b.elapsed); // ties go to the faster team
-    // Over when every team that has started has finished or run out of time (a team that never starts does not block).
-    return send(res, 200, { rows, over: liveEvent ? eventStatus(now) === "closed" : rows.length > 0 && rows.every((r) => !r.active) }), true;
-  }
+  if (route === "scoreboard" && req.method === "GET") return send(res, 200, scoreboard(Date.now())), true;
   if (route === "state" && req.method === "GET") {
     const t = team(url.searchParams.get("code"));
     if (!t) return send(res, 403, { error: "unknown team" }), true;
