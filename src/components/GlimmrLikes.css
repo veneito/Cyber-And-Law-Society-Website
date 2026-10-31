@@ -1,0 +1,20 @@
+@keyframes glimmr-heart-pop {
+  0% { opacity: 0; transform: scale(.35) rotate(-12deg); }
+  18% { opacity: 1; transform: scale(1.15) rotate(5deg); }
+  32%, 70% { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+.glimmr-like-burst { animation: glimmr-heart-pop 850ms ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .glimmr-like-burst { animation-name: glimmr-heart-fade; }
+  @keyframes glimmr-heart-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+}
+@keyframes glimmr-page-load {
+  0% { transform: scaleX(.02); }
+  25% { transform: scaleX(.35); }
+  65% { transform: scaleX(.7); }
+  90% { transform: scaleX(.86); }
+  100% { transform: scaleX(1); }
+}
+.glimmr-page-progress { animation: glimmr-page-load 2.5s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .glimmr-page-progress { animation-timing-function: steps(4); } }
