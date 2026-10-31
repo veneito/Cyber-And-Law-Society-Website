@@ -1,4 +1,5 @@
-import { Power, Volume2, Wifi } from "lucide-react";
+import { DemicubeWallpaper } from "./DemicubeWallpaper";
+import { Maximize2, Copy, Power, Volume2, Wifi } from "lucide-react";
 import { FakeBrowser } from "./FakeBrowser";
 import { FilesApp } from "./FilesApp";
 import { TorApp } from "./TorApp";
@@ -18,7 +19,7 @@ const PEOPLE: [string, string][] = [
 
 // Placeholder apps: swap `body` for the real activity content.
 const APPS: { id: string; icon: ReactNode; title: string; body: ReactNode; w?: number; h?: number; hidden?: boolean }[] = [
-  { id: "browser", icon: "◎", title: "Browser", w: 640, h: 460, body: <FakeBrowser /> },
+  { id: "browser", icon: <img src="/assets/water-dog-v3.svg" alt="" className="h-[1em] w-[1em] object-contain contrast-[1.2] mix-blend-screen" />, title: "Water Dog", w: 640, h: 460, body: <FakeBrowser /> },
   { id: "readme", icon: "☰", title: "README.txt", w: 560, h: 440, body: (
     <div className="space-y-3 font-mono text-green-200">
       <p>{tr("You are an investigator searching for the location of a missing woman.")}</p>
@@ -35,10 +36,10 @@ const APPS: { id: string; icon: ReactNode; title: string; body: ReactNode; w?: n
   { id: "notes", icon: "✎", title: "Notes", body: <p>{tr("Nothing here yet.")}</p> },
   { id: "vpn", icon: "⛨", title: "VPN", w: 360, h: 380, body: <VpnApp /> },
   // Hidden apps have no desktop icon; they open from another app (tor.exe on the USB).
-  { id: "tor", icon: <img src="/assets/tor-icon-v1.webp" alt="" className="h-[1em] w-[1em] object-contain" />, title: "Tor Browser", w: 640, h: 420, hidden: true, body: <TorApp /> },
+  { id: "tor", icon: <img src="/assets/tor-icon-v1.webp" alt="" className="h-[1em] w-[1em] object-contain contrast-[1.2] mix-blend-screen" />, title: "Tor Browser", w: 640, h: 420, hidden: true, body: <TorApp /> },
 ];
 
-type Win = { x: number; y: number; min: boolean };
+type Win = { x: number; y: number; min: boolean; maximized?: boolean };
 
 export function ActivityPage() {
   const [started, setStarted] = useState(false);
@@ -57,6 +58,24 @@ function Desktop() {
   // Array order = stacking order; the last window is on top.
   const [open, setOpen] = useState<[string, Win][]>([]);
   const [overview, setOverview] = useState(false);
+  const [messageNotice, setMessageNotice] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const notify = () => {
+      const browserWidth = Math.min(640, window.innerWidth - 16);
+      setOpen(windows => {
+        const browser = windows.find(([id]) => id === 'browser');
+        return [...windows.filter(([id]) => id !== 'browser'), ['browser', { ...browser?.[1], x: Math.max(8, window.innerWidth - browserWidth - 16), y: 48, min: false, maximized: false }]];
+      });
+      setMessageNotice(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => setMessageNotice(false), 5500);
+    };
+    window.addEventListener('raphael-dm', notify);
+    return () => { window.removeEventListener('raphael-dm', notify); clearTimeout(timer); };
+  }, []);
+  const [solaceReleased, setSolaceReleased] = useState(false);
+  useEffect(() => { const release = () => setSolaceReleased(true); window.addEventListener("release-solace", release); return () => window.removeEventListener("release-solace", release); }, []);
   const [now, setNow] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(i); }, []);
 
@@ -76,7 +95,12 @@ function Desktop() {
   });
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-black text-neutral-200" style={{ backgroundImage: "url(/assets/desktop-wallpaper-v1.png)", backgroundColor: "rgb(17,20,15)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center" }}>
+    <div className="relative h-dvh overflow-hidden bg-black text-neutral-200">
+      {solaceReleased ? <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black">
+        <svg width="0" height="0" className="absolute"><defs><filter id="solace-green"><feColorMatrix type="matrix" values="0.15 0.5 0.05 0 -0.06  0.3 1.05 0.1 0 -0.09  0.2 0.7 0.07 0 -0.065  0 0 0 1 0" /></filter></defs></svg>
+        <img src="/assets/cult-symbol-v1.webp" alt="" className="solace-wallpaper-burn h-full w-full object-contain" style={{ filter: "url(#solace-green)", mixBlendMode: "screen" }} />
+        <img src="/assets/cult-symbol-v1.webp" alt="" className="solace-wallpaper-ember absolute inset-0 h-full w-full object-contain" style={{ filter: "url(#solace-green) brightness(2) drop-shadow(0 0 4px #7bf1a8)", mixBlendMode: "screen" }} />
+      </div> : <DemicubeWallpaper />}
       {/* Desktop icons: double-click to open, like GNOME's desktop */}
       <div className="absolute left-3 top-12 flex flex-col gap-2">
         {APPS.filter(a => !a.hidden).map(a => (
@@ -112,10 +136,10 @@ function Desktop() {
         return (
           <section key={id} hidden={w.min} onPointerDown={() => focus(id)} aria-label={tr(app.title)}
             className={`absolute flex flex-col overflow-hidden rounded-xl border bg-neutral-950 shadow-[0_20px_80px_rgba(0,0,0,0.8)] ${top?.[0] === id ? "border-green-500/60" : "border-neutral-800"}`}
-            style={{ left: w.x, top: w.y, width: `min(${app.w ?? 520}px, calc(100vw - 16px))`, height: app.h ?? 320, resize: "both" }}>
+            style={w.maximized ? { left: 0, top: 32, width: "100%", height: "calc(100dvh - 32px)", resize: "none", zIndex: 45 } : { left: w.x, top: w.y, width: `min(${app.w ?? 520}px, calc(100vw - 16px))`, height: app.h ?? 320, resize: "both" }}>
             <div className="relative flex h-10 shrink-0 cursor-grab touch-none select-none items-center justify-center bg-neutral-900 text-sm font-semibold text-neutral-100"
               onPointerDown={e => {
-                if ((e.target as HTMLElement).closest("button") || e.button !== 0) return;
+                if (w.maximized || (e.target as HTMLElement).closest("button") || e.button !== 0) return;
                 const sx = e.clientX - w.x, sy = e.clientY - w.y;
                 const move = (m: PointerEvent) => patch(id, { x: Math.max(0, m.clientX - sx), y: Math.max(32, Math.min(m.clientY - sy, window.innerHeight - 60)) });
                 const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
@@ -124,6 +148,7 @@ function Desktop() {
               {tr(app.title)}
               <span className="absolute right-2 flex gap-2">
                 <button aria-label={tr("Minimize")} onClick={() => patch(id, { min: true })} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 text-xs hover:bg-neutral-700">—</button>
+                {(id === "browser" || id === "tor") && <button aria-label={w.maximized ? "Restore browser window" : "Maximize browser window"} title={w.maximized ? "Restore" : "Maximize"} onClick={() => patch(id, { maximized: !w.maximized })} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700">{w.maximized ? <Copy size={12} /> : <Maximize2 size={12} />}</button>}
                 <button aria-label={tr("Close")} onClick={() => setOpen(o => o.filter(([k]) => k !== id))} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 text-xs hover:bg-red-700 hover:text-white">×</button>
               </span>
             </div>
@@ -132,6 +157,7 @@ function Desktop() {
         );
       })}
 
+      {messageNotice && <div role="status" className="absolute bottom-20 right-4 z-[60] flex items-center gap-3 rounded-xl border border-[#704975] bg-[#211526] px-5 py-4 shadow-[0_8px_35px_#0009]"><img src="/assets/glimmr-logo-v1.svg" alt="" className="h-8 w-8" /><div><p className="text-sm font-semibold text-[#f1d4e9]">new message</p><p className="text-xs text-[#bca4b8]">raphael.pierre · Glimmr</p></div><button aria-label="Dismiss notification" onClick={() => setMessageNotice(false)} className="ml-3 rounded px-2 py-1 text-neutral-400 hover:text-white">×</button></div>}
       {/* Activities overview: app grid */}
       {overview && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-8 bg-black/85 pt-8 backdrop-blur-sm" onClick={() => setOverview(false)}>
@@ -147,3 +173,4 @@ function Desktop() {
     </div>
   );
 }
+

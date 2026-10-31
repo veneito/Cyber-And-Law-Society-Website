@@ -122,3 +122,30 @@
 - [x] Move the fullscreen USB pickup prompt below the crosshair so the language selector cannot cover it (2026-10-28).
 
 - [x] Anchor USB pickup to the aiming cursor and add capped, directional hunter roars with distance and wall muffling (2026-10-28).
+
+- [x] Make investigation desktop background black, including the wallpaper's baked-in green tint (2026-10-30).
+
+- [x] Brand the investigation browser Water Dog with a curled-dog water droplet icon (2026-10-30).
+
+- [x] Give Circle a dark purple palette and live search suggestions mixing suspects with similar fictional accounts.
+
+- [x] Replace investigation ASCII wallpaper with an animated blue-dot demicube on black.
+
+- [x] Add ASCII-style profile pictures and everyday posts to Circle filler accounts.
+
+- [x] Rebrand the fictional social network as Glimmr with a camera-and-sparkle logo.
+
+- [x] Convert supplied landscape/animal photos to square ASCII posts with matching captions and comments.
+
+- [x] Add double-click likes with pink heart animation and toggleable like buttons.
+
+- [x] Add SOLACE.asc and glowing ASCII deity viewer to the unlocked drive.
+
+- [x] Add immersive 2.5-second browser page loads with address-bar progress indicator.
+
+- [x] Add Glimmr Home/Messages/Your profile navigation and empty investigator profile with seal avatar.
+
+- [x] Trigger Raphael's warning DM and automatically load Messages on first USB unlock.
+
+- [x] Build red Hollow Dawn cult initiation onionsite with popup word collection and broken-prayer puzzle.
+- [ ] Build remaining onionsites and next drive; first proposed password fragment is VESPER.

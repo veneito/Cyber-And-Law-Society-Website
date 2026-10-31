@@ -1,0 +1,13 @@
+.glimmr-viewport { container-type: inline-size; }
+.glimmr-layout { display:grid; grid-template-columns:150px minmax(0,1fr); min-height:100%; max-width:1100px; margin:0 auto; }
+.glimmr-sidebar { position:sticky; top:0; align-self:start; display:flex; flex-direction:column; gap:8px; padding:24px 10px; color:#d7c4dc; }
+.glimmr-sidebar button { display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:9px; text-align:left; font-size:13px; }
+.glimmr-sidebar button:hover,.glimmr-sidebar button[aria-current=page] { background:#2d1e34; color:#f3d9ee; }
+.glimmr-sidebar button:focus-visible { outline:2px solid #d292d2; outline-offset:2px; }
+.glimmr-sidebar svg { flex-shrink:0; }
+@container (max-width:560px) {
+  .glimmr-layout { grid-template-columns:54px minmax(0,1fr); }
+  .glimmr-sidebar { padding:20px 5px; }
+  .glimmr-sidebar button { padding:12px 9px; justify-content:center; }
+  .glimmr-sidebar button>span:not(.inline-flex) { display:none; }
+}

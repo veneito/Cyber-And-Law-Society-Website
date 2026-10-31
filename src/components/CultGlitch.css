@@ -1,0 +1,43 @@
+.cult-cursed-caption { font-family: monospace; color: #d8bfdc; animation: cult-text-drift 6s infinite steps(1); }
+.cult-screen-interference { position: fixed; inset: 0; z-index: 90; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0 3px, #ad7ab4 3px 4px); opacity: .025; animation: cult-signal-drift 6s infinite steps(1); }
+@keyframes cult-text-drift {
+  0%, 91%, 96%, 100% { text-shadow: none; }
+  92%, 95% { text-shadow: 1px 0 #e797bd88, -1px 0 #8faad377; }
+  94% { text-shadow: -2px 0 #e797bd88, 1px 0 #8faad377; }
+}
+@keyframes cult-signal-drift {
+  0%, 89%, 96%, 100% { transform: translateY(0); opacity: .025; }
+  90%, 94% { transform: translateY(2px); opacity: .055; }
+  92% { transform: translateY(-1px); opacity: .04; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cult-cursed-caption, .cult-screen-interference { animation: none; }
+  .cult-screen-interference { opacity: .015; }
+}
+
+/* The cult image leaks a slow hot afterglow into the rest of the display. */
+.cult-burning-image { isolation: isolate; overflow: hidden; }
+.cult-burning-image > img { animation: cult-heat-image 7s ease-in-out infinite; }
+.cult-burning-image::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 43%, #f5a9d42e 0%, #c04f8c12 28%, transparent 58%), linear-gradient(0deg, #e66d8e22, transparent 25%); mix-blend-mode: screen; box-shadow: inset 0 0 65px #a83c7844; animation: cult-heat-bloom 7s ease-in-out infinite; }
+.cult-screen-interference { background: repeating-linear-gradient(0deg, transparent 0 3px, #c998c9 3px 4px); }
+.cult-screen-interference::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 24%, #47182c66 68%, #070207cc 100%); animation: cult-burn-vignette 7s ease-in-out infinite; }
+.cult-screen-interference::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 14%; background: linear-gradient(transparent, #e792c744, #c2699c18, transparent); mix-blend-mode: screen; animation: cult-screen-tear 9s linear infinite; }
+@keyframes cult-heat-image {
+  0%, 100% { filter: brightness(1.08) contrast(1.1); transform: scale(1.005); }
+  48% { filter: brightness(1.28) contrast(1.18) drop-shadow(0 0 5px #e17db188); transform: scale(1.018) skewX(.25deg); }
+  51% { filter: brightness(1.2) contrast(1.15); transform: scale(1.018) skewX(-.35deg); }
+  55% { filter: brightness(1.28) contrast(1.18); transform: scale(1.018) skewX(.2deg); }
+}
+@keyframes cult-heat-bloom { 0%, 100% { opacity: .2; } 50% { opacity: .65; } }
+@keyframes cult-burn-vignette { 0%, 100% { opacity: .3; } 50% { opacity: .65; } }
+@keyframes cult-screen-tear { 0% { transform: translateY(-100%); opacity: 0; } 10% { opacity: .22; } 80% { opacity: .22; } 100% { transform: translateY(850%); opacity: 0; } }
+/* Keep the vignette visible independently of the faint scanline layer. */
+.cult-screen-interference { opacity: 1; animation: none; background: repeating-linear-gradient(0deg, transparent 0 3px, #ad7ab40a 3px 4px); }
+@media (prefers-reduced-motion: reduce) {
+  .cult-burning-image > img, .cult-burning-image::after, .cult-screen-interference::before, .cult-screen-interference::after { animation: none; }
+  .cult-burning-image > img { filter: brightness(1.12) contrast(1.12); }
+  .cult-burning-image::after { opacity: .25; }
+  .cult-screen-interference { opacity: .3; }
+  .cult-screen-interference::after { display: none; }
+}
+
