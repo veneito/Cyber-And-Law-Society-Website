@@ -1,6 +1,6 @@
 export const CASE_EVENT = {
   title: 'Bea F. Wellington Case File',
-  opensAt: '2026-11-06T16:45:00-06:00',
+  opensAt: '2026-11-01T16:45:00-06:00',
   closesAt: '2026-11-13T16:45:00-06:00',
   discord: 'https://discord.gg/ZKsKn9WNvX',
 };
