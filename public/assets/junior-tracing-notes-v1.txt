@@ -1,0 +1,104 @@
+HATWHITEJR / FOLLOW THE OFFERING
+Wallet tracing and custody archive field notes
+
+Mr.WhiteHat handles the signal mirror. I handle the money. We have investigated this cult together before. Their ritual language distracts you from ordinary accounting. Keep a separate record of each observation and the source that supports it. These notes do not contain the hidden address, passphrase or final fragment.
+
+0. QUICK START / WHAT DO I ACTUALLY CLICK?
+
+You do not need Terminal for the first part. The website contains the transaction evidence; Terminal becomes useful when you find encoded data.
+
+A. Open Files, then deity_drive, then the file named receipt. Read this receipt. Copy its sender address, payment amount and time into your notes.
+B. Convert the receipt time to UTC. See the worked example below.
+C. Click a transaction box or ledger row. SCROLL BELOW THE MAP to see its details. A selected box alone does not show everything.
+D. Compare its INPUT address and time with the receipt. Find the matching starting transfer.
+E. In that transfer's OUTPUTS, locate the payment amount from the receipt. Use the SPENT BY button beside that output, not the biggest amount on the map.
+F. In later transfers, compare the INPUT address with the OUTPUT addresses. The output returning to the same address is change. Follow the spent payment to the other address.
+G. Continue until a transaction's details include OP_RETURN. Stop tracing money at that point and inspect its embedded data.
+H. Copy the entire hex string. Open Terminal and consult its tool reference for the hex decoder. Decoding gives you an address and an evidence identifier. Put only the address in a NEW TOR TAB, so the ledger stays open.
+
+The labels OFFERING and VESSEL are the cult's dramatic names. Underneath, they are ordinary transaction records. Clicking the graph selects a record; SPENT BY follows an output into its spending transaction.
+
+WORKED TIME EXAMPLE — NOT YOUR RECEIPT
+
+Suppose a receipt says Monday 21:30 at UTC-05:00. Add five hours: Tuesday 02:30 UTC. The date changes because you crossed midnight. Use the actual receipt's clock and date in your investigation, not these example values.
+
+WORKED PAYMENT EXAMPLE — NOT YOUR TRANSACTIONS
+
+INPUT: wallet A spends 50,000 sat.
+OUTPUT 1: wallet B receives 12,000 sat.
+OUTPUT 2: wallet A receives 37,000 sat back.
+FEE: 1,000 sat.
+
+The arithmetic balances: 12,000 + 37,000 + 1,000 = 50,000. If the receipt was for a payment of 12,000 sat to someone else, follow output 1's spending link. Output 2 is change, despite being larger. At later hops the payment can shrink: some funds may be retained and fees paid. Do not insist every hop equals the original invoice amount.
+
+IF YOU FEEL LOST
+
+Write one row per step: current transaction, input address, chosen output address, chosen output amount, next spending transaction, why you chose it. If you cannot explain a choice from the evidence, go back one row. There is no penalty for inspecting a wrong branch.
+
+In chat, send help again for progressively clearer nudges. Send help time, help change, or help trace for a focused explanation. These explain what to look at without naming your winning transaction or revealing the hidden address.
+
+1. START FROM THE RECEIPT
+
+A busy ledger contains many payments. A receipt narrows your task to a particular sender, amount, and time. Match all three. An unrelated donor may pay the same amount at the same moment. Matching one field is not proof.
+
+Amounts here are satoshis. A transaction has inputs and outputs, and the difference is its fee. Check that the arithmetic balances before interpreting the flow.
+
+2. RECONCILE THE CLOCKS
+
+The receipt has an explicit offset. Ledger and server logs use UTC. Convert the receipt to UTC before comparing events. Subtracting a negative offset moves the UTC clock forward. Crossing midnight changes the date too.
+
+Do not replace the recorded offset with your computer's timezone. Preserve the original receipt and your converted result so you can explain your conclusion.
+
+3. FOLLOW AN OUTPUT, NOT JUST A WEBSITE
+
+A transaction can spend one input into several outputs. A large output may be change going back to the sender rather than payment to the recipient. Start with the receipt's exact payment. Follow the transaction spending that output next.
+
+Later in this snapshot, change returns to the same sender address. Compare input and output addresses. The path continues through the payment, not the returning output. Unspent means the snapshot contains no later spending transaction; it does not make the recipient guilty.
+
+The graph helps compare branches. It does not mark the correct route. Select nodes to inspect evidence and record transaction IDs, amounts, recipients and spending links. A decoy is still a branch; determine whether it belongs to your receipt.
+
+4. WHEN THE TRAIL STOPS LOOKING LIKE MONEY
+
+An OP_RETURN field is non-spendable data, not a wallet. Its letters and digits represent bytes in hexadecimal form. Use the Terminal's hexadecimal decoder to inspect the embedded message. Consult the built-in tool reference for its arguments.
+
+Separate an address from an evidence identifier. Open the recovered address in Tor with the VPN connected. Compare the case identifier. Reaching a dramatic confession does not prove your route was correct.
+
+5. VERIFY THE MIRROR
+
+A forged mirror can copy familiar names while changing the substance. Compare receipt and case identifiers. An original integrity manifest is stronger evidence than a page claiming to be authentic.
+
+Save the custody snapshot. Read its instructions and manifest. Use the file-hashing tool on the exact custodian file and compare the complete digest. Hash the file's bytes, not its filename or a paraphrase. The snapshot includes the forged record for comparison; different contents should produce different hashes.
+
+6. RECONSTRUCT THE SERVER TIMELINE
+
+Access logs describe requests and actions. Authentication logs describe identity and key events. Modification times can be backdated. Read these sources together.
+
+Find the event associated with the receipt you traced. Similar events for another receipt are distractions. Identify what was deleted, what was issued, and which case record was requested afterward.
+
+7. RECOVER DELETED CONFIGURATION
+
+Deleted files may leave text in unallocated space. The strings tool extracts readable sequences, not a guaranteed current configuration. Inspect names and record boundaries before carving.
+
+The carving tool recovers a named record from the image. Old or revoked configurations may coexist with the active one. Confirm state and case association. Do not choose a salt because it sounds meaningful; the valid configuration establishes its value.
+
+8. DERIVE THE KEY
+
+The recovered configuration describes a passphrase formula. Match its receipt, find the corresponding key-issued event, and use the active configuration's salt. Each field must come from evidence.
+
+Honor order and separators. A timestamp may need a date, literal T, seconds, and Z for UTC. Equivalent instants with different text formatting produce different derived keys. Check date rollover. Do not add spaces around separators. Consult the tool reference to group the complete phrase as one argument.
+
+9. AUTHENTICATED DECRYPTION
+
+PBKDF2 derives an AES key from the passphrase and stored salt. AES-GCM checks authenticity while decrypting. A wrong key fails authentication instead of yielding a trustworthy partial story.
+
+Use the archive decryption tool on the sealed file with your derived phrase. If rejected, revisit field sources, active configuration, time conversion and formatting. Find the unsupported assumption instead of randomly changing characters.
+
+10. PRESERVE THE RESULT
+
+Record the final fragment and narrative lead. Keep the transaction trail and integrity result with them. Fragments belong in service order, separated as the drive requests.
+
+Send help again if stuck. I will point to the next method based on your progress; you still read, compare and decide.
+
+— HatWhiteJr
+
+

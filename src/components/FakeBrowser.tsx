@@ -1,4 +1,7 @@
-import { hasRaphaelDm, RAPHAEL_DM } from "./investigationMessages";
+import { juniorInvited } from "./juniorMessages";
+import { GlimmrInbox } from "./GlimmrInbox";
+import { mysteriousInvited } from "./mysteriousMessages";
+import { hasRaphaelDm } from "./investigationMessages";
 import "./GlimmrNavigation.css";
 import { CultCaption } from "./CultCaption";
 import { Heart, Search, Home, MessageCircle } from "lucide-react";
@@ -21,9 +24,12 @@ const PEOPLE: Person[] = [
   { id: "el.chiguire", name: "El Chiguire", bio: "Capybara enthusiast. Calm waters.", avatar: "/assets/chiguire-avatar-v1.webp", glyph: "C", followers: 301, following: 12 },
 ];
 
+PEOPLE.push({ id: "hatwhitejr", name: "HatWhiteJr", bio: "Following the money.", avatar: "/assets/hatwhitejr-ascii-v1.svg", glyph: "", followers: 11, following: 5 });
+PEOPLE.push({ id: "mr.whitehat", name: "Mr.WhiteHat", bio: "🇵🇭", avatar: "/assets/mr-mysterious-ascii-v1.svg", glyph: "", followers: 17, following: 8 });
 PEOPLE.push(...suggestedAccounts.map(([id, name]) => ({ id, name, bio: "Just sharing little moments.", avatar: FILLER_AVATAR, glyph: name[0], followers: 128, following: 203 })));
 
 const POSTS: Post[] = [
+  { id: 301, by: "mr.whitehat", when: "Oct 24", text: "me and another whitehat hacker", glyph: "", likes: 12, image: "/assets/whitehat-friends-ascii-v1.svg", description: "Two white-hat hackers standing together, rendered in purple and pink ASCII." },
   { id: 12, by: "chris.p.bacon", when: "Oct 18", text: "Thank you for taking such good care of me, @julieta.dubois. Best PA in the clinic.", glyph: "🥓", likes: 17, image: "/assets/chris-post-v1.webp" },
   { id: 13, by: "enrique.iglesias", when: "Oct 21", text: "Playing the old songs tonight. Some people never come back.", glyph: "🎤", likes: 392, image: "/assets/enrique-post-v1.webp" },
   { id: 14, by: "tim.cheese", when: "Oct 20", text: "Closed the shop early. Someone from my past stopped by asking questions.", glyph: "🧀", likes: 12, image: "/assets/tim-post-v1.webp" },
@@ -107,8 +113,8 @@ function PostCard({ post, go, full, liked, onLike }: { post: Post; go: (v: View)
 const pageLoadTime = (page: View) => page.v === "new" ? 1000 : page.v === "messages" || (page.v === "profile" && page.id === YOUR_PROFILE.id) ? 600 : page.v === "post" || page.v === "profile" ? 500 : 2500;
 
 export function FakeBrowser() {
-  const [view, setView] = useState<View>({ v: "new" });
-  const [pending, setPending] = useState<View | null>(() => ({ v: hasRaphaelDm() ? "messages" : "new" }));
+  const [view, setView] = useState<View>(() => ({ v: mysteriousInvited() || juniorInvited() ? "messages" : "new" }));
+  const [pending, setPending] = useState<View | null>(() => mysteriousInvited() || juniorInvited() ? null : ({ v: hasRaphaelDm() ? "messages" : "new" }));
   const pageRef = useRef<HTMLDivElement>(null);
   const navigate = (next: View) => { setSearching(false); setPending(next); };
   useEffect(() => {
@@ -123,11 +129,12 @@ export function FakeBrowser() {
   const destination = pending ?? view;
   const url = destination.v === "messages" ? "glimmr.social/messages" : destination.v === "new" ? "about:newtab" : destination.v === "feed" ? "glimmr.social" : destination.v === "none" ? `glimmr.social/search?q=${encodeURIComponent(destination.q)}` : destination.v === "profile" ? `glimmr.social/${destination.id}` : `glimmr.social/p/${destination.id}`;
   const person = view.v === "profile" ? view.id === YOUR_PROFILE.id ? YOUR_PROFILE : who(view.id) : null;
-  const [hasMessage, setHasMessage] = useState(hasRaphaelDm);
+
   useEffect(() => {
-    const receive = () => { setHasMessage(true); setSearching(false); setPending({ v: "messages" }); };
-    window.addEventListener('raphael-dm', receive);
-    return () => window.removeEventListener('raphael-dm', receive);
+    const receive = () => { setSearching(false); setPending({ v: "messages" }); };
+    const invite = () => { setSearching(false); setView({ v: 'messages' }); setPending(null); };
+    window.addEventListener('raphael-dm', receive); window.addEventListener('mysterious-dm', invite); window.addEventListener('junior-dm', invite);
+    return () => { window.removeEventListener('raphael-dm', receive); window.removeEventListener('mysterious-dm', invite); window.removeEventListener('junior-dm', invite); };
   }, []);
   const [q, setQ] = useState("");
   const [searching, setSearching] = useState(false);
@@ -166,10 +173,7 @@ export function FakeBrowser() {
                 {suggestions.length ? suggestions.map(p => <button type="button" key={p.id} onClick={() => { navigate({ v: "profile", id: p.id }); setQ(p.name); setSearching(false); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-[#35223d] focus:bg-[#35223d] focus:outline-none"><Avatar p={p} size={34} /><span><b className="block text-sm text-neutral-100">{p.id}</b><span className="text-xs text-[#bca4b8]">{p.name}</span></span></button>) : <p className="p-3 text-sm text-neutral-400">{tr("No results for")} “{q}”</p>}
               </div>}
             </form>
-            {view.v === "messages" && (hasMessage ? <section aria-label="Messages from Raphael" className="overflow-hidden rounded-xl border border-[#443049] bg-[#1c1222]">
-              <header className="flex items-center gap-3 border-b border-[#443049] p-4"><Avatar p={who('raphael.pierre')!} size={38} /><div><button onClick={() => navigate({ v: 'profile', id: 'raphael.pierre' })} className="font-semibold text-neutral-100 hover:underline">raphael.pierre</button><p className="text-xs text-[#bca4b8]">Raphael Pierre</p></div></header>
-              <div className="space-y-3 p-4"><p className="text-center text-[10px] uppercase tracking-widest text-neutral-500">Incoming message</p><p className="rounded-2xl rounded-tl-sm border border-[#66416a] bg-[#35203b] p-4 text-sm leading-relaxed text-[#ead7ea]">{RAPHAEL_DM}</p></div>
-            </section> : <div className="flex flex-col items-center gap-3 rounded-xl border border-[#443049] px-4 py-14 text-center"><MessageCircle size={36} className="text-[#bca4b8]" /><h3 className="text-lg text-neutral-100">Messages</h3><p className="text-neutral-400">No messages yet.</p></div>)}
+            {view.v === "messages" && <GlimmrInbox openRaphael={() => navigate({ v: "profile", id: "raphael.pierre" })} openWhiteHat={() => navigate({ v: "profile", id: "mr.whitehat" })} openJunior={() => navigate({ v: "profile", id: "hatwhitejr" })} />}
             {view.v === "none" && <p className="py-6 text-center text-neutral-500">{tr("No results for")} “{view.q}”</p>}
             {view.v === "feed" && FEED.map(p => <PostCard key={p.id} post={p} go={navigate} liked={likedPosts.has(p.id)} onLike={likePost} />)}
             {view.v === "post" && <PostCard post={POSTS.find(p => p.id === view.id)!} go={navigate} full liked={likedPosts.has(view.id)} onLike={likePost} />}
@@ -196,3 +200,7 @@ export function FakeBrowser() {
     </div>
   );
 }
+
+
+
+

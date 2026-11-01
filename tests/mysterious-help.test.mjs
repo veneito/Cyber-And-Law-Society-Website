@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { messageClock } from './message-clock.mjs';
+import { inviteMysterious,mysteriousInvited,mysteryMessages,sendMysteryMessage,whitehatTyping } from '../src/components/mysteriousMessages.ts';
+import { importOracleKit,runOracleCommand } from '../src/components/oraclePuzzle.ts';
+const clock=messageClock();let invites=0;window.addEventListener('mysterious-dm',()=>invites++);
+inviteMysterious();inviteMysterious();clock.advance(2999);assert.equal(mysteriousInvited(),false);assert.equal(invites,0);
+clock.advance(1);assert.equal(invites,1);assert.equal(mysteryMessages().length,1);assert.equal(whitehatTyping(),true);
+clock.advance(2500);assert.equal(mysteryMessages().length,2);clock.advance(2500);assert.equal(mysteryMessages().length,3);assert.equal(whitehatTyping(),false);
+sendMysteryMessage('HELP');clock.advance(2500);assert.equal(mysteryMessages().at(-1).attachment,true);assert.match(mysteryMessages().at(-1).text,/Save Mirror Kit/);
+importOracleKit();sendMysteryMessage('help');clock.advance(2500);assert.match(mysteryMessages().at(-1).text,/access.log/);
+await runOracleCommand('cat access.log');sendMysteryMessage('help');clock.advance(2500);assert.match(mysteryMessages().at(-1).text,/shuffled/);
+const guide=fs.readFileSync(new URL('../public/assets/whitehat-field-notes-v1.txt',import.meta.url),'utf8');for(const answer of ['MORROW','ECHO','69b097d113','stream=7A'])assert.ok(!guide.includes(answer));
+clock.restore();console.log('WhiteHat delayed intro, typing, help and document checks passed.');

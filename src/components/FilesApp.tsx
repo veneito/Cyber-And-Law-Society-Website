@@ -1,3 +1,5 @@
+import { BitcoinReceipt } from "./BitcoinReceipt";
+import { PhotoEvidenceDrive, FinalRescueDrive } from "./PhotoEvidence";
 import { deliverRaphaelDm } from "./investigationMessages";
 import { SolaceArt } from "./SolaceArt";
 import { useState } from "react";
@@ -13,9 +15,12 @@ const launchTor = () => window.dispatchEvent(new CustomEvent("launch-app", { det
 export function FilesApp() {
   const [open, setOpen] = useState(unlocked);
   const [pw, setPw] = useState("");
+
+
+
   const [bad, setBad] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [reading, setReading] = useState<"readme" | "solace" | null>(null);
+  const [reading, setReading] = useState<"readme" | "solace" | "receipt" | null>(null);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pw.trim().toUpperCase() === PASSWORD) { unlocked = true; setOpen(true); deliverRaphaelDm(); } else setBad(true);
@@ -46,18 +51,23 @@ export function FilesApp() {
             <button onDoubleClick={() => setReading("readme")} onKeyDown={e => { if (e.key === "Enter") setReading("readme"); }} className={file}>
               <span className="text-4xl text-green-300">☰</span>README.txt
             </button>
+<button onDoubleClick={() => setReading("receipt")} onKeyDown={e => { if(e.key === "Enter") setReading("receipt"); }} className={file}><span className="text-4xl text-amber-200">▤</span>receipt</button>
 <button onDoubleClick={() => setReading("solace")} onKeyDown={e => { if (e.key === "Enter") setReading("solace"); }} className={file}><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center text-3xl text-[#d292d2]">◬</span>SOLACE.asc</button>
           </div>
         )}
         {open && reading && (
           <div className="mt-3 space-y-3 text-neutral-300">
             <button onClick={() => setReading(null)} className="text-xs text-green-300 hover:underline">← {tr("Back")}</button>
-            {reading === "solace" ? <SolaceArt /> : <><p>{tr("If you are reading this, you were chosen. Open tor.exe and follow the signal.")}</p>
+            {reading === "receipt" ? <BitcoinReceipt /> : reading === "solace" ? <SolaceArt /> : <><p>{tr("If you are reading this, you were chosen. Open tor.exe and follow the signal.")}</p>
             <ul className="space-y-1">{ONION_SITES.map(s => <li key={s.url}><span className="text-green-200">{s.url}</span> {"-"} {tr(s.title)}</li>)}</ul></>}
           </div>
         )}
       </div>
+      {open && <><PhotoEvidenceDrive /><FinalRescueDrive /></>}
       {open && !reading && <p className="mt-2 text-[10px] text-neutral-500">{tr("Double-click a file to open it.")}</p>}
     </div>
   );
 }
+
+
+

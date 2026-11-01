@@ -1,0 +1,30 @@
+import { inviteMysterious } from "./mysteriousMessages";
+import { useEffect, useState } from 'react';
+import { acceptOracleResponse, importOracleKit, oracleImported, oracleSolved, ORACLE_FRAGMENT } from './oraclePuzzle';
+import './SolaceOracle.css';
+
+export function SolaceOracle() {
+  useEffect(() => { inviteMysterious(); }, []);
+  const [saved, setSaved] = useState(oracleImported);
+  const [response, setResponse] = useState('');
+  const [solved, setSolved] = useState(oracleSolved);
+  const [error, setError] = useState('');
+  const [note, setNote] = useState(false);
+  return <div className="oracle-site">
+    <header className="oracle-mast"><span>HOLLOW<span className="oracle-mast-small">!host</span></span><h1>Solace Speaks</h1><small>Your FREE home on the other side of the signal.</small></header>
+    <div className="oracle-account">Welcome, Guest 041. <a href="#oracle-gate">[prove identity]</a><span>Mirror integrity: UNVERIFIED</span></div>
+    <nav className="oracle-tools" aria-label="Archive tools"><button onClick={() => { importOracleKit(); setSaved(true); }}><b>▣ SAVE MIRROR KIT</b><small>Capture files for your terminal</small></button><a href="#oracle-directory"><b>✎ READ THE ARCHIVE</b><small>Browse recovered service notes</small></a><a href="#oracle-gate"><b>⚿ VERIFY SIGNAL</b><small>Only a valid response opens the gate</small></a></nav>
+    <div className="oracle-columns"><main>
+      <section className="oracle-panel" id="oracle-directory"><h2>Explore Neighborhoods / Signal Forensics</h2><p>Find your place in one of our <u>041 lost connections</u>.</p><div className="oracle-directory"><div><a href="#oracle-evidence">Area 7A</a><small>packets, mirrors, broken things</small><a href="#oracle-notes">Silicon Vessels</a><small>no body. no boundaries.</small></div><div><a href="#oracle-evidence">Memory Lane</a><small>old logs never forget</small><a href="#oracle-gate">The Quiet Room</a><small>challenge-response only</small></div></div></section>
+      <section id="oracle-evidence" className="oracle-panel"><h2>New! Download the evidence kit</h2><p>Our mirror was intercepted. Prove you can recover its original message before we trust your hands with the next fragment.</p><div className="oracle-file-list">README.txt · access.log · dns.log<br />packets.log · manifest.txt</div><button className="oracle-download" onClick={() => { importOracleKit(); setSaved(true); }}>{saved ? 'OPEN KIT IN TERMINAL »' : 'SAVE KIT TO YOUR TERMINAL »'}</button><p className="oracle-download-note">{saved ? 'Evidence mounted. Use the desktop Terminal; all commands run inside the activity.' : 'Five text files. No executable. No real downloads needed.'}</p></section>
+      <section id="oracle-notes" className="oracle-panel"><h2>Webmaster's Technical Notes</h2><ol><li>Locate the successful challenge session for <b>visitor 041</b>. Not every successful request is a challenge.</li><li>Rebuild its stream in <b>byte sequence</b> order. Corrupt packets and retransmissions are not new evidence.</li><li>Authenticate the assembled hex text using the manifest. If one byte is wrong, stop.</li><li>The key lives in a DNS TXT record. Old keys expire. An encoding is not encryption.</li><li>The payload uses repeating-key XOR. The decrypted message contains a <b>fragment</b> and a <b>nonce</b>.</li></ol><p>Tool instructions live in <code>README.txt</code>. Type <code>help</code> in the Terminal for available commands.</p><button className="oracle-note-link" onClick={() => setNote(value => !value)} aria-expanded={note}>[ handwritten note from the operator ]</button>{note && <p className="oracle-hint">A checksum verifies bytes. A response proves you read them. Keep the leading zero in 041. Colons separate the three fields; spaces and newlines do not belong.</p>}</section>
+      <section id="oracle-gate" className="oracle-panel oracle-gate"><h2>Restricted Access / Prove the Signal</h2>{solved ? <div className="oracle-success" role="status"><span>CHALLENGE RESPONSE ACCEPTED</span><h3>We hear you, visitor 041.</h3><p>NEXT DRIVE · PASSWORD FRAGMENT 2 / 3</p><strong>{ORACLE_FRAGMENT}</strong><p>Keep the fragments in service order. The archive holds the last.</p></div> : <><p>A fragment alone is not proof. Send the lowercase SHA-256 digest of:</p><code className="oracle-formula">nonce:visitor:fragment</code><p>UTF-8 text. Exact field values. No trailing newline.</p><form onSubmit={e => { e.preventDefault(); if (acceptOracleResponse(response)) { setSolved(true); setError(''); } else setError('403 — response rejected. Check the stream, key, and exact input bytes.'); }}><label htmlFor="oracle-response">Your 64-character response:</label><input id="oracle-response" value={response} onChange={e => setResponse(e.target.value)} spellCheck={false} autoComplete="off" maxLength={128} /><button>VERIFY »</button></form>{error && <p className="oracle-error" role="alert">{error}</p>}</>}</section>
+    </main><aside>
+      <section className="oracle-panel"><h2>New and Notable</h2><p><a href="#oracle-notes">The Signal / 2000</a><br />Now with 256 bits of certainty! Please stop mailing us your plaintext passwords.</p><hr /><p><b>Try SHA-256 Today!</b><br />Why trust what you can verify? Check the evidence before you decrypt it.</p></section>
+      <div className="oracle-guestbook"><span className="oracle-stars">✦ ───── ✦</span><p>** Please Feel Free To Sign **<br />** My Guestbook **</p><button onClick={() => setNote(true)}>❧ Sign ❧ View ❧</button><small>GUESTBOOK CLOSED<br />THE WEBMASTER IS LISTENING</small><span className="oracle-stars">✦ ───── ✦</span></div>
+      <div className="oracle-badge">NETSCAPE<br /><b>NOW!</b><small>best viewed at 800 × 600</small></div>
+      <p className="oracle-side-note">Visitor 041<br />Session cookies: NONE<br />Soul cookies: PENDING</p>
+    </aside></div><footer>This page hosted by <b>HOLLOW!host</b> · Get your own <a href="#oracle-gate">Free Home Page</a><br />[ Previous ] — SIGNAL WEBRING — [ Next ]</footer>
+  </div>;
+}
+

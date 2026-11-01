@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { PHOTO_FILES,CARRIER,TRAINING_GPS,rescueState,unlockPhotoDrive,scanPhoto,inspectPhoto,coordinatesMatch,verifyStreamLocation,unlockFinalDrive,contactGamePolice } from '../src/components/rescueChapter.ts';
+globalThis.window=new EventTarget();
+assert.match(scanPhoto(CARRIER),/ACCESS DENIED/);
+assert.equal(unlockPhotoDrive('CINDER'),false);
+assert.equal(unlockPhotoDrive('VESPER-MORROW-CINDER'),true);
+assert.match(inspectPhoto(CARRIER),/StegoSuite first/);
+for(const file of PHOTO_FILES){const result=scanPhoto(file);if(file===CARRIER)assert.match(result,/integrity: VALID/);else assert.ok(!result.includes('integrity: VALID'));}
+assert.match(inspectPhoto('IMG_0212.png'),/NOT TRUSTWORTHY/);
+assert.match(inspectPhoto(CARRIER),/12.34567/);
+assert.equal(rescueState.metadata,true);
+assert.equal(coordinatesMatch('12.34567, 45.67890'),false);
+assert.equal(coordinatesMatch('12.34567, -45.67890, 10'),false);
+assert.equal(coordinatesMatch(TRAINING_GPS),true);
+assert.equal(unlockFinalDrive(TRAINING_GPS),false);
+assert.equal(verifyStreamLocation('0,0'),false);
+assert.equal(verifyStreamLocation(TRAINING_GPS),true);
+assert.equal(unlockFinalDrive(TRAINING_GPS),true);
+assert.equal(contactGamePolice(),true);
+assert.equal(rescueState.police,true);
+console.log('Photo carrier, metadata, location verification and simulated dispatch chain passed.');
