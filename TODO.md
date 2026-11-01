@@ -153,3 +153,19 @@
 
 - [x] Build red Hollow Dawn cult initiation onionsite with popup word collection and broken-prayer puzzle.
 - [ ] Build remaining onionsites and next drive; first proposed password fragment is VESPER.
+
+- [x] Build blue Solace Speaks onionsite with terminal packet reconstruction, DNS/base64 key recovery, XOR and challenge-response puzzle (fragment 2: MORROW).
+- [ ] Build The Faithful Archive and next drive; proposed password fragments currently VESPER, MORROW, final fragment TBD.
+
+- [x] Add Mr.Mysterious's one-time invitation and progress-aware help conversation for the terminal puzzle.
+
+- [x] Build Faithful Archive wallet trail, real/forged hidden mirrors, virtual server forensics, file carving and AES decryption; connect final CINDER fragment to case_drive.
+
+- [x] Rename helper Mr.WhiteHat; add timed texts/typing, detailed guide attachment, clickable profile and supplied ASCII post.
+
+- [x] Make wallet tracing a cult offering-network interface; add HatWhiteJr, supplied ASCII portrait, empty profile, timed help DMs and tracing guide.
+
+- [x] Add independent Tor tabs and visible, keyboard-accessible desktop window resize handles.
+
+- [x] Extend decrypted report into simulated stream, photo/stego/metadata chapter, verified GPS form and final in-game dispatch drive.
+- [ ] Replace six evidence photo placeholders and simulated image records with the user's supplied assets when available.

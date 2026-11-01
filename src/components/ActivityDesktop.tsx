@@ -1,3 +1,7 @@
+import { EvidenceTool } from "./PhotoEvidence";
+import { InvestigationNotes } from "./InvestigationNotes";
+import { WhiteHatReader } from "./WhiteHatReader";
+import { InvestigationTerminal } from "./InvestigationTerminal";
 import { DemicubeWallpaper } from "./DemicubeWallpaper";
 import { Maximize2, Copy, Power, Volume2, Wifi } from "lucide-react";
 import { FakeBrowser } from "./FakeBrowser";
@@ -32,14 +36,18 @@ const APPS: { id: string; icon: ReactNode; title: string; body: ReactNode; w?: n
     </div>
   ) },
   { id: "files", icon: "▤", title: "Files", body: <FilesApp /> },
-  { id: "terminal", icon: ">_", title: "Terminal", body: <p className="font-mono text-green-300">$ <span className="cursor">█</span></p> },
-  { id: "notes", icon: "✎", title: "Notes", body: <p>{tr("Nothing here yet.")}</p> },
+  { id: "terminal", icon: ">_", title: "Terminal", w: 680, h: 460, body: <InvestigationTerminal /> },
+  { id: "guidejr", icon: "▧", title: "HatWhiteJr PDF Viewer", w: 580, h: 650, hidden: true, body: <WhiteHatReader junior /> },
+  { id: "guide", icon: "▧", title: "WhiteHat PDF Viewer", w: 580, h: 650, hidden: true, body: <WhiteHatReader /> },
+  { id: "stego", icon: "▧", title: "StegoSuite", w: 540, h: 590, hidden: true, body: <EvidenceTool mode="stego" /> },
+  { id: "metadata", icon: "⌕", title: "Metadata Inspector", w: 540, h: 590, hidden: true, body: <EvidenceTool mode="metadata" /> },
+  { id: "notes", icon: "✎", title: "Notes", w: 560, h: 440, body: <InvestigationNotes /> },
   { id: "vpn", icon: "⛨", title: "VPN", w: 360, h: 380, body: <VpnApp /> },
   // Hidden apps have no desktop icon; they open from another app (tor.exe on the USB).
   { id: "tor", icon: <img src="/assets/tor-icon-v1.webp" alt="" className="h-[1em] w-[1em] object-contain contrast-[1.2] mix-blend-screen" />, title: "Tor Browser", w: 640, h: 420, hidden: true, body: <TorApp /> },
 ];
 
-type Win = { x: number; y: number; min: boolean; maximized?: boolean };
+type Win = { x: number; y: number; min: boolean; maximized?: boolean; width?: number; height?: number };
 
 export function ActivityPage() {
   const [started, setStarted] = useState(false);
@@ -72,9 +80,11 @@ function Desktop() {
   const [open, setOpen] = useState<[string, Win][]>([]);
   const [overview, setOverview] = useState(false);
   const [messageNotice, setMessageNotice] = useState(false);
+  const [noticeSender, setNoticeSender] = useState("raphael.pierre");
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const notify = () => {
+      setNoticeSender("raphael.pierre");
       const browserWidth = Math.min(640, window.innerWidth - 16);
       setOpen(windows => {
         const browser = windows.find(([id]) => id === 'browser');
@@ -84,8 +94,12 @@ function Desktop() {
       clearTimeout(timer);
       timer = setTimeout(() => setMessageNotice(false), 5500);
     };
+    const mystery = () => { setNoticeSender('Mr.WhiteHat'); setMessageNotice(true); clearTimeout(timer); timer = setTimeout(() => setMessageNotice(false), 6500); };
+    const junior = () => { setNoticeSender('HatWhiteJr'); setMessageNotice(true); clearTimeout(timer); timer = setTimeout(() => setMessageNotice(false), 6500); };
+    window.addEventListener('junior-dm', junior);
+    window.addEventListener('mysterious-dm', mystery);
     window.addEventListener('raphael-dm', notify);
-    return () => { window.removeEventListener('raphael-dm', notify); clearTimeout(timer); };
+    return () => { window.removeEventListener('raphael-dm', notify); window.removeEventListener('mysterious-dm', mystery); window.removeEventListener('junior-dm', junior); clearTimeout(timer); };
   }, []);
   const [solaceReleased, setSolaceReleased] = useState(false);
   useEffect(() => { const release = () => setSolaceReleased(true); window.addEventListener("release-solace", release); return () => window.removeEventListener("release-solace", release); }, []);
@@ -98,7 +112,7 @@ function Desktop() {
     setOverview(false);
     const hit = open.find(([k]) => k === id);
     if (hit) { patch(id, { min: false }); focus(id); }
-    else setOpen(o => [...o, [id, { x: 120 + o.length * 28, y: 56 + o.length * 28, min: false }]]);
+    else setOpen(o => [...o, [id, { x: (id === "guide" || id === "guidejr") ? 14 : 120 + o.length * 28, y: (id === "guide" || id === "guidejr") ? 48 : 56 + o.length * 28, min: false }]]);
   };
   const top = open[open.length - 1];
   useEffect(() => {
@@ -144,12 +158,12 @@ function Desktop() {
         })}
       </nav>
 
-      {open.map(([id, w]) => {
-        const app = APPS.find(a => a.id === id)!;
+      {APPS.filter(app => open.some(([id]) => id === app.id)).map(app => {
+        const [id, w] = open.find(([id]) => id === app.id)!;
         return (
           <section key={id} hidden={w.min} onPointerDown={() => focus(id)} aria-label={tr(app.title)}
             className={`absolute flex flex-col overflow-hidden rounded-xl border bg-neutral-950 shadow-[0_20px_80px_rgba(0,0,0,0.8)] ${top?.[0] === id ? "border-green-500/60" : "border-neutral-800"}`}
-            style={w.maximized ? { left: 0, top: 32, width: "100%", height: "calc(100dvh - 32px)", resize: "none", zIndex: 45 } : { left: w.x, top: w.y, width: `min(${app.w ?? 520}px, calc(100vw - 16px))`, height: app.h ?? 320, resize: "both" }}>
+            style={{ zIndex: 5 + open.findIndex(([key]) => key === id), ...(w.maximized ? { left: 0, top: 32, width: "100%", height: "calc(100dvh - 32px)", resize: "none" } : { left: w.x, top: w.y, width: w.width ?? `min(${app.w ?? 520}px, calc(100vw - 16px))`, height: w.height ?? app.h ?? 320, minWidth: Math.min(300, window.innerWidth - 16), minHeight: 220 }) }}>
             <div className="relative flex h-10 shrink-0 cursor-grab touch-none select-none items-center justify-center bg-neutral-900 text-sm font-semibold text-neutral-100"
               onPointerDown={e => {
                 if (w.maximized || (e.target as HTMLElement).closest("button") || e.button !== 0) return;
@@ -161,16 +175,25 @@ function Desktop() {
               {tr(app.title)}
               <span className="absolute right-2 flex gap-2">
                 <button aria-label={tr("Minimize")} onClick={() => patch(id, { min: true })} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 text-xs hover:bg-neutral-700">—</button>
-                {(id === "browser" || id === "tor") && <button aria-label={w.maximized ? "Restore browser window" : "Maximize browser window"} title={w.maximized ? "Restore" : "Maximize"} onClick={() => patch(id, { maximized: !w.maximized })} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700">{w.maximized ? <Copy size={12} /> : <Maximize2 size={12} />}</button>}
+                {(id === "browser" || id === "tor" || id === "terminal" || id === "guide" || id === "guidejr" || id === "notes" || id === "stego" || id === "metadata") && <button aria-label={w.maximized ? "Restore browser window" : "Maximize browser window"} title={w.maximized ? "Restore" : "Maximize"} onClick={() => patch(id, { maximized: !w.maximized })} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700">{w.maximized ? <Copy size={12} /> : <Maximize2 size={12} />}</button>}
                 <button aria-label={tr("Close")} onClick={() => setOpen(o => o.filter(([k]) => k !== id))} className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-800 text-xs hover:bg-red-700 hover:text-white">×</button>
               </span>
             </div>
             <div className="min-h-0 flex-1 overflow-auto p-4 text-sm text-neutral-300">{app.body}</div>
+            {!w.maximized && <button aria-label={`Resize ${app.title}`} title="Drag to resize. Arrow keys adjust size." className="absolute bottom-0 right-0 z-20 flex h-6 w-6 touch-none cursor-nwse-resize items-end justify-end rounded-tl bg-neutral-950/80 pr-1 pb-0.5 text-sm text-green-400/70 hover:text-green-200 focus-visible:outline focus-visible:outline-green-300" onKeyDown={e => { if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return; e.preventDefault(); const container = e.currentTarget.parentElement!; patch(id, { width: Math.max(Math.min(300, window.innerWidth - 16), Math.min(window.innerWidth - w.x, container.offsetWidth + (e.key === 'ArrowRight' ? 20 : e.key === 'ArrowLeft' ? -20 : 0))), height: Math.max(220, Math.min(window.innerHeight - w.y - 10, container.offsetHeight + (e.key === 'ArrowDown' ? 20 : e.key === 'ArrowUp' ? -20 : 0))) }); }} onPointerDown={e => {
+              e.stopPropagation(); e.preventDefault(); focus(id);
+              const handle = e.currentTarget, container = handle.parentElement!;
+              const startX = e.clientX, startY = e.clientY, width = container.offsetWidth, height = container.offsetHeight;
+              handle.setPointerCapture(e.pointerId);
+              handle.onpointermove = move => patch(id, { width: Math.max(Math.min(300, window.innerWidth - 16), Math.min(window.innerWidth - w.x - 8, width + move.clientX - startX)), height: Math.max(220, Math.min(window.innerHeight - w.y - 10, height + move.clientY - startY)) });
+              const end = () => { handle.onpointermove = null; handle.onpointerup = null; handle.onpointercancel = null; };
+              handle.onpointerup = end; handle.onpointercancel = end;
+            }}>◢</button>}
           </section>
         );
       })}
 
-      {messageNotice && <div role="status" className="absolute bottom-20 right-4 z-[60] flex items-center gap-3 rounded-xl border border-[#704975] bg-[#211526] px-5 py-4 shadow-[0_8px_35px_#0009]"><img src="/assets/glimmr-logo-v1.svg" alt="" className="h-8 w-8" /><div><p className="text-sm font-semibold text-[#f1d4e9]">new message</p><p className="text-xs text-[#bca4b8]">raphael.pierre · Glimmr</p></div><button aria-label="Dismiss notification" onClick={() => setMessageNotice(false)} className="ml-3 rounded px-2 py-1 text-neutral-400 hover:text-white">×</button></div>}
+      {messageNotice && <div role="status" className="absolute bottom-20 right-4 z-[60] flex items-center gap-3 rounded-xl border border-[#704975] bg-[#211526] px-5 py-4 shadow-[0_8px_35px_#0009]"><img src="/assets/glimmr-logo-v1.svg" alt="" className="h-8 w-8" /><div><p className="text-sm font-semibold text-[#f1d4e9]">new message</p><p className="text-xs text-[#bca4b8]">{noticeSender} · Glimmr</p></div><button aria-label="Dismiss notification" onClick={() => setMessageNotice(false)} className="ml-3 rounded px-2 py-1 text-neutral-400 hover:text-white">×</button></div>}
       {/* Activities overview: app grid */}
       {overview && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-8 bg-black/85 pt-8 backdrop-blur-sm" onClick={() => setOverview(false)}>
@@ -186,4 +209,13 @@ function Desktop() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
 

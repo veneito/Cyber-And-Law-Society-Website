@@ -1,0 +1,116 @@
+MR.WHITEHAT'S FIELD NOTES
+Solace Speaks / a guide to recovering the signal
+
+I have dealt with the Hollow Dawn before. They hide ordinary technical tricks behind religious language. Do not let their presentation convince you the evidence is supernatural. Work slowly, preserve what you find, and distinguish facts from guesses.
+
+These notes explain the method. They do not contain the winning stream, key, decrypted fields, password fragment, or final response. Your own evidence supplies those values.
+
+1. UNDERSTAND THE TASK BEFORE TOUCHING THE FILES
+
+The blue page is asking you to prove that you reconstructed a message correctly. It is not asking you to guess the cult's favorite word. There are two different things to recover: the concealed message and a response derived from it. Recovering the first is necessary, but it is not the finish line.
+
+Save the mirror kit from the site. It mounts text files inside the activity's desktop Terminal. You do not need a terminal on your actual computer. The kit does not run software on your machine or connect to a real network. The terminal's built-in command reference explains its available tools and the structure of their arguments. Read that reference before experimenting.
+
+2. INVENTORY THE EVIDENCE
+
+List the imported files, then read the kit's instructions. Give each file a job in your notes. An access log describes requests; a packet log contains pieces of traffic; a DNS log may contain naming records; a manifest records expected integrity values. None of these should be treated as interchangeable.
+
+Write down what the webpage identifies about your visitor. Keep identifiers exactly as printed. A leading zero can be part of an identifier, even if a person would normally omit it when writing a number. That distinction matters when text is hashed later.
+
+3. FIND THE RIGHT REQUEST
+
+Look through the access log for your visitor. Narrowing a large log to relevant lines is useful, but a matching visitor alone does not establish that the request is the one you need.
+
+Check three independent fields: visitor, requested resource, and result. HTTP status 200 means the request succeeded. A successful icon request is still only an icon request. An unsuccessful challenge request is not the successful session merely because its path looks promising.
+
+Find the request that satisfies all of the site's conditions at once. Note the stream identifier on that same line. Do not borrow a stream from a neighboring line. Logs are chronological records, not sentences whose values can be mixed together.
+
+4. WHY THE PACKETS LOOK WRONG
+
+Captured packets need not be listed in the order in which their contents belong. A packet may arrive late or be captured again after retransmission. The capture may also contain unrelated streams and damaged data.
+
+Sequence fields describe byte offsets in the reconstructed stream. They are not row numbers, and they are not character positions in a hex string. Two hex characters represent one byte. This is why a packet's hex text can be twice as long as the amount by which the next byte offset advances.
+
+5. RECONSTRUCT WITHOUT INVENTING BYTES
+
+Follow only the stream linked to your successful challenge request. Reject packets marked with a bad checksum. A damaged record may look almost identical to a good one: a one-character change is still different evidence.
+
+Sort the valid chunks by their sequence offsets. Identical retransmissions at the same offset contribute their data once. Repeating those bytes would corrupt the recovered payload. Two different valid chunks claiming the same offset are a conflict, not permission to choose whichever looks nicer.
+
+The activity's reconstruction tool handles ordering, identical retransmissions, and continuity checks. Use the filename and stream from your investigation. If it reports a gap, revisit your selection rather than filling it with guesses. Save the resulting hex text so you can reuse it exactly.
+
+6. AUTHENTICATE BEFORE DECRYPTING
+
+Read the manifest's description of what was hashed. It is possible to hash the text representation of a byte sequence or the bytes represented by that text; those are different inputs and give different digests.
+
+In this mirror, the manifest specifies a representation. Honor it exactly, including letter case and whether there is a newline. The terminal's text-hashing tool does not add a trailing newline. Do not introduce spaces merely to make a long value easier to read.
+
+Compare your digest to the manifest in full. A matching beginning or ending is not sufficient. A mismatch means the assembly or representation is wrong; it does not mean you should try random keys until something seems readable. Integrity checking prevents a small earlier mistake from becoming a much larger later mystery.
+
+7. FIND THE KEY'S RECORD
+
+Use the stream you already established to find its associated DNS record. A TXT record can contain arbitrary text. It is not automatically a password, and it is not automatically encrypted.
+
+There may be several records for the same stream, including expired ones. Consider the record's state and revision information together. A newer record for a different stream is irrelevant. The goal is the applicable current record for your stream, not the largest serial number anywhere in the file.
+
+Keep the value exactly as stored until you know its encoding. Some encoded strings end with padding characters. Removing those characters because they look decorative can break decoding.
+
+8. ENCODING IS NOT ENCRYPTION
+
+Encoding changes the representation of data. It does not supply secrecy. Base64 is a common way to carry bytes through systems designed for text. Recognizing that representation lets you turn a record back into its intended text.
+
+Use the terminal's decoder that corresponds to the record's encoding. Preserve the output's case. The recovered key is text that will become bytes in the next operation. Do not hash it, change its spelling, or substitute the still-encoded record unless the evidence explicitly asks for that.
+
+9. UNDERSTAND REPEATING-KEY XOR
+
+XOR combines corresponding bits. Applying the same key a second time reverses the operation. In a repeating-key scheme, the key cycles over the payload until every payload byte has been processed.
+
+Your inputs have different roles: the assembled ciphertext is hex text representing bytes, while the recovered key is ordinary text. The terminal's XOR tool expects those roles in the order described by its reference. Confusing the encoded key with the decoded key produces meaningless results even if both are valid strings.
+
+After decryption, expect structured text with named fields. If the output is nonsense, check your stream, integrity result, encoding, and argument roles. Do not repair unreadable output by hand. Authenticated evidence should explain itself through the defined transformations.
+
+10. READ THE DECRYPTED FIELDS
+
+Do not rush to submit the first readable word. Separate the field names from their values. The concealed message supplies a fragment and a nonce. A nonce is a value used to bind a response to this particular challenge. It is not another password fragment.
+
+Record both values exactly. Delimiters that divide fields are not necessarily part of the values themselves. The website gives the response formula; the decrypted message supplies ingredients for it. Keep those responsibilities separate.
+
+11. BUILD THE RESPONSE AS TEXT
+
+Return to the website and read the order of fields in the formula. Arrange the recovered values and visitor identifier in precisely that order. Use the separator specified by the page. Punctuation is data here, not decoration.
+
+Keep the visitor's leading zero. Preserve case. Do not insert labels, extra spaces, quotation-mark characters, or an Enter key at the end of the actual message being hashed. Quotes may be used by the terminal to group an argument; they are different from characters intentionally included in the input itself. Consult its reference if you are unsure.
+
+The hashing tool produces the digest of that exact text. It does not encrypt it, and it cannot tell you whether you chose the correct ingredients. Its output is deterministic: the same bytes always give the same digest.
+
+12. SUBMIT THE PROOF, NOT THE SECRET
+
+The response field expects a hexadecimal digest of a particular length. Copy the full digest into that field. The plaintext fragment, decoded key, ciphertext, and nonce are all different objects; none is a substitute for the requested response.
+
+If rejected, check one boundary at a time: correct successful request, correct stream, valid assembly, matching integrity hash, current key record, decoded key, readable fields, exact response formatting. Repeating the same submission without changing the evidence will not help.
+
+When accepted, record the revealed fragment with its service number. The next drive uses fragments in service order. Keep the evidence that justified the result rather than remembering only the final word.
+
+13. A PRACTICAL NOTEBOOK
+
+Use a small table in your own notes: observation, source, interpretation, and confidence. For example, an HTTP result is an observation from a log. Your decision that it belongs to the challenge is an interpretation supported by several fields. A suspicion is useful, but it is not evidence until it survives checking.
+
+Keep long generated strings separate from your explanations so you can copy them cleanly. Label each one by role: ciphertext, integrity digest, encoded key, decoded key, plaintext, or response digest. Many failures in this puzzle are valid data used in the wrong place.
+
+14. IF YOUR TERMINAL FEELS UNFAMILIAR
+
+You can read files without changing them. You can filter lines without deleting anything. You can inspect the built-in tool reference as often as you need. The Up and Down arrows recall previous commands, so you can correct an argument without rebuilding an entire long line.
+
+The simulation supports a limited set of tools rather than every operating-system command. An unknown-command message is not a clue or punishment; use the provided reference. The interface is a workbench, not a test of how many commands you have memorized.
+
+15. FOR THE ARCHIVE AFTER THIS MIRROR
+
+The later financial trail introduces different evidence. A transaction output is not automatically the payment: some outputs are change returned to the sender, and fees must be accounted for. Match a receipt's sender, amount, and time before following spending links. Timestamps with an explicit offset must be converted to UTC before comparison; the calendar date can change at midnight.
+
+A hidden mirror's appearance is not proof that its confession is genuine. Compare identifiers and original hashes. File modification times can be forged. Event logs and independently preserved receipts may be stronger evidence.
+
+Deleted files can leave recoverable records in an image. Inspect before carving, and distinguish active configuration from revoked remnants. A recovered key formula tells you how to assemble evidence values; it is not an invitation to guess replacements. Authenticated decryption rejects a wrong key rather than yielding trustworthy partial truth.
+
+I can still offer a nudge in chat. Ask for help after you try the next step, and I will point at the method that needs attention. I will not send you the answer.
+
+— Mr.WhiteHat
