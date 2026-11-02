@@ -4,16 +4,30 @@ export const ORACLE_FRAGMENT = 'MORROW';
 export const ORACLE_RESPONSE = '69b097d113b6491ef7d450eb1f424bd536a52fd2b6d5641e1bb6a4142fed1cd1';
 export const ORACLE_FILES: Record<string, string> = {
   'README.txt': `SOLACE SPEAKS // MIRROR KIT 041
-These files are captured evidence, not live network access.
-1. Find the successful /challenge request belonging to visitor 041 in access.log.
-2. Recover that stream's payload from packets.log. Sequence numbers are BYTE offsets.
-   Ignore BAD checksums and other streams. Identical retransmissions count once.
-3. Check the SHA-256 of the assembled lowercase HEX TEXT against manifest.txt.
-4. Find the latest non-expired TXT key for this stream in dns.log. Decode its base64.
-5. Decrypt payload using repeating-key XOR with that decoded ASCII key.
-6. Extract the fragment and nonce. The page requests a challenge response, NOT the fragment.
-   Reply = SHA256(nonce:visitor:fragment), UTF-8, no spaces or trailing newline.
-Type help for supported terminal commands. Everything stays in this simulation.`,
+Captured evidence only. Nothing here touches a live network. Type help for commands.
+
+GOAL: the page asks for a challenge response. It is NOT the fragment you will find.
+
+1. FIND YOUR STREAM
+   Read access.log. Find visitor 041's /challenge request that succeeded (status 200).
+   Its stream id is the one you want. Ignore every other stream.
+2. REBUILD THE MESSAGE
+   reassemble packets.log STREAM
+   The tool puts packets in byte order and skips bad checksums, other streams and repeats.
+3. CHECK IT IS INTACT
+   sha256 "HEX_TEXT" on the rebuilt hex, then compare with manifest.txt.
+   Different hash = you rebuilt the wrong thing. Go back to step 2.
+4. GET THE KEY
+   In dns.log, use this stream's newest ACTIVE key (highest serial, name _key.STREAM).
+   base64 TEXT turns that record into the plain key.
+5. DECRYPT
+   xor HEX KEY
+   The result holds a fragment and a nonce.
+6. BUILD THE RESPONSE
+   sha256 "NONCE:VISITOR:FRAGMENT"
+   Colons, no spaces, no newline. Paste that hash into the page.
+
+Tip: copy each output into the next command, and put quotes around text with spaces.`,
   'access.log': `03:11:01 visitor=099 GET /challenge status=200 stream=2F
 03:11:03 visitor=041 GET /challenge status=403 stream=9C
 03:11:05 visitor=041 GET /favicon.ico status=200 stream=1B

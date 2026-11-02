@@ -6,8 +6,13 @@ import { DemicubeWallpaper } from "./DemicubeWallpaper";
 import { Maximize2, Copy, Power, Volume2, Wifi } from "lucide-react";
 import { FakeBrowser } from "./FakeBrowser";
 import { FilesApp } from "./FilesApp";
-import { TorApp } from "./TorApp";
-import { VpnApp } from "./VpnApp";
+import { TorApp, torStart, ONION_SITES } from "./TorApp";
+import { rescueState, STREAM_URL, CARRIER } from "./rescueChapter";
+import { VAULT_URL } from "./archivePuzzle";
+import { VpnApp, vpn } from "./VpnApp";
+import { DigicorePlayer } from "./DigicorePlayer";
+import { FinalReveal } from "./FinalReveal";
+import { devFillCaseFile } from "./caseFile";
 import { useEffect, useState, type ReactNode } from "react";
 import { t as tr } from "../i18n/language";
 
@@ -29,6 +34,8 @@ const APPS: { id: string; icon: ReactNode; title: string; body: ReactNode; w?: n
       <p>{tr("You are an investigator searching for the location of a missing woman.")}</p>
       <p>{tr("Use social media to pinpoint her last known locations and uncover the information that will lead you to her.")}</p>
       <p>{tr("You already have suspicious flash drives found in her room. They are locked and need passwords.")}</p>
+      <p className="text-green-300">{tr("Use Notes for all evidence you collect. Its Case File tab lists what is still missing and checks what you write against what you find. You will need every line of it.")}</p>
+      <p>{tr("Trust the evidence, not the people supplying it.")}</p>
       <p className="pt-1 text-green-400">{tr("PEOPLE OF INTEREST")}</p>
       <ul className="space-y-1 text-neutral-300">
         {PEOPLE.map(([name, relation]) => <li key={name}><b className="text-green-200">{name}</b> {"-"} {tr(relation)}</li>)}
@@ -42,10 +49,29 @@ const APPS: { id: string; icon: ReactNode; title: string; body: ReactNode; w?: n
   { id: "stego", icon: "▧", title: "StegoSuite", w: 540, h: 590, hidden: true, body: <EvidenceTool mode="stego" /> },
   { id: "metadata", icon: "⌕", title: "Metadata Inspector", w: 540, h: 590, hidden: true, body: <EvidenceTool mode="metadata" /> },
   { id: "notes", icon: "✎", title: "Notes", w: 560, h: 440, body: <InvestigationNotes /> },
+  { id: "digicore", icon: "♫", title: "Streamify", w: 340, h: 520, body: <DigicorePlayer /> },
   { id: "vpn", icon: "⛨", title: "VPN", w: 360, h: 380, body: <VpnApp /> },
   // Hidden apps have no desktop icon; they open from another app (tor.exe on the USB).
   { id: "tor", icon: <img src="/assets/tor-icon-v1.webp" alt="" className="h-[1em] w-[1em] object-contain contrast-[1.2] mix-blend-screen" />, title: "Tor Browser", w: 640, h: 420, hidden: true, body: <TorApp /> },
 ];
+
+// Dev only (`npm run dev`): jump straight to a late stage of the activity.
+const STAGES: [string, string][] = [[STREAM_URL, "Livestream"], [VAULT_URL, "Wallet vault"], ...ONION_SITES.map((site): [string, string] => [site.url, site.title])];
+function StagePreview({ onOpen, onFlag }: { onOpen: (url: string) => void; onFlag: (flag: "location" | "finalDrive" | "police") => void }) {
+  const [pos, setPos] = useState({ x: Math.max(8, window.innerWidth - 250), y: 40 });
+  const drag = (e: React.PointerEvent) => {
+    const dx = e.clientX - pos.x, dy = e.clientY - pos.y;
+    const move = (m: PointerEvent) => setPos({ x: Math.max(0, Math.min(m.clientX - dx, window.innerWidth - 60)), y: Math.max(32, Math.min(m.clientY - dy, window.innerHeight - 40)) });
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  };
+  return <div style={{ left: pos.x, top: pos.y }} className="absolute z-[70] flex w-60 flex-col gap-1 rounded-lg border border-amber-600/60 bg-black/90 p-2 font-mono text-[10px] text-amber-200">
+    <b onPointerDown={drag} className="cursor-grab touch-none select-none">STAGE PREVIEW (dev) · drag</b>
+    {STAGES.map(([url, label]) => <button key={url} onClick={() => onOpen(url)} className="rounded border border-amber-800 px-2 py-1 text-left hover:bg-amber-950">{label}</button>)}
+    <button onClick={devFillCaseFile} className="rounded border border-amber-800 px-2 py-1 text-left hover:bg-amber-950">fill case file</button>
+    {(["location", "finalDrive", "police"] as const).map(flag => <button key={flag} onClick={() => onFlag(flag)} className="rounded border border-amber-800 px-2 py-1 text-left hover:bg-amber-950">set {flag}</button>)}
+  </div>;
+}
 
 type Win = { x: number; y: number; min: boolean; maximized?: boolean; width?: number; height?: number };
 
@@ -73,6 +99,26 @@ export function ActivityPage() {
       </form>
     </main>
   );
+}
+
+// Clears the saved case file and notes, then reloads so every in-memory puzzle state starts over.
+function resetProgress() {
+  if (!window.confirm(tr("Reset all progress? This clears your Case File and notes and restarts the activity."))) return;
+  try { localStorage.removeItem("cls-case-file-v1"); localStorage.removeItem("cls-investigation-notepad-v1"); } catch { /* Reload still resets in-memory progress. */ }
+  location.reload();
+}
+
+// In-page #links inside the simulated sites would scroll the locked desktop itself and strand it off-screen.
+// Scroll only the nearest scrollable container instead.
+function jumpWithinPage(e: React.MouseEvent) {
+  const link = (e.target as HTMLElement).closest?.('a[href^="#"]');
+  if (!link) return;
+  e.preventDefault();
+  const target = document.getElementById(decodeURIComponent(link.getAttribute('href')!.slice(1)));
+  if (!target) return;
+  let box = target.parentElement;
+  while (box && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
+  if (box) box.scrollTo({ top: box.scrollTop + target.getBoundingClientRect().top - box.getBoundingClientRect().top - 8, behavior: 'smooth' });
 }
 
 function Desktop() {
@@ -114,6 +160,13 @@ function Desktop() {
     if (hit) { patch(id, { min: false }); focus(id); }
     else setOpen(o => [...o, [id, { x: (id === "guide" || id === "guidejr") ? 14 : 120 + o.length * 28, y: (id === "guide" || id === "guidejr") ? 48 : 56 + o.length * 28, min: false }]]);
   };
+  const previewSite = (url: string) => {
+    vpn.connected = true; rescueState.drive = true; rescueState.metadata = true; rescueState.scanned.add(CARRIER);
+    torStart.url = url; setOverview(false);
+    setOpen(o => o.filter(([k]) => k !== "tor")); // remount so the first tab loads the chosen site
+    setTimeout(() => setOpen(o => [...o, ["tor", { x: 40, y: 48, min: false, maximized: true }]]), 0);
+  };
+  const previewFlag = (flag: "location" | "finalDrive" | "police") => { Object.assign(rescueState, { drive: true, metadata: true, location: true, ...(flag !== "location" && { finalDrive: true }), ...(flag === "police" && { police: true }) }); rescueState.scanned.add(CARRIER); window.dispatchEvent(new Event("rescue-chapter")); };
   const top = open[open.length - 1];
   useEffect(() => {
     const onLaunch = (e: Event) => launch((e as CustomEvent<string>).detail);
@@ -122,7 +175,7 @@ function Desktop() {
   });
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-black text-neutral-200">
+    <div onClickCapture={jumpWithinPage} onScroll={e => { e.currentTarget.scrollTop = 0; e.currentTarget.scrollLeft = 0; }} className="relative h-dvh overflow-hidden bg-black text-neutral-200">
       {solaceReleased ? <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black">
         <svg width="0" height="0" className="absolute"><defs><filter id="solace-green"><feColorMatrix type="matrix" values="0.15 0.5 0.05 0 -0.06  0.3 1.05 0.1 0 -0.09  0.2 0.7 0.07 0 -0.065  0 0 0 1 0" /></filter></defs></svg>
         <img src="/assets/cult-symbol-v1.webp" alt="" className="solace-wallpaper-burn h-full w-full object-contain" style={{ filter: "url(#solace-green)", mixBlendMode: "screen" }} />
@@ -141,7 +194,7 @@ function Desktop() {
       <header className="absolute inset-x-0 top-0 z-50 grid h-8 grid-cols-3 items-center bg-black px-2 font-sans text-xs font-medium text-neutral-200">
         <button onClick={() => setOverview(v => !v)} aria-pressed={overview} className={`justify-self-start rounded-full px-3 py-1 hover:bg-neutral-800 ${overview ? "bg-neutral-800 text-green-300" : ""}`}>{tr("Activities")}</button>
         <span className="justify-self-center rounded-full px-3 py-1">{now.toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
-        <span className="flex items-center gap-3 justify-self-end rounded-full px-3 py-1 text-neutral-300" aria-hidden="true"><Wifi size={14} /><Volume2 size={14} /><Power size={14} /></span>
+        <span className="flex items-center gap-3 justify-self-end rounded-full px-3 py-1 text-neutral-300"><Wifi size={14} aria-hidden="true" /><Volume2 size={14} aria-hidden="true" /><button aria-label={tr("Reset progress")} title={tr("Reset progress")} onClick={resetProgress} className="rounded hover:text-red-400 focus-visible:outline focus-visible:outline-green-300"><Power size={14} /></button></span>
       </header>
 
       {/* Dock */}
@@ -193,6 +246,8 @@ function Desktop() {
         );
       })}
 
+      {import.meta.env.DEV && <StagePreview onOpen={previewSite} onFlag={previewFlag} />}
+      <FinalReveal />
       {messageNotice && <div role="status" className="absolute bottom-20 right-4 z-[60] flex items-center gap-3 rounded-xl border border-[#704975] bg-[#211526] px-5 py-4 shadow-[0_8px_35px_#0009]"><img src="/assets/glimmr-logo-v1.svg" alt="" className="h-8 w-8" /><div><p className="text-sm font-semibold text-[#f1d4e9]">new message</p><p className="text-xs text-[#bca4b8]">{noticeSender} · Glimmr</p></div><button aria-label="Dismiss notification" onClick={() => setMessageNotice(false)} className="ml-3 rounded px-2 py-1 text-neutral-400 hover:text-white">×</button></div>}
       {/* Activities overview: app grid */}
       {overview && (

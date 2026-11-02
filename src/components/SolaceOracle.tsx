@@ -12,7 +12,7 @@ export function SolaceOracle() {
   const [note, setNote] = useState(false);
   return <div className="oracle-site">
     <header className="oracle-mast"><span>HOLLOW<span className="oracle-mast-small">!host</span></span><h1>Solace Speaks</h1><small>Your FREE home on the other side of the signal.</small></header>
-    <div className="oracle-account">Welcome, Guest 041. <a href="#oracle-gate">[prove identity]</a><span>Mirror integrity: UNVERIFIED</span></div>
+    <div className="oracle-account">Welcome, Guest 041. We have been expecting you. <a href="#oracle-gate">[prove identity]</a><span>Mirror integrity: UNVERIFIED</span></div>
     <nav className="oracle-tools" aria-label="Archive tools"><button onClick={() => { importOracleKit(); setSaved(true); }}><b>▣ SAVE MIRROR KIT</b><small>Capture files for your terminal</small></button><a href="#oracle-directory"><b>✎ READ THE ARCHIVE</b><small>Browse recovered service notes</small></a><a href="#oracle-gate"><b>⚿ VERIFY SIGNAL</b><small>Only a valid response opens the gate</small></a></nav>
     <div className="oracle-columns"><main>
       <section className="oracle-panel" id="oracle-directory"><h2>Explore Neighborhoods / Signal Forensics</h2><p>Find your place in one of our <u>041 lost connections</u>.</p><div className="oracle-directory"><div><a href="#oracle-evidence">Area 7A</a><small>packets, mirrors, broken things</small><a href="#oracle-notes">Silicon Vessels</a><small>no body. no boundaries.</small></div><div><a href="#oracle-evidence">Memory Lane</a><small>old logs never forget</small><a href="#oracle-gate">The Quiet Room</a><small>challenge-response only</small></div></div></section>

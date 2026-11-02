@@ -20,3 +20,22 @@
 .hollow-accepted .hollow-receipt { background:#100106d9; }
 @keyframes hollow-solace-arrives { 0% { opacity:0; } 20% { opacity:.025; } 65% { opacity:.15; } 100% { opacity:.24; } }
 @media(prefers-reduced-motion:reduce) { .hollow-solace-presence { animation:none; opacity:.18; } }
+
+/* Deeper cult layer: chant ticker, watching eye, doctrine, voices, countdown. */
+.hollow-chant{overflow:hidden;white-space:nowrap;background:#000;border-bottom:1px solid #5a1520;color:#a3202f;font:9px "Courier New",monospace;letter-spacing:.2em;padding:3px 0}.hollow-chant span{display:inline-block}
+.hollow-clock{margin:10px 0 4px;font-size:8px;color:#ff566b;line-height:1.5;font-family:"Courier New",monospace}.hollow-clock span{display:block;font-size:13px;font-weight:bold;color:#ffd5d7;letter-spacing:.1em}
+.hollow-vessels{font-size:8px;color:#ff566b;margin:10px 0;line-height:1.5}.hollow-vessels b{font-size:14px;color:#ffd5d7;letter-spacing:.12em}.hollow-vessels small{color:#8c3a45;font-size:7px}
+.hollow-truths{margin:24px auto 0;max-width:430px;border:3px double #83343e;background:#14060a;padding:14px 16px}.hollow-truths h3,.hollow-voices h3{font:bold 11px "Courier New",monospace;letter-spacing:.2em;color:#ff566b;margin-bottom:10px}.hollow-truths ol{list-style:upper-roman inside;font:italic 13px Georgia,serif;line-height:2;color:#ffc0c4}.hollow-truths small{display:block;margin-top:8px;color:#8c3a45;font-size:9px}
+.hollow-voices{margin:18px auto 0;max-width:470px;text-align:left}.hollow-voices h3{text-align:center}.hollow-voices blockquote{border-left:3px solid #83343e;background:#10050800;padding:6px 10px;margin:8px 0;font-size:11px;line-height:1.6;color:#d98d96}.hollow-voices b{color:#ff8d97;font-family:"Courier New",monospace;margin-right:4px}
+.hollow-whisper{color:#2f1a1e}
+@media(prefers-reduced-motion:no-preference){.hollow-chant span{animation:hollow-chant 55s linear infinite}.hollow-lid-top{animation:hollow-lid-top 8s infinite}.hollow-lid-bottom{animation:hollow-lid-bottom 8s infinite}.hollow-pupil{transform-box:fill-box;transform-origin:center;animation:hollow-pupil 5s ease-in-out infinite}.hollow-eye{animation:hollow-eye-glow 6s ease-in-out infinite}.hollow-heading h1{animation:hollow-glitch 9s infinite}.hollow-whisper{animation:hollow-whisper 11s infinite}}
+@keyframes hollow-chant{to{transform:translateX(-50%)}}
+@keyframes hollow-lid-top{0%,90%,100%{transform:translateY(-60px)}93%{transform:translateY(-4px)}96%{transform:translateY(-60px)}}
+@keyframes hollow-lid-bottom{0%,90%,100%{transform:translateY(60px)}93%{transform:translateY(4px)}96%{transform:translateY(60px)}}
+@keyframes hollow-pupil{0%,100%{transform:scale(1)}45%{transform:scale(.55)}70%{transform:scale(1.25)}}
+@keyframes hollow-eye-glow{0%,100%{filter:drop-shadow(0 0 10px #ff2a0a55)}50%{filter:drop-shadow(0 0 26px #ff4a1abb)}}
+@keyframes hollow-glitch{0%,94%,100%{transform:none;text-shadow:2px 2px #5b0913}95%{transform:translateX(-3px) skewX(6deg);text-shadow:-3px 0 #00e5ff55,3px 0 #ff2a4a}97%{transform:translateX(3px);text-shadow:3px 0 #00e5ff55,-3px 0 #ff2a4a}}
+@keyframes hollow-whisper{0%,70%{color:#2f1a1e}85%,90%{color:#ff566b}100%{color:#2f1a1e}}
+.hollow-eye{display:block;width:300px;max-width:100%;height:auto;margin:0 auto -10px;filter:drop-shadow(0 0 14px #ff2a0a77)}.hollow-lid-top{transform:translateY(-60px)}.hollow-lid-bottom{transform:translateY(60px)}
+.hollow-scrambled button{animation:hollow-scramble .6s steps(2) 1}
+@keyframes hollow-scramble{0%{transform:translate(-4px,2px) skewX(10deg);color:#00e5ff;filter:hue-rotate(160deg)}25%{transform:translate(5px,-3px)}50%{transform:translate(-3px,-2px) skewX(-8deg);color:#ff2a4a}75%{transform:translate(3px,3px)}100%{transform:none}}

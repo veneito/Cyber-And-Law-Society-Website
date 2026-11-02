@@ -1,17 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { rescueState, verifyStreamLocation, STREAM_URL } from './rescueChapter';
 import { useRescueUpdate } from './PhotoEvidence';
+import { markSeen } from './caseSeen';
 import './SolaceStream.css';
-const CHAT=[['hollow_eye','the signal persists'],['static_guest','is this the north room?'],['vessel_08','the witness knows where you are'],['silent_donor','keep the feed running'],['mod_ash','Field coordinates may be submitted in chat. Original camera records only.'],['echo_witness','those camera files were copied. find the original.']];
+const FEED=['/assets/solace-feed-q1-v1.png','/assets/solace-feed-q2-v1.webp','/assets/solace-feed-q3-v1.webp','/assets/solace-feed-q4-v1.webp'];
+const FEED_ORDER=[0,1,2,3,2,1]; // low to high quality and back
+const CHAT=[['hollow_eye','the signal persists'],['static_guest','is this the north room?'],['vessel_08','the witness knows where you are'],['silent_donor','keep the feed running'],['mod_ash','Field coordinates may be submitted in chat. Original camera records only.'],['echo_witness','those camera files were copied. find the original.'],['null_donor','visitor 041 is back. we kept your chair warm.'],['mod_ash','Session 041 is logged. Everything you open is recorded under it.']];
 export function SolaceStream(){
  useRescueUpdate();const [tick,setTick]=useState(0),[panel,setPanel]=useState<'feed'|'service'|'operator'>('feed'),[gps,setGps]=useState(''),[error,setError]=useState('');
  const [message,setMessage]=useState('');
  const [posted,setPosted]=useState<{name:string;text:string}[]>([]);
+ const [frame,setFrame]=useState(0);
+ useEffect(()=>{markSeen('stream');},[]);
  const chatEnd=useRef<HTMLDivElement>(null);
  useEffect(()=>{chatEnd.current?.scrollIntoView({block:'nearest'});},[posted]);
+ useEffect(()=>{const timer=window.setInterval(()=>setFrame(value=>value+1),1100);return()=>window.clearInterval(timer);},[]);
+ useEffect(()=>{ // one-shot intro, then the crying loop until the site closes
+  const intro=new Audio('/assets/solace-live-intro-v1.wav'),loop=new Audio('/assets/solace-crying-loop-v1.wav');loop.loop=true;
+  intro.onended=()=>{void loop.play().catch(()=>{});};
+  intro.play().catch(()=>{});
+  return()=>{intro.onended=null;intro.pause();loop.pause();};
+ },[]);
  useEffect(()=>{const timer=window.setInterval(()=>setTick(value=>value+1),4500);return()=>window.clearInterval(timer);},[]);
  return <div className="solace-stream"><header><span>◬ SOLACE / WITNESS NETWORK</span><small>{STREAM_URL}</small></header><nav><button onClick={()=>setPanel('feed')}>WATCH</button><button onClick={()=>setPanel('service')}>SERVICE / MIRROR STATUS</button><span>ROOM: CINDER / 01</span></nav><div className="stream-training">FICTIONAL LIVE FEED · SIMULATED CHAT AND DONATIONS</div>
- <div className="stream-columns"><main><div className="stream-camera" role="img" aria-label="Placeholder simulated live camera of Julieta seated in the Cinder room"><span className="stream-live">● LIVE</span><span className="stream-time">CAM_01 · {String(4+Math.floor(tick/13)).padStart(2,'0')}:{String(tick*4%60).padStart(2,'0')}:00 UTC</span><svg viewBox="0 0 640 360" aria-hidden="true"><path d="M0 0H640V360H0Z" fill="#101518"/><path d="M40 35H600V310H40Z" fill="#1c2528"/><path d="M70 310V85H560V310M70 100 560 310M560 100 70 310" stroke="#344044" fill="none"/><ellipse cx="320" cy="260" rx="62" ry="19" fill="#080c0d"/><path d="M280 270V190Q320 163 360 190V270" fill="#404c50"/><circle cx="320" cy="149" r="28" fill="#687274"/><path d="M292 149Q284 108 319 113Q352 109 350 154L337 129 303 128Z" fill="#171d20"/><path d="M272 280H369M280 270V321M357 270V321" stroke="#738087" stroke-width="5"/></svg><div className="stream-camera-label">JULIETA / PLACEHOLDER FEED<br /><small>Actual visual assets will be added later.</small></div></div><div className="stream-caption"><h1>THE VESSEL IS STILL HERE.</h1><p>{42+tick%4} witnesses · the public channel is listening</p></div>
+ <div className="stream-columns"><main><div className="stream-camera" role="img" aria-label="Simulated live camera of Julieta seated in the Cinder room"><span className="stream-live">● LIVE</span><span className="stream-render">RENDER {'▮'.repeat(FEED_ORDER[frame%FEED_ORDER.length]+1)}{'▯'.repeat(3-FEED_ORDER[frame%FEED_ORDER.length])}</span><span className="stream-time">CAM_01 · {String(4+Math.floor(tick/13)).padStart(2,'0')}:{String(tick*4%60).padStart(2,'0')}:00 UTC</span>{FEED.map((src,i)=><img key={src} src={src} alt="" style={{opacity:i===FEED_ORDER[frame%FEED_ORDER.length]?1:0}}/>)}<div className="stream-camera-label">JULIETA / CAM_01</div></div><div className="stream-caption"><h1>THE VESSEL IS STILL HERE.</h1><p>{42+tick%4} witnesses · the public channel is listening</p></div>
  {panel==='feed'&&<section><h2>Broadcast notice</h2><p>Recovered a field location? Post the decimal GPS pair in public chat. The mirror checks original camera records.</p><p>Recovered image records are more reliable than copied stream thumbnails.</p></section>}
  {panel==='service'&&<section><h2>Service index / old mirror tools</h2><p>Video relay: ONLINE<br />Chat bridge: MIRRORED<br />Donations: CACHED</p><button className="stream-operator-link" onClick={()=>setPanel('operator')}>[ field operator reconciliation ]</button><p>Location reports require original camera records. Coordinates can also be submitted through public chat.</p></section>}
  {panel==='operator'&&<section><h2>Field-location reconciliation</h2><p>Submit the precise decimal GPS pair recovered from the original image's verified metadata.</p>{rescueState.location?<div role="status" className="stream-verified">LOCATION VERIFIED. The dispatch drive now accepts these coordinates as its key. Return to Files.</div>:<form onSubmit={e=>{e.preventDefault();if(verifyStreamLocation(gps))setError('');else setError('Record mismatch. Inspect the verified image with Metadata Inspector and preserve the negative longitude sign.');}}><label htmlFor="stream-gps">Decimal latitude, longitude</label><input id="stream-gps" value={gps} onChange={e=>setGps(e.target.value)}/><button>VERIFY FIELD LOCATION</button>{error&&<p role="alert">{error}</p>}</form>}</section>}</main>
