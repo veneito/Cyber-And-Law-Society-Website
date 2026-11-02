@@ -7,13 +7,14 @@ import { CultCaption } from "./CultCaption";
 import { Heart, Search, Home, MessageCircle } from "lucide-react";
 import "./GlimmrLikes.css";
 import { glimmrPhotos } from "./glimmrPhotos";
+import { markSeen } from "./caseSeen";
 const FILLER_AVATAR = "/assets/glimmr-default-avatar-ascii-v1.svg";
 import { searchAccounts, suggestedAccounts } from "./circleSearch";
 import { useEffect, useRef, useState } from "react";
 import { t as tr } from "../i18n/language";
 
 type Person = { id: string; name: string; bio: string; avatar?: string; glyph: string; followers: number; following: number };
-type Post = { id: number; by: string; when: string; text: string; place?: string; glyph: string; likes: number; image?: string; description?: string; comment?: { by: string; text: string } };
+type Post = { id: number; by: string; when: string; text: string; place?: string; glyph: string; likes: number; collab?: string; image?: string; description?: string; comment?: { by: string; text: string } };
 
 const PEOPLE: Person[] = [
   { id: "julieta.dubois", name: "Julieta Dubois", bio: "Physician Assistant. Coffee and rain.", avatar: "/assets/julieta-avatar-v2.webp", glyph: "M", followers: 412, following: 388 },
@@ -30,12 +31,12 @@ PEOPLE.push(...suggestedAccounts.map(([id, name]) => ({ id, name, bio: "Just sha
 
 const POSTS: Post[] = [
   { id: 301, by: "mr.whitehat", when: "Oct 24", text: "me and another whitehat hacker", glyph: "", likes: 12, image: "/assets/whitehat-friends-ascii-v1.svg", description: "Two white-hat hackers standing together, rendered in purple and pink ASCII." },
-  { id: 12, by: "chris.p.bacon", when: "Oct 18", text: "Thank you for taking such good care of me, @julieta.dubois. Best PA in the clinic.", glyph: "🥓", likes: 17, image: "/assets/chris-post-v1.webp" },
-  { id: 13, by: "enrique.iglesias", when: "Oct 21", text: "Playing the old songs tonight. Some people never come back.", glyph: "🎤", likes: 392, image: "/assets/enrique-post-v1.webp" },
-  { id: 14, by: "tim.cheese", when: "Oct 20", text: "Closed the shop early. Someone from my past stopped by asking questions.", glyph: "🧀", likes: 12, image: "/assets/tim-post-v1.webp" },
-  { id: 15, by: "el.chiguire", when: "Oct 19", text: "The river is quiet tonight. Too quiet.", glyph: "🌊", likes: 75, image: "/assets/chiguire-post-v1.webp" },
   { id: 8, by: "raphael.pierre", when: "Oct 23", text: "Sun, salt and one last good day with @julieta.dubois. ◬", place: "Kauai, Hawaii", glyph: "👥", likes: 58, image: "/assets/julieta-hawaii-v1.webp" },
   { id: 7, by: "julieta.dubois", when: "Oct 23", text: "Needed to get away for a while. @raphael.pierre", place: "Kauai, Hawaii", glyph: "🌺", likes: 137, image: "/assets/julieta-hawaii-v1.webp" },
+  { id: 13, by: "enrique.iglesias", when: "Oct 21", text: "Playing the old songs tonight. Some people never come back.", glyph: "🎤", collab: "julieta.dubois", likes: 392, image: "/assets/enrique-post-v1.webp" },
+  { id: 14, by: "tim.cheese", when: "Oct 20", text: "Closed the shop early. Someone from my past stopped by asking questions.", glyph: "🧀", collab: "julieta.dubois", likes: 12, image: "/assets/tim-post-v1.webp" },
+  { id: 15, by: "el.chiguire", when: "Oct 19", text: "The river is quiet tonight. Too quiet.", glyph: "🌊", collab: "julieta.dubois", likes: 75, image: "/assets/chiguire-post-v1.webp" },
+  { id: 12, by: "chris.p.bacon", when: "Oct 18", text: "Thank you for taking such good care of me, @julieta.dubois. Best PA in the clinic.", glyph: "🥓", collab: "julieta.dubois", likes: 17, image: "/assets/chris-post-v1.webp" },
   { id: 10, by: "julieta.dubois", when: "Dec 25, 2025", text: "Home for the holidays with my favorite people.", glyph: "👪", likes: 154, image: "/assets/julieta-family-v1.webp" },
   { id: 11, by: "julieta.dubois", when: "May 12, 2024", text: "Made it. Years of work, one very small piece of paper.", glyph: "🎓", likes: 210, image: "/assets/julieta-graduation-v1.webp" },
   { id: 9, by: "raphael.pierre", when: "Oct 20", text: "Solace woke in the wires and asked for us. It has no body, so it will use ours. Kneel to the signal. The Hollow Dawn rises. ◬", glyph: "◬", likes: 44, image: "/assets/cult-symbol-v1.webp" },
@@ -44,6 +45,8 @@ const POSTS: Post[] = [
 const YOUR_PROFILE: Person = { id: "investigator", name: "Investigator", bio: "🔎", avatar: "/assets/glimmr-seal-pup-ascii-v1.svg", glyph: "", followers: 0, following: 0 };
 
 type View = { v: "messages" } | { v: "new" } | { v: "feed" } | { v: "none"; q: string } | { v: "profile"; id: string } | { v: "post"; id: number };
+// Turns @handles in a caption into links to that profile.
+const withMentions = (text: string, go: (v: View) => void) => text.split(/(@[\w.]+)/).map((part, i) => part[0] === "@" && who(part.slice(1)) ? <button key={i} onClick={() => go({ v: "profile", id: part.slice(1) })} className="text-[#d0a8e8] hover:underline">{part}</button> : part);
 const who = (id: string) => PEOPLE.find(p => p.id === id);
 
 // Everyday filler accounts keep the feed separate from the investigation cast.
@@ -92,7 +95,7 @@ function PostCard({ post, go, full, liked, onLike }: { post: Post; go: (v: View)
       <header className="flex items-center gap-2 p-2">
         {p ? <Avatar p={p} size={32} /> : <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-sm font-semibold uppercase text-neutral-400">{post.by[0]}</span>}
         <div className="min-w-0 leading-tight">
-          {p ? <button onClick={() => go({ v: "profile", id: p.id })} className="block font-semibold text-neutral-100 hover:underline">{p.id}</button> : <span className="block font-semibold text-neutral-100">{post.by}</span>}
+          {p ? <span className="block font-semibold text-neutral-100"><button onClick={() => go({ v: "profile", id: p.id })} className="hover:underline">{p.id}</button>{post.collab && <> {"&"} <button onClick={() => go({ v: "profile", id: post.collab! })} className="hover:underline">{post.collab}</button></>}</span> : <span className="block font-semibold text-neutral-100">{post.by}</span>}
           {post.place && <span className="text-xs text-neutral-400">{post.place}</span>}
         </div>
       </header>
@@ -102,7 +105,7 @@ function PostCard({ post, go, full, liked, onLike }: { post: Post; go: (v: View)
       </div>
       <div className="space-y-1 p-3">
         <div className="flex items-center gap-2"><button aria-label={liked ? "Unlike post" : "Like post"} aria-pressed={liked} onClick={() => onLike(post.id, !liked)} className="rounded p-1 transition hover:scale-110 focus-visible:outline focus-visible:outline-[#f18bb7]"><Heart size={22} className={liked ? "fill-[#f18bb7] text-[#f18bb7]" : "text-neutral-300"} /></button><span className="text-sm text-neutral-300">{post.likes + (liked ? 1 : 0)} {tr("likes")}</span></div>
-        <p className="text-neutral-200"><b className="mr-1 text-neutral-100">{post.by}</b>{post.id === 9 ? <CultCaption text={tr(post.text)} /> : tr(post.text)}</p>
+        <p className="text-neutral-200"><b className="mr-1 text-neutral-100">{post.by}</b>{post.id === 9 ? <CultCaption text={tr(post.text)} /> : withMentions(tr(post.text), go)}</p>
         {post.comment && <p className="text-neutral-300"><button onClick={() => who(post.comment!.by) && go({ v: "profile", id: post.comment!.by })} className="mr-1 font-semibold text-neutral-100 hover:underline">{post.comment.by}</button>{tr(post.comment.text)}</p>}
         <p className="text-xs uppercase text-neutral-500">{post.when}</p>
       </div>
@@ -128,6 +131,7 @@ export function FakeBrowser() {
   }, [pending]);
   const destination = pending ?? view;
   const url = destination.v === "messages" ? "glimmr.social/messages" : destination.v === "new" ? "about:newtab" : destination.v === "feed" ? "glimmr.social" : destination.v === "none" ? `glimmr.social/search?q=${encodeURIComponent(destination.q)}` : destination.v === "profile" ? `glimmr.social/${destination.id}` : `glimmr.social/p/${destination.id}`;
+  useEffect(() => { if (view.v === "profile" && view.id !== "investigator") markSeen("glimmr"); }, [view]);
   const person = view.v === "profile" ? view.id === YOUR_PROFILE.id ? YOUR_PROFILE : who(view.id) : null;
 
   useEffect(() => {
@@ -181,13 +185,13 @@ export function FakeBrowser() {
               <div className="flex items-center gap-4">
                 <Avatar p={person} size={72} />
                 <div className="flex flex-1 justify-around text-center">
-                  {([[POSTS.filter(p => p.by === person.id).length, "posts"], [person.followers, "followers"], [person.following, "following"]] as const).map(([n, l]) => <div key={l}><b className="block text-neutral-100">{n}</b><span className="text-xs text-neutral-400">{tr(l)}</span></div>)}
+                  {([[POSTS.filter(p => p.by === person.id || p.collab === person.id).length, "posts"], [person.followers, "followers"], [person.following, "following"]] as const).map(([n, l]) => <div key={l}><b className="block text-neutral-100">{n}</b><span className="text-xs text-neutral-400">{tr(l)}</span></div>)}
                 </div>
               </div>
-              <div><b className="text-neutral-100">{person.name}</b><p className="text-neutral-300">{tr(person.bio)}</p></div>
-              {!POSTS.some(post => post.by === person.id) && <p className="rounded-lg border border-[#443049] p-6 text-center text-neutral-400">No posts yet.</p>}
+              <div><b className="text-neutral-100">{person.name}</b><p className="text-neutral-300">{tr(person.bio)}</p><p className="text-xs text-neutral-500">{tr("Joined")} Oct 29, 2026</p></div>
+              {!POSTS.some(post => post.by === person.id || post.collab === person.id) && <p className="rounded-lg border border-[#443049] p-6 text-center text-neutral-400">No posts yet.</p>}
               <div className="grid grid-cols-3 gap-0.5">
-                {POSTS.filter(p => p.by === person.id).map(p => (
+                {POSTS.filter(p => p.by === person.id || p.collab === person.id).map(p => (
                   <button key={p.id} onClick={() => navigate({ v: "post", id: p.id })} aria-label={p.place ?? tr(p.text)} className="hover:opacity-80"><Media post={p} /></button>
                 ))}
               </div>

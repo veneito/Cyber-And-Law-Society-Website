@@ -9,6 +9,9 @@
 - [ ] Coordinate online registration/API change with Vene before merging; deploy through reviewed PR.
 # TODO
 
+- [x] Final act: reveal that Solace fabricated everything, Case File tab in Notes, and a defense trial (docs/features/investigation-desktop.md)
+- [ ] Playtest the whole investigation start to finish for pacing, and tune the Case File hints and the five trial counts
+
 ## Waiting on the club
 - [x] Officers added (see docs/features/officers.md). Still need: Professor Wang photo → `image` in site.ts
 - [ ] Real bios from Alfred and Andrew (current ones are invented placeholders in `officers`)

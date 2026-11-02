@@ -3,6 +3,7 @@ import { PhotoEvidenceDrive, FinalRescueDrive } from "./PhotoEvidence";
 import { deliverRaphaelDm } from "./investigationMessages";
 import { SolaceArt } from "./SolaceArt";
 import { useState } from "react";
+import { markSeen } from "./caseSeen";
 import { t as tr } from "../i18n/language";
 import { ONION_SITES } from "./TorApp";
 
@@ -23,7 +24,7 @@ export function FilesApp() {
   const [reading, setReading] = useState<"readme" | "solace" | "receipt" | null>(null);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw.trim().toUpperCase() === PASSWORD) { unlocked = true; setOpen(true); deliverRaphaelDm(); } else setBad(true);
+    if (pw.trim().toUpperCase() === PASSWORD) { unlocked = true; setOpen(true); deliverRaphaelDm(); markSeen("drive"); } else setBad(true);
   };
   const file = "flex w-24 flex-col items-center gap-1 rounded-lg p-2 text-xs text-neutral-200 hover:bg-neutral-800 focus:outline focus:outline-green-300";
   return (

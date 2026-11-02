@@ -1,4 +1,5 @@
 import { primeMessageAudio, whitehatPing } from "./whitehatAudio.ts";
+import { markSeen } from './caseSeen.ts';
 import { archiveProgress, archiveGuidance } from './archivePuzzle.ts';
 import { oracleImported, oracleSolved } from './oraclePuzzle.ts';
 import { oracleGuidance } from './oracleGuidance.ts';
@@ -23,9 +24,10 @@ export function inviteMysterious() {
   invitationScheduled = true; primeMessageAudio();
   window.setTimeout(() => {
   invited = true;
+  markSeen('helpers');
   whitehatPing();
   messages.push({ from: 'mysterious', text: 'Hey, I noticed you got into the website.' });
-  later("I've dealt with this cult before. I can help you make sense of what they left behind.");
+  later("I've dealt with this cult before. I can help you make sense of what they left behind. I was waiting for you to get this far.");
   later('If you need help navigating, I can show you how I deciphered it with a document. Just send me — help.');
   window.dispatchEvent(new CustomEvent('launch-app', { detail: 'browser' }));
   window.dispatchEvent(new Event('mysterious-dm'));

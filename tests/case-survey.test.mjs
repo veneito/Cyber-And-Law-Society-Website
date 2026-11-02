@@ -12,6 +12,7 @@ process.env.CASE_CONFIG=path.join(dir,'config.json');process.env.CASE_STATE=path
 fs.writeFileSync(process.env.CASE_CONFIG,JSON.stringify({teams:{DONE:'Finished',ACTIVE:'Active',INVALID:'Invalid'},answers:['A']}));
 fs.writeFileSync(process.env.CASE_STATE,JSON.stringify({DONE:{startedAt:Date.now()-1000,finishedAt:Date.now()},ACTIVE:{startedAt:Date.now()},INVALID:{startedAt:Date.now()-1000,finishedAt:Date.now()}}));
 const {handleCase}=await import(pathToFileURL(path.resolve('deploy/case.mjs')).href);
+delete process.env.DISCORD_WEBHOOK_URL; // importing case.mjs loads .env; never post test surveys to the real Discord
 function request(body){return new Promise(resolve=>{const req=new EventEmitter();req.url='/api/case/survey';req.method='POST';let status;handleCase(req,{writeHead(s){status=s;},end(s){resolve({status,body:JSON.parse(s)});}});req.emit('data',JSON.stringify(body));req.emit('end');});}
 assert.equal((await request({code:'ACTIVE',enjoyment:5,difficulty:3,learning:4})).status,409);
 assert.equal((await request({code:'INVALID',enjoyment:0,difficulty:3,learning:4})).status,400);

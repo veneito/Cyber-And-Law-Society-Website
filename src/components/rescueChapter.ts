@@ -2,7 +2,7 @@ export const STREAM_URL = 'solace-watch8r3.onion';
 export const TRAINING_GPS = '12.34567, -45.67890';
 export const PHOTO_FILES = ['IMG_0211.png','IMG_0212.png','IMG_0213.png','IMG_0214.png','IMG_0215.png','IMG_0216.png'];
 export const CARRIER = 'IMG_0214.png';
-export const rescueState = { drive: false, scanned: new Set<string>(), metadata: false, location: false, finalDrive: false, police: false };
+export const rescueState = { drive: false, scanned: new Set<string>(), metadata: false, location: false, finalDrive: false, police: false, cleared: false };
 export const chapterChanged = () => window.dispatchEvent(new Event('rescue-chapter'));
 export function unlockPhotoDrive(password: string) { const valid = password.trim().toUpperCase() === 'VESPER-MORROW-CINDER'; if (valid) { rescueState.drive = true; chapterChanged(); } return valid; }
 export function scanPhoto(file: string) {
@@ -15,7 +15,7 @@ export function inspectPhoto(file: string) {
  if (file !== CARRIER) return 'EXIF: absent or unverified\nGPS: NOT TRUSTWORTHY\nThis derivative cannot establish the location.';
  if (!rescueState.scanned.has(CARRIER)) return 'Embedded record not mounted. Analyze the image in StegoSuite first.';
  rescueState.metadata = true; chapterChanged();
- return `SOURCE: ${CARRIER}\nRecord: original_exif / verified carrier\nCamera: RELAY-884\nGPSLatitude: 12.34567 N\nGPSLongitude: 45.67890 W\nDecimal GPS: ${TRAINING_GPS}\nLocation label: CINDER / north service room\nTRAINING COORDINATES — fictional game evidence, not a real rescue location.\nKeep the minus sign for west. Post the decimal pair in the stream's public chat.`;
+ return `SOURCE: ${CARRIER}\nRecord: original_exif / verified carrier\nCamera: RELAY-884\nGPSLatitude: 12.34567 N\nGPSLongitude: 45.67890 W\nDecimal GPS: ${TRAINING_GPS}\nHorizontal error: 0.00 m (perfect fix)\nLocation label: CINDER / north service room\nTRAINING COORDINATES — fictional game evidence, not a real rescue location.\nKeep the minus sign for west. Post the decimal pair in the stream's public chat.`;
 }
 export function coordinatesMatch(input: string) {
  const parts = input.trim().split(/[,;\s]+/).filter(Boolean).map(Number);

@@ -16,6 +16,9 @@ export const ONION_SITES = [
   { url: "ashfall3m8vtq.onion", title: "The Faithful Archive" },
 ];
 
+// Dev stage preview sets this so the first Tor tab opens a site straight away.
+export const torStart = { url: "" };
+
 export function TorApp() {
   const nextId = useRef(2);
   const [tabs, setTabs] = useState([{ id: 1, title: 'New tab' }]);
@@ -39,7 +42,7 @@ export function TorApp() {
 function TorPage({ id, reportTitle }: { id: number; reportTitle: (id: number, title: string) => void }) {
   const [url, setUrl] = useState("");
   const [page, setPage] = useState<string | null>(null); // null = start page, "" = not found, "vpn" = blocked, else a site url
-  const [pending, setPending] = useState<{ url: string; request: number } | null>(null);
+  const [pending, setPending] = useState<{ url: string; request: number } | null>(() => id === 1 && torStart.url ? { url: torStart.url, request: 0 } : null);
   const request = useRef(0);
   const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

@@ -2,16 +2,43 @@ import { rescueState } from "./rescueChapter.ts";
 export const VAULT_URL = 'cinder-relay9x4.onion';
 export const FALSE_VAULT_URL = 'witness-vault2h7.onion';
 export const archiveProgress = { visited: false, traced: false, imported: false, verified: false, carved: false, decrypted: false };
+export const VESSEL_PARTS: [string, string, string][] = [
+ ['tx-884-a', 'NEURAL CORE', '8 GPU racks. The mind it will run on.'],
+ ['tx-884-b', 'BODY FRAME', 'Carbon-fiber skeleton and servo actuators.'],
+ ['tx-884-c', 'SKIN, EYES, VOICE', 'Synthetic dermis, glass optics, a speaker array.'],
+];
 export const TRANSACTIONS = [
- { id: 'tx-884-a', time: '2026-10-29 03:14:00 UTC', input: 1000000, from: 'bc1q-donor-884', outputs: [{ address: 'bc1q-relay-a', value: 150000, spent: 'tx-884-b' }, { address: 'bc1q-donor-change', value: 849000, spent: 'tx-decoy' }], fee: 1000, op: '' },
- { id: 'tx-884-b', time: '2026-10-29 03:16:12 UTC', input: 150000, from: 'bc1q-relay-a', outputs: [{ address: 'bc1q-relay-a', value: 29000, spent: '' }, { address: 'bc1q-custody', value: 120000, spent: 'tx-884-c' }], fee: 1000, op: '' },
- { id: 'tx-884-c', time: '2026-10-29 03:19:41 UTC', input: 120000, from: 'bc1q-custody', outputs: [{ address: 'bc1q-relay-sink', value: 115000, spent: '' }, { address: 'bc1q-custody', value: 4000, spent: '' }], fee: 1000, op: '63696e6465722d72656c61793978342e6f6e696f6e7c52454c41592d383834' },
- { id: 'tx-decoy', time: '2026-10-29 03:17:11 UTC', input: 849000, from: 'bc1q-donor-change', outputs: [{ address: 'bc1q-public-mirror', value: 848000, spent: '' }], fee: 1000, op: '7769746e6573732d7661756c743268372e6f6e696f6e7c434f4e46455353494f4e' },
- { id: 'tx-unrelated', time: '2026-10-29 03:14:00 UTC', input: 180000, from: 'bc1q-donor-112', outputs: [{ address: 'bc1q-public-mirror', value: 150000, spent: '' }, { address: 'bc1q-other-change', value: 29000, spent: '' }], fee: 1000, op: '' },
+ { id: 'tx-884-a', time: '2026-10-29 03:14:00 UTC', input: 1000000, from: 'bc1q-donor-884', outputs: [{ address: 'bc1q-relay-a', value: 150000, spent: 'tx-884-b', tag: 'VENDOR DEPOSIT / ASHFALL COMPUTE: neural core, 8 GPU racks' }, { address: 'bc1q-donor-change', value: 849000, spent: 'tx-decoy', tag: 'Change returned to the donor' }], memo: 'Offering 884 funds the build. The donor wallet pays the first vendor deposit.', fee: 1000, op: '' },
+ { id: 'tx-884-b', time: '2026-10-29 03:16:12 UTC', input: 150000, from: 'bc1q-relay-a', outputs: [{ address: 'bc1q-relay-a', value: 29000, spent: '', tag: 'Relay change' }, { address: 'bc1q-custody', value: 120000, spent: 'tx-884-c', tag: 'CUSTODY ESCROW / carbon-fiber frame and servo actuators (limbs)' }], memo: 'The relay wallet orders the body of the vessel.', fee: 1000, op: '' },
+ { id: 'tx-884-c', time: '2026-10-29 03:19:41 UTC', input: 120000, from: 'bc1q-custody', outputs: [{ address: 'bc1q-relay-sink', value: 115000, spent: '', tag: 'FINAL ASSEMBLY / synthetic dermis, glass optics, voice array' }, { address: 'bc1q-custody', value: 4000, spent: '', tag: 'Custody change' }], memo: 'Final assembly invoice. The inscription below is the order note.', fee: 1000, op: '63696e6465722d72656c61793978342e6f6e696f6e7c52454c41592d383834' },
+ { id: 'tx-decoy', time: '2026-10-29 03:17:11 UTC', input: 849000, from: 'bc1q-donor-change', outputs: [{ address: 'bc1q-public-mirror', value: 848000, spent: '', tag: 'PUBLIC MIRROR (no components purchased)' }], memo: 'Public mirror payment. Looks like a donation. Buys nothing.', fee: 1000, op: '7769746e6573732d7661756c743268372e6f6e696f6e7c434f4e46455353494f4e' },
+ { id: 'tx-unrelated', time: '2026-10-29 03:14:00 UTC', input: 180000, from: 'bc1q-donor-112', outputs: [{ address: 'bc1q-public-mirror', value: 150000, spent: '', tag: 'Unrelated payment' }, { address: 'bc1q-other-change', value: 29000, spent: '', tag: 'Unrelated change' }], memo: 'A different offering. No components purchased.', fee: 1000, op: '' },
 ];
 const SEALED = { salt: 'aG9sbG93LWFyY2hpdmUtODg0', iv: 'Y2luZGVyLXJlbGF5', data: '6KghqTJPTpxfV7GPOlz5haHbtgNAML3Nj9RTcN9+4ywRp2cKpv+kMwZMaN3kV50Fotx5thcPbCgvjqHSabj4VBfOdIcmP65AjbEJq5i4mkvUYaF6uKc6dHmU1u/2ef80+/Qf5Dtn72YLfoUD8Vs5Y+lb1ZgDVcdyw0UqOhHUFH0mOZTSO376Kj0c1cY7VcjOMRY7bETYEkEpAYVPkBbpe9Y/z2h/lYxYiGqTPLaF4hjVYyuNG1CFmImRy+ngwEar16auujRSOwN85P2TRK8iXO99nHDjmXC3CW2Uu8k0lyB7GG2LKhhJ4ufIEpEBoJhJWl4WAsYp3WDDzRgfRQaIOcwH3xpG3EeO8fplBXKx7Fa3Gpu5TbQ8t2AoHfhsD4O8C/zW9rUSq7ZJXuwhCdUFIbUlEZ6cYtffbUIbmyhND4zv8O7H/jF7ZB1AR3GCkEwJRAGrllC8jhPUG4s7rujUfmGDg8OWajfngjtnsImVjf8nudUwBCdca6QG1r0Ihj719X+NRRzA2K8jGsDmLyGq88ZjV5YRZwklfwBWtVtOYmQbN//25MetxCatumQJRJjMEjA10nEcr8B0GkXic34eCi8idMZ97aH+yRV3IJqxDXc=' };
 export const ARCHIVE_FILES: Record<string, string> = {
- 'archive/README.txt': `RELAY-884 / CUSTODY SNAPSHOT\nThis is simulated evidence. No real disks or wallets are accessed.\nRead archive/manifest.txt and the logs. File modification times are not trustworthy.\nUse sha256file FILE to verify the custodian record against the original ledger.\nstrings FILE extracts printable strings from a damaged image.\ncarve IMAGE NAME recovers an exact BEGIN_FILE / END_FILE record.\ncat recovered/NAME reads a carved file.\nDecrypt archive/sealed.json with: decrypt FILE "PASSPHRASE"\nAES-256-GCM, PBKDF2-SHA256, 120000 iterations; salt and IV are in sealed.json.\nThe recovered configuration specifies the exact passphrase formula.\nThe archive site's receipt uses UTC-05:00. Server logs use UTC. Convert carefully.`,
+ 'archive/README.txt': `RELAY-884 / CUSTODY SNAPSHOT
+Simulated evidence. No real disks or wallets are touched. Type help for commands.
+
+GOAL: open sealed.json. It needs a passphrase built from a formula that was deleted.
+
+1. FIND THE REAL RECORD
+   manifest.txt lists the hash of the original custodian record.
+   sha256file FILE, then compare. A record that does not match is a forgery. Ignore it.
+2. FIND WHAT WAS DELETED
+   Read access.log and directory.txt. Something was scrubbed from the server, and disk.img still holds leftovers.
+   strings archive/disk.img lists every file it can see. There is more than one: the active one matters.
+3. RECOVER IT
+   carve archive/disk.img NAME, then cat recovered/NAME
+   The recovered config states the passphrase formula and the time format.
+4. COLLECT THE FIELDS
+   Take the receipt id from the real record. Find that receipt's ISSUED line in auth.log.
+   File dates lie. Log times are UTC. The payment receipt on the archive site uses UTC-05:00.
+5. OPEN THE SEAL
+   decrypt archive/sealed.json "PASSPHRASE"
+   Join the fields exactly as the formula says, in its order, with | between them.
+   AES-256-GCM, PBKDF2-SHA256, 120000 iterations. The tool does the maths.
+
+Tip: archive files use archive/ paths. Recovered files use recovered/. ls shows both.`,
  'archive/manifest.txt': 'ORIGINAL LEDGER / HD-884\narchive/custodian.txt sha256=c856ef9afaa5405d6936aed31c170295a8d63710cd028d8e78cffdd262ec2ff6\nA confession from another mirror is not an original ledger. Verify before trusting it.',
  'archive/forged.txt': 'receipt=HD-884;case=CLOSED;custodian=UNKNOWN',
  'archive/custodian.txt': 'receipt=HD-884;case=RELAY-884;custodian=R.Pierre',

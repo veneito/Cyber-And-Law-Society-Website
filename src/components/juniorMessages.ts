@@ -1,5 +1,6 @@
 import { juniorGuidance } from './juniorGuidance.ts';
 import { whitehatPing, primeMessageAudio } from './whitehatAudio.ts';
+import { markSeen } from './caseSeen.ts';
 export type JuniorMessage = { from: 'investigator' | 'mysterious'; text: string; attachment?: boolean };
 let invitationScheduled = false;
 let invited = false, pending = 0, nextAt = 0;
@@ -15,8 +16,8 @@ export function inviteJunior() {
  if (invited || invitationScheduled) return;
  invitationScheduled = true; primeMessageAudio();
  window.setTimeout(() => {
- invited = true; whitehatPing();
- messages.push({ from: 'mysterious', text: "You found their offering ledger. I'm HatWhiteJr. Mr.WhiteHat and I have been following their money." });
+ invited = true; markSeen('helpers'); whitehatPing();
+ messages.push({ from: 'mysterious', text: "You found their offering ledger. I'm HatWhiteJr. Mr.WhiteHat and I have been following their money. I was already watching this ledger before you opened it." });
  later("The cult hides its trail behind change outputs and forged mirrors. I've seen that trick before. Don't trust the loudest confession.");
  later('Send me help if you need a hand. I will share my tracing notes and guide you through the evidence without doing it for you.');
  window.dispatchEvent(new CustomEvent('launch-app', { detail: 'browser' })); window.dispatchEvent(new Event('junior-dm'));
