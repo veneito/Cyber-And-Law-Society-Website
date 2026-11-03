@@ -22,3 +22,8 @@
 - Bio fades in word by word (`.bio-word`, 0.06s per word, `animationDelay` in `OfficerCard`).
 - `bio` optional: omitted = sample placeholder text, `""` = no bio (Professor Wang). Alfred's and Andrew's bios are invented fluff, to be replaced by the real ones.
 - `email` renders as an outlined green button (`mailto:`), matching "Become an officer". Emails are public on the site.
+
+- 2026-11-03: Replaced Jon, Michelle and Alfred photos with supplied ASCII portraits under new filenames. Michelle uses a centered head crop; Alfred uses a 1.8x face zoom. Per-officer imagePosition/imageScale apply to both cards and popup avatars.
+- Removed profile intro sequences, name/role decoding, word-by-word bio fades and dialog transitions. Profiles open immediately; carousel navigation is unchanged.
+
+- 2026-11-03: Removed Andrew from the officer roster, made Michelle Co-President and disabled the group-photo banner above the officer cards.

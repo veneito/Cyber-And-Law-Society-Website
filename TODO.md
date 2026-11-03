@@ -172,3 +172,10 @@
 
 - [x] Extend decrypted report into simulated stream, photo/stego/metadata chapter, verified GPS form and final in-game dispatch drive.
 - [ ] Replace six evidence photo placeholders and simulated image records with the user's supplied assets when available.
+
+- [x] Replace Jon, Michelle and Alfred officer photos with supplied ASCII portraits; center Michelle and zoom/center Alfred (2026-11-03).
+- [x] Remove officer profile animations so bios open immediately (2026-11-03).
+- [x] Temporarily close the unfinished missing-woman activity and personal assessment (2026-11-03).
+- [ ] Reopen the missing-woman activity and assessment only when ready.
+
+- [x] Remove Andrew and the officer group-photo banner; make Michelle Co-President (2026-11-03).
