@@ -170,3 +170,5 @@ Design notes, not shown to players. The twist: Solace invented everything (the v
 - **Reveal and trial** (`FinalReveal.tsx`, mounted in `ActivityDesktop.tsx`, shown when `rescueState.police`): two scenes, then five counts (`CHARGES`). Each count is answered by presenting one confirmed case-file exhibit (`exhibitProves`); wrong picks are objections (3 strikes resets with a warning); "recess" closes the overlay so the player can finish the Notes. Winning sets `rescueState.cleared`.
 - **Dev preview**: the stage panel has **fill case file** (opens every lock and fills every answer) and **set police** to jump to the reveal. Test: `tests/case-file.test.mjs`.
 - Deliberately kept the old puzzle answers and tests untouched. Helper intro messages stay at three each (tests count them), so the foreshadowing lines were folded into existing messages.
+
+- 2026-11-03: Temporarily closed the missing-woman activity and removed its activities listing. All /activity routes, including assessment and certificate query links, show an unavailable notice. Activity and assessment source files are preserved.

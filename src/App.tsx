@@ -3,14 +3,12 @@ import { t as tr } from "./i18n/language";
 import { ArrowRight, Bug, CalendarDays, ChevronDown, Mail, MapPin, Menu, X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { ApplyForm } from "./components/ApplyForm";
-import { ActivityPage } from "./components/ActivityDesktop";
 import { Anomaly,isFixed, resetHunt, startHunt } from "./components/Anomaly";
 import { Icon } from "./components/Icon";
 import { CasePage } from "./components/Case";
 import { Logo } from "./components/Logo";
 import { Network } from "./components/Network";
 import { JusticeHologram } from "./components/JusticeHologram";
-import { OfficerIntro } from "./components/OfficerIntro";
 import { Phage } from "./components/Phage";
 import { DecodeText } from "./components/Materialize";
 import { Quarantine } from "./components/Quarantine";
@@ -143,11 +141,10 @@ const SAMPLE_BIO = "Sample bio: this is placeholder text about the officer. Add 
 
 function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: () => void }) {
   const dlg = useRef<HTMLDialogElement>(null);
-  const [open, setOpen] = useState(false); // replays the decode effect on each open
-  const [intro, setIntro] = useState(false);
+  const photoStyle = { objectPosition: o.imagePosition ?? "center", transform: `scale(${o.imageScale ?? 1})`, transformOrigin: o.imagePosition ?? "center" };
   const avatar = (size: string) =>
     o.image ? (
-      <img src={o.image} alt={o.name} className={`mx-auto ${size} rounded-full object-cover`} />
+      <div className={`mx-auto ${size} overflow-hidden rounded-full`}><img src={o.image} alt={o.name} className="h-full w-full object-cover" style={photoStyle} /></div>
     ) : (
       <div className={`mx-auto grid ${size} place-items-center rounded-full bg-gradient-to-br from-green-500/30 to-green-900/40 text-2xl font-semibold text-white ring-1 ring-neutral-700`}>
         {initials(o.name)}
@@ -159,9 +156,7 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
       <button
         onClick={() => {
           if (pos !== 0) { onSelect(); return; }
-          setIntro(Boolean(o.intro) && !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
           dlg.current?.showModal();
-          setOpen(true);
         }}
         aria-label={pos === 0 ? `${o.name}, open bio` : `Show ${o.name}`}
         tabIndex={Math.abs(pos) > 2 ? -1 : 0}
@@ -177,7 +172,7 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         }}
       >
         {o.image ? (
-          <img src={o.image} alt="" draggable={false} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img src={o.image} alt="" draggable={false} className="h-full w-full object-cover" style={photoStyle} />
         ) : (
           <div className="grid h-full w-full place-items-center bg-gradient-to-br from-green-500/30 to-green-900/40 text-6xl font-semibold text-white">{initials(o.name)}</div>
         )}
@@ -189,22 +184,18 @@ function OfficerCard({ o, pos, onSelect }: { o: Officer; pos: number; onSelect: 
         </div>
       </button>
       {/* showModal() traps focus, handles Escape and restores focus; a click on the dialog itself is a backdrop click */}
-      <dialog ref={dlg} aria-label={o.name} onClose={() => { setOpen(false); setIntro(false); }} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
+      <dialog ref={dlg} aria-label={o.name} onClick={(e) => e.target === dlg.current && dlg.current.close()} className="officer-dialog m-auto w-full max-w-md bg-transparent p-4 text-inherit">
         <div className="relative rounded-xl border border-neutral-700 bg-neutral-950 p-8 text-center">
           <button onClick={() => dlg.current?.close()} aria-label={tr("Close")} className="absolute right-3 top-3 text-neutral-400 hover:text-white"><X className="h-5 w-5" /></button>
-          {open && intro && o.intro ? <OfficerIntro kind={o.intro} name={o.name} onComplete={() => setIntro(false)} /> : <>
           {avatar("h-32 w-32")}
-          <h3 className="mt-4 text-xl font-semibold text-white"><DecodeText text={o.name} active={open} /></h3>
-          <p className="text-sm text-green-300"><DecodeText text={`${o.role} · ${o.major}`} active={open} /></p>
+          <h3 className="mt-4 text-xl font-semibold text-white">{o.name}</h3>
+          <p className="text-sm text-green-300">{o.role} · {o.major}</p>
           {(o.bio ?? SAMPLE_BIO) && (
             <p className="mt-4 text-left text-neutral-300">
-              {(o.bio ?? SAMPLE_BIO).split(" ").map((w, i) => (
-                <span key={i} className={open ? "bio-word" : ""} style={{ animationDelay: `${0.3 + i * 0.06}s` }}>{w} </span>
-              ))}
+              {o.bio ?? SAMPLE_BIO}
             </p>
           )}
           {o.email && <a href={`mailto:${o.email}`} className="mt-5 inline-flex max-w-full items-center justify-center gap-2 break-all rounded-lg border border-green-400 px-4 py-2 text-sm font-semibold text-green-300 hover:bg-green-400 hover:text-black"><Mail className="h-4 w-4 shrink-0" aria-hidden />{o.email}</a>}
-          </>}
         </div>
       </dialog>
     </>
@@ -260,7 +251,6 @@ function ActivitiesPage() {
   const items = [
     { href: "/play", tag: tr("Mini-game"), title: tr("Quarantine the viruses"), text: tr("Scan the file system, track down the malware and lock it away. Climb the leaderboard.") },
     { href: "/case/wellington", tag: tr("Investigation"), title: tr("The Bea F. Wellington case file"), text: tr("A cyber-crime investigation. Follow the photo, find the key, crack the ciphers and prove what she did.") },
-    { href: "/activity", tag: tr("Investigation"), title: tr("Find the missing woman"), text: tr("Search social media, unlock suspicious flash drives and trace a missing woman's last known location on a virtual desktop.") },
   ];
   return (
     <>
@@ -380,7 +370,14 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "");
   if (path === "/become-an-officer") return <OfficerPage />;
   if (path === "/case/wellington") return <CasePage />;
-  if (path === "/activity") return <ActivityPage />;
+  if (path === "/activity" || path.startsWith("/activity/")) return (
+    <SubPage>
+      <Section id="activity-unavailable" eyebrow="Investigation" title="Activity unavailable">
+        <p className="text-neutral-300">This activity and its personal assessment are not ready yet. Please check back later.</p>
+        <a href="/activities" className="mt-6 inline-block text-green-300">Back to activities</a>
+      </Section>
+    </SubPage>
+  );
   if (path === "/activities") return <ActivitiesPage />;
   if (path === "/meetings") return <MeetingsPage />;
   if (window.location.pathname.replace(/\/$/, "") === "/play") return <PlayPage />;
