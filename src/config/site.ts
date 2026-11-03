@@ -156,7 +156,7 @@ export const siteConfig = {
     },
   ] as { title: string; date: string; summary: string; images?: string[] }[],
 
-  officersPhoto: "/assets/officers/group1.jpg",
+  officersPhoto: null,
 
   officers: [
     {
@@ -170,12 +170,7 @@ export const siteConfig = {
       bio: tr("Growing up in the Philippines, I watched technology reshape everyday life faster than the rules around it could keep up. That curiosity led me to IT, and to helping found a club where students can explore how cyber and law shape each other."),
     },
     {
-      name: "Andrew", role: tr("Co-President"), major: tr("Digital Forensics"), image: "/assets/officers/andrew.jpg",
-      email: "aop2322@jagmail.southalabama.edu",
-      bio: tr("Digital forensics taught me that every click leaves a trail, and that those trails matter in court. I help lead the society to give students hands-on experience tracing evidence and understanding the law behind it."),
-    },
-    {
-      name: "Michelle", role: tr("Social Media Manager"), major: tr("Biology"), image: "/assets/officers/michelle-ascii-2026-11.png", imagePosition: "50% 0%",
+      name: "Michelle", role: tr("Co-President"), major: tr("Biology"), image: "/assets/officers/michelle-ascii-2026-11.png", imagePosition: "50% 0%",
       bio: tr("Originally from Venezuela, I am bilingual in Spanish and English, creative and passionate about painting, learning, and art."),
     },
     { name: "Professor Wang", role: tr("Advisor"), major: tr("Criminal Justice Professor"), image: "/assets/officers/wang.webp", email: "wang@southalabama.edu", bio: "" },
